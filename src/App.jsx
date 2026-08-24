@@ -129,6 +129,8 @@ export default function App() {
   const [formError, setFormError] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [isLookingUp, setIsLookingUp] = useState(false);
+  const [updatingProductId, setUpdatingProductId] = useState(null);
+  const [inventoryActionError, setInventoryActionError] = useState("");
   const [search, setSearch] = useState("");
   const [inventoryFilter, setInventoryFilter] = useState("all");
   const [inventorySort, setInventorySort] = useState("name");
@@ -170,32 +172,61 @@ export default function App() {
 };
   const handleConsume = async (item) => {
   if (!item.portions || item.portions <= 0) return;
+  if (updatingProductId === item.id) return;
 
   const newPortions = item.portions - 1;
 
-  await updatePortions(item.id, newPortions);
+  setUpdatingProductId(item.id);
+  setInventoryActionError("");
 
-  await loadProducts();
+  try {
+    await updatePortions(item.id, newPortions);
 
-  setSelectedProduct((current) =>
-    current?.id === item.id
-      ? { ...current, portions: newPortions }
-      : current,
+    await loadProducts();
+
+    setSelectedProduct((current) =>
+      current?.id === item.id
+        ? { ...current, portions: newPortions }
+        : current,
+    );
+  } catch (error) {
+  console.error("Error consumiendo porción:", error);
+
+  setInventoryActionError(
+    "No pudimos actualizar las porciones. Inténtalo nuevamente.",
   );
+} finally {
+    setUpdatingProductId(null);
+  }
 };
 
   const handleAdd = async (item) => {
+  if (updatingProductId === item.id) return;
+
   const newPortions = (item.portions || 0) + 1;
 
-  await updatePortions(item.id, newPortions);
+  setUpdatingProductId(item.id);
+  setInventoryActionError("");
 
-  await loadProducts();
+  try {
+    await updatePortions(item.id, newPortions);
 
-  setSelectedProduct((current) =>
-    current?.id === item.id
-      ? { ...current, portions: newPortions }
-      : current,
+    await loadProducts();
+
+    setSelectedProduct((current) =>
+      current?.id === item.id
+        ? { ...current, portions: newPortions }
+        : current,
+    );
+  } catch (error) {
+  console.error("Error agregando porción:", error);
+
+  setInventoryActionError(
+    "No pudimos actualizar las porciones. Inténtalo nuevamente.",
   );
+} finally {
+    setUpdatingProductId(null);
+  }
 };
 
   const handleScan = async (code) => {
@@ -228,13 +259,15 @@ export default function App() {
         imageUrl: "",
       });
     }
-  } catch (error) {
+    } catch (error) {
     console.error("Error buscando producto:", error);
 
     setStatus("error");
     setFormError(
       "No pudimos consultar el producto. Inténtalo nuevamente.",
     );
+  } finally {
+    setIsLookingUp(false);
   }
 };
 
@@ -1081,32 +1114,45 @@ export default function App() {
     </div>
   </div>
 
-  <div className="mt-5 grid grid-cols-2 gap-2">
-  <button
-    type="button"
-    onClick={(event) => {
-      event.stopPropagation();
-      handleConsume(item);
-    }}
-    disabled={portions <= 0}
-    aria-label={`Consumir una porción de ${item.name}`}
-    className="rounded-xl bg-[var(--cupboard-danger)]/10 px-3 py-2.5 text-sm font-bold text-[var(--cupboard-danger)] transition hover:bg-[var(--cupboard-danger)]/20 disabled:cursor-not-allowed disabled:opacity-30"
-  >
-    − 1
-  </button>
+      {inventoryActionError && (
+        <div
+          role="alert"
+          aria-live="assertive"
+          className="mb-3 rounded-xl border border-[var(--cupboard-danger)]/30 bg-red-500/10 px-3 py-2 text-xs font-medium text-[var(--cupboard-danger)]"
+        >
+          {inventoryActionError}
+        </div>
+      )}
 
-  <button
-    type="button"
-    onClick={(event) => {
-      event.stopPropagation();
-      handleAdd(item);
-    }}
-    aria-label={`Agregar una porción de ${item.name}`}
-    className="rounded-xl bg-[var(--cupboard-primary-soft)] px-3 py-2.5 text-sm font-bold text-[var(--cupboard-primary)] transition hover:brightness-95"
-  >
-    + 1
-  </button>
-</div>
+    <div className="mt-5 grid grid-cols-2 gap-2">
+        <button
+            type="button"
+            onClick={(event) => {
+            event.stopPropagation();
+            handleConsume(item);
+            }}
+            disabled={portions <= 0 || updatingProductId === item.id}
+            aria-label={`Consumir una porción de ${item.name}`}
+            aria-busy={updatingProductId === item.id}
+            className="rounded-xl bg-[var(--cupboard-danger)]/10 px-3 py-2.5 text-sm font-bold text-[var(--cupboard-danger)] transition hover:bg-[var(--cupboard-danger)]/20 disabled:cursor-not-allowed disabled:opacity-30"
+            >
+            {updatingProductId === item.id ? "Guardando…" : "− 1"}
+        </button>
+
+        <button
+            type="button"
+            onClick={(event) => {
+            event.stopPropagation();
+            handleAdd(item);
+            }}
+            disabled={updatingProductId === item.id}
+            aria-label={`Agregar una porción de ${item.name}`}
+            aria-busy={updatingProductId === item.id}
+            className="rounded-xl bg-[var(--cupboard-primary-soft)] px-3 py-2.5 text-sm font-bold text-[var(--cupboard-primary)] transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-30"
+            >
+            {updatingProductId === item.id ? "Guardando…" : "+ 1"}
+        </button>
+    </div>
 </article>
                     );
                   })}
@@ -1163,8 +1209,7 @@ export default function App() {
                           ? "Buscando producto..."
                           : barcode
                             ? barcode
-                            : "Esperando escaneo..."}
-                      </p>
+                            : "Esperando escaneo..."}                      </p>
                     </div>
 
                     <button
