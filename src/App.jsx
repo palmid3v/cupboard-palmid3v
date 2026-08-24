@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import BarcodeScanner from "./components/BarcodeScanner";
 import {
   getProduct,
@@ -127,6 +127,8 @@ export default function App() {
   const [products, setProducts] = useState([]);
   const [status, setStatus] = useState("");
   const [formError, setFormError] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const [isLookingUp, setIsLookingUp] = useState(false);
   const [search, setSearch] = useState("");
   const [inventoryFilter, setInventoryFilter] = useState("all");
   const [inventorySort, setInventorySort] = useState("name");
@@ -197,9 +199,12 @@ export default function App() {
 };
 
   const handleScan = async (code) => {
-    setBarcode(code);
-    setIsEditing(false);
+  setBarcode(code);
+  setIsEditing(false);
+  setFormError("");
+  setIsLookingUp(true);
 
+  try {
     const product = await getProduct(code);
 
     if (product) {
@@ -223,7 +228,15 @@ export default function App() {
         imageUrl: "",
       });
     }
-  };
+  } catch (error) {
+    console.error("Error buscando producto:", error);
+
+    setStatus("error");
+    setFormError(
+      "No pudimos consultar el producto. Inténtalo nuevamente.",
+    );
+  }
+};
 
   const handleChange = (event) => {
   setFormError("");
@@ -234,21 +247,25 @@ export default function App() {
   });
 };
 
+  const nameInputRef = useRef(null);
+  const weightInputRef = useRef(null);
+  const portionsInputRef = useRef(null);
   const handleSave = async () => {
   setFormError("");
-
-  if (!barcode) {
-    setFormError("El producto necesita un código de barras.");
-    return;
-  }
 
   const name = form.name.trim();
   const portionsValue = Number(form.portions);
   const weightValue =
     form.weight === "" ? null : Number(form.weight);
 
+  if (!barcode) {
+    setFormError("Primero escanea o selecciona un código de barras.");
+    return;
+  }
+
   if (!name) {
     setFormError("El nombre del producto es obligatorio.");
+    nameInputRef.current?.focus();
     return;
   }
 
@@ -258,6 +275,7 @@ export default function App() {
     portionsValue < 0
   ) {
     setFormError("Las porciones deben ser un número igual o mayor que 0.");
+    portionsInputRef.current?.focus();
     return;
   }
 
@@ -266,8 +284,11 @@ export default function App() {
     (!Number.isFinite(weightValue) || weightValue < 0)
   ) {
     setFormError("El peso debe ser un número igual o mayor que 0.");
+    weightInputRef.current?.focus();
     return;
   }
+
+  setIsSaving(true);
 
   try {
     await saveProduct(barcode, {
@@ -302,6 +323,8 @@ export default function App() {
     setFormError(
       "No pudimos guardar el producto. Inténtalo nuevamente.",
     );
+  } finally {
+    setIsSaving(false);
   }
 };
 
@@ -530,7 +553,7 @@ export default function App() {
     <button
       type="button"
       onClick={() => setSelectedProduct(null)}
-      className="rounded-xl border border-[var(--cupboard-border)] bg-[var(--cupboard-surface)] px-4 py-2.5 text-sm font-semibold text-[var(--cupboard-text-muted)] transition hover:bg-[var(--cupboard-surface-muted)] hover:text-[var(--cupboard-text)]"
+      className="rounded-xl border border-[var(--cupboard-border)] bg-[var(--cupboard-surface)] px-4 py-2.5 text-sm font-semibold text-[var(--cupboard-text-muted)] transition hover:bg-[var(--cupboard-surface-muted)] hover:text-[var(--cupboard-text)] focus:outline-none focus:ring-2 focus:ring-[var(--cupboard-primary)]/30"
     >
       ← Volver al inventario
     </button>
@@ -1135,8 +1158,12 @@ export default function App() {
                         Barcode
                       </p>
 
-                      <p className="mt-1 font-mono text-sm font-semibold">
-                        {barcode || "Esperando escaneo..."}
+                      <p className="mt-1 text-sm font-semibold">
+                        {isLookingUp
+                          ? "Buscando producto..."
+                          : barcode
+                            ? barcode
+                            : "Esperando escaneo..."}
                       </p>
                     </div>
 
@@ -1152,6 +1179,22 @@ export default function App() {
                   </div>
                 </div>
               </section>
+
+{isLookingUp && (
+  <div
+    role="status"
+    aria-live="polite"
+    className="rounded-2xl border border-[var(--cupboard-primary)]/30 bg-[var(--cupboard-primary)]/10 px-4 py-4"
+  >
+    <p className="text-sm font-bold text-[var(--cupboard-primary)]">
+      Buscando producto...
+    </p>
+
+    <p className="mt-1 text-xs text-[var(--cupboard-text-muted)]">
+      Estamos consultando tu inventario.
+    </p>
+  </div>
+)}
 
               {status && (
   <div
@@ -1234,7 +1277,7 @@ export default function App() {
                   <button
                     type="button"
                     onClick={() => setIsEditing(true)}
-                    className="mt-5 rounded-xl border border-[var(--cupboard-border)] px-4 py-3 text-sm font-semibold transition hover:bg-[var(--cupboard-surface-muted)]"
+                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--cupboard-primary)] px-4 py-3 font-semibold text-white shadow-sm transition hover:brightness-95 focus:outline-none focus:ring-2 focus:ring-[var(--cupboard-primary)]/30"
                   >
                     ✎ Editar producto
                   </button>
@@ -1290,14 +1333,28 @@ export default function App() {
         </label>
 
         <input
-          id="product-name"
-          name="name"
-          type="text"
-          placeholder="Ej. Leche entera"
-          value={form.name}
-          onChange={handleChange}
-          className="w-full rounded-xl border border-[var(--cupboard-border)] bg-[var(--cupboard-surface-muted)] px-4 py-3 text-sm outline-none transition placeholder:text-[var(--cupboard-text-muted)] focus:border-[var(--cupboard-primary)] focus:ring-2 focus:ring-[var(--cupboard-primary)]/20"
-        />
+  id="product-name"
+  ref={nameInputRef}
+  name="name"
+  type="text"
+  placeholder="Ej. Leche entera"
+  value={form.name}
+  onChange={handleChange}
+  autoFocus
+  aria-invalid={formError === "El nombre del producto es obligatorio."}
+  aria-describedby={
+    formError === "El nombre del producto es obligatorio."
+      ? "product-form-error"
+      : undefined
+  }
+  className={[
+    "w-full rounded-xl border bg-[var(--cupboard-surface-muted)] px-4 py-3 text-sm outline-none transition",
+    "placeholder:text-[var(--cupboard-text-muted)]",
+    formError === "El nombre del producto es obligatorio."
+      ? "border-[var(--cupboard-danger)] focus:border-[var(--cupboard-danger)] focus:ring-2 focus:ring-[var(--cupboard-danger)]/20"
+      : "border-[var(--cupboard-border)] focus:border-[var(--cupboard-primary)] focus:ring-2 focus:ring-[var(--cupboard-primary)]/20",
+  ].join(" ")}
+/>
       </div>
 
       {/* Description */}
@@ -1333,13 +1390,28 @@ export default function App() {
           <div className="relative">
             <input
               id="product-weight"
+              ref={weightInputRef}
+              aria-invalid={
+                  formError === "El peso debe ser un número igual o mayor que 0."
+                }
+                aria-describedby={
+                  formError === "El peso debe ser un número igual o mayor que 0."
+                    ? "product-form-error"
+                    : undefined
+                }
               name="weight"
               type="number"
               min="0"
               placeholder="0"
               value={form.weight}
               onChange={handleChange}
-              className="w-full rounded-xl border border-[var(--cupboard-border)] bg-[var(--cupboard-surface-muted)] px-4 py-3 pr-12 text-sm outline-none transition placeholder:text-[var(--cupboard-text-muted)] focus:border-[var(--cupboard-primary)] focus:ring-2 focus:ring-[var(--cupboard-primary)]/20"
+              className={[
+  "w-full rounded-xl border bg-[var(--cupboard-surface-muted)] px-4 py-3 pr-12 text-sm outline-none transition",
+  "placeholder:text-[var(--cupboard-text-muted)]",
+  formError === "El peso debe ser un número igual o mayor que 0."
+    ? "border-[var(--cupboard-danger)] focus:border-[var(--cupboard-danger)] focus:ring-2 focus:ring-[var(--cupboard-danger)]/20"
+    : "border-[var(--cupboard-border)] focus:border-[var(--cupboard-primary)] focus:ring-2 focus:ring-[var(--cupboard-primary)]/20",
+].join(" ")}
             />
 
             <span className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-xs font-medium text-[var(--cupboard-text-muted)]">
@@ -1358,13 +1430,28 @@ export default function App() {
 
           <input
             id="product-portions"
+            ref={portionsInputRef}
+            aria-invalid={
+  formError === "Las porciones deben ser un número igual o mayor que 0."
+}
+aria-describedby={
+  formError === "Las porciones deben ser un número igual o mayor que 0."
+    ? "product-form-error"
+    : undefined
+}
             name="portions"
             type="number"
             min="0"
             placeholder="0"
             value={form.portions}
             onChange={handleChange}
-            className="w-full rounded-xl border border-[var(--cupboard-border)] bg-[var(--cupboard-surface-muted)] px-4 py-3 text-sm outline-none transition placeholder:text-[var(--cupboard-text-muted)] focus:border-[var(--cupboard-primary)] focus:ring-2 focus:ring-[var(--cupboard-primary)]/20"
+            className={[
+  "w-full rounded-xl border bg-[var(--cupboard-surface-muted)] px-4 py-3 text-sm outline-none transition",
+  "placeholder:text-[var(--cupboard-text-muted)]",
+  formError === "Las porciones deben ser un número igual o mayor que 0."
+    ? "border-[var(--cupboard-danger)] focus:border-[var(--cupboard-danger)] focus:ring-2 focus:ring-[var(--cupboard-danger)]/20"
+    : "border-[var(--cupboard-border)] focus:border-[var(--cupboard-primary)] focus:ring-2 focus:ring-[var(--cupboard-primary)]/20",
+].join(" ")}
           />
         </div>
       </div>
@@ -1424,7 +1511,9 @@ export default function App() {
 
                 {formError && (
   <div
+    id="product-form-error"
     role="alert"
+    aria-live="assertive"
     className="mt-6 rounded-xl border border-[var(--cupboard-danger)]/30 bg-red-500/10 px-4 py-3 text-sm font-medium text-[var(--cupboard-danger)]"
   >
     {formError}
@@ -1444,10 +1533,10 @@ export default function App() {
       <button
         type="button"
         onClick={handleSave}
-        disabled={!barcode}
+        disabled={!barcode || isSaving}
         className="rounded-xl bg-[var(--cupboard-primary)] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--cupboard-primary-hover)] disabled:cursor-not-allowed disabled:opacity-40"
       >
-        Guardar producto
+        {isSaving ? "Guardando..." : "Guardar producto"}
       </button>
     </div>
   </section>
@@ -1456,19 +1545,23 @@ export default function App() {
               {!isEditing && (
   <div className="grid gap-3 sm:grid-cols-2">
     <button
-      type="button"
-      onClick={handleSave}
-      disabled={!barcode}
-      className="rounded-2xl bg-[var(--cupboard-primary)] px-5 py-4 font-semibold text-white shadow-[var(--cupboard-shadow-md)] transition hover:bg-[var(--cupboard-primary-hover)] disabled:cursor-not-allowed disabled:opacity-40"
-    >
-      Guardar producto
-    </button>
+  type="button"
+  onClick={handleSave}
+  disabled={!barcode || isSaving}
+  className="rounded-2xl bg-[var(--cupboard-primary)] px-5 py-4 font-semibold text-white shadow-[var(--cupboard-shadow-md)] transition hover:bg-[var(--cupboard-primary-hover)] disabled:cursor-not-allowed disabled:opacity-40"
+>
+  {isSaving ? "Guardando..." : "Guardar producto"}
+</button>
 
     <button
       type="button"
-      onClick={() =>
-        setScanKey((previous) => previous + 1)
-      }
+      onClick={() => {
+  setBarcode("");
+  setStatus("");
+  setFormError("");
+  setIsEditing(false);
+  setScanKey((previous) => previous + 1);
+}}
       className="rounded-2xl border border-[var(--cupboard-border)] bg-[var(--cupboard-surface)] px-5 py-4 font-semibold transition hover:bg-[var(--cupboard-surface-muted)]"
     >
       Escanear otro
