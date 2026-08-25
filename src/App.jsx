@@ -125,6 +125,7 @@ export default function App() {
 
   const [isEditing, setIsEditing] = useState(false);
   const [products, setProducts] = useState([]);
+  const [isLoadingProducts, setIsLoadingProducts] = useState(true);
   const [status, setStatus] = useState("");
   const [formError, setFormError] = useState("");
   const [isSaving, setIsSaving] = useState(false);
@@ -140,8 +141,14 @@ export default function App() {
   const [isManualEntry, setIsManualEntry] = useState(false);
 
   const loadProducts = async () => {
-    const data = await getAllProducts();
-    setProducts(data);
+    setIsLoadingProducts(true);
+
+    try {
+      const data = await getAllProducts();
+      setProducts(data);
+    } finally {
+      setIsLoadingProducts(false);
+    }
   };
 
   useEffect(() => {
@@ -979,7 +986,20 @@ setIsSaving(true);
     </div>
   </div>
 
-                {products.length === 0 && (
+                {isLoadingProducts && (
+  <div
+    role="status"
+    className="rounded-3xl border border-dashed border-[var(--cupboard-border)] bg-[var(--cupboard-surface)] px-6 py-12 text-center shadow-[var(--cupboard-shadow-sm)]"
+  >
+    <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-3xl bg-[var(--cupboard-primary-soft)] text-4xl">
+      📦
+    </div>
+
+    <p className="mt-6 text-lg font-bold">Cargando inventario...</p>
+  </div>
+)}
+
+                {!isLoadingProducts && products.length === 0 && (
   <div className="rounded-3xl border border-dashed border-[var(--cupboard-border)] bg-[var(--cupboard-surface)] px-6 py-12 text-center shadow-[var(--cupboard-shadow-sm)]">
     <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-3xl bg-[var(--cupboard-primary-soft)] text-4xl">
       📦
@@ -1004,7 +1024,7 @@ setIsSaving(true);
   </div>
 )}
 
-                {products.length > 0 &&
+                {!isLoadingProducts && products.length > 0 &&
   filteredProducts.length === 0 && (
     <div className="rounded-3xl border border-dashed border-[var(--cupboard-border)] bg-[var(--cupboard-surface)] px-6 py-12 text-center shadow-[var(--cupboard-shadow-sm)]">
       <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-3xl bg-[var(--cupboard-surface-muted)] text-4xl">
@@ -1034,6 +1054,7 @@ setIsSaving(true);
     </div>
   )}
 
+                {!isLoadingProducts && (
                 <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                   {filteredProducts.map((item) => {
                     const portions = Number(item.portions) || 0;
@@ -1203,6 +1224,7 @@ setIsSaving(true);
                     );
                   })}
                 </div>
+                )}
               </section>
             </>
           )}
