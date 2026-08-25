@@ -415,9 +415,12 @@ setIsSaving(true);
 
   const filteredProducts = products
   .filter((item) => {
-    const matchesSearch = item.name
-      ?.toLowerCase()
-      .includes(search.toLowerCase());
+    const searchTerm = search.trim().toLowerCase();
+
+    const matchesSearch =
+      !searchTerm ||
+      item.name?.toLowerCase().includes(searchTerm) ||
+      item.id?.toLowerCase().includes(searchTerm);
 
     const portions = Number(item.portions) || 0;
 
@@ -461,17 +464,9 @@ setIsSaving(true);
     }
 
     return 0;
-  });
+  })
 
-  const lowStockCount = products.filter(
-    (item) => Number(item.portions) <= 5,
-  ).length;
-
-  const totalPortions = products.reduce(
-    (total, item) => total + (Number(item.portions) || 0),
-    0,
-  );
-
+  
   const statusConfig = {
     found: {
       label: "Producto encontrado",
@@ -813,7 +808,7 @@ setIsSaving(true);
                   </p>
 
                   <p className="mt-2 text-3xl font-bold">
-                    {totalPortions}
+                    {inventorySummary.portions}
                   </p>
 
                   <p className="mt-1 text-xs text-[var(--cupboard-text-muted)]">
@@ -827,7 +822,7 @@ setIsSaving(true);
                   </p>
 
                   <p className="mt-2 text-3xl font-bold text-[var(--cupboard-danger)]">
-                    {lowStockCount}
+                    {inventorySummary.lowStock}
                   </p>
 
                   <p className="mt-1 text-xs text-[var(--cupboard-text-muted)]">
@@ -1021,8 +1016,9 @@ setIsSaving(true);
       </h3>
 
       <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[var(--cupboard-text-muted)]">
-        No hay productos que coincidan con tu búsqueda o
-        con el filtro seleccionado.
+        {search.trim()
+          ? `No hay productos que coincidan con "${search.trim()}".`
+          : "No hay productos que coincidan con el filtro seleccionado."}
       </p>
 
       <button
