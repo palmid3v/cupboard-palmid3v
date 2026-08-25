@@ -130,12 +130,14 @@ export default function App() {
   const [isSaving, setIsSaving] = useState(false);
   const [isLookingUp, setIsLookingUp] = useState(false);
   const [updatingProductId, setUpdatingProductId] = useState(null);
-  const [inventoryActionError, setInventoryActionError] = useState("");
+  const [inventoryActionError, setInventoryActionError] = useState(null);
+  const [inventoryActionSuccess, setInventoryActionSuccess] = useState(null);
   const [search, setSearch] = useState("");
   const [inventoryFilter, setInventoryFilter] = useState("all");
   const [inventorySort, setInventorySort] = useState("name");
   const [scanKey, setScanKey] = useState(0);
   const [theme, setTheme] = useState(getInitialTheme);
+  const [isManualEntry, setIsManualEntry] = useState(false);
 
   const loadProducts = async () => {
     const data = await getAllProducts();
@@ -168,8 +170,12 @@ export default function App() {
   }, [theme]);
 
   const openProduct = (item) => {
+  setInventoryActionError(null);
+  setInventoryActionSuccess(null);
   setSelectedProduct(item);
 };
+
+
   const handleConsume = async (item) => {
   if (!item.portions || item.portions <= 0) return;
   if (updatingProductId === item.id) return;
@@ -177,7 +183,8 @@ export default function App() {
   const newPortions = item.portions - 1;
 
   setUpdatingProductId(item.id);
-  setInventoryActionError("");
+  setInventoryActionError(null);
+  setInventoryActionSuccess("");
 
   try {
     await updatePortions(item.id, newPortions);
@@ -189,12 +196,19 @@ export default function App() {
         ? { ...current, portions: newPortions }
         : current,
     );
+
+    setInventoryActionSuccess({
+      productId: item.id,
+      message: `Porciones actualizadas: ${newPortions}`,
+    });
+
   } catch (error) {
   console.error("Error consumiendo porción:", error);
 
-  setInventoryActionError(
-    "No pudimos actualizar las porciones. Inténtalo nuevamente.",
-  );
+  setInventoryActionError({
+    productId: item.id,
+    message: "No pudimos actualizar las porciones. Inténtalo nuevamente.",
+  });
 } finally {
     setUpdatingProductId(null);
   }
@@ -206,7 +220,8 @@ export default function App() {
   const newPortions = (item.portions || 0) + 1;
 
   setUpdatingProductId(item.id);
-  setInventoryActionError("");
+  setInventoryActionError(null);
+  setInventoryActionSuccess("");
 
   try {
     await updatePortions(item.id, newPortions);
@@ -218,12 +233,19 @@ export default function App() {
         ? { ...current, portions: newPortions }
         : current,
     );
+
+    setInventoryActionSuccess({
+      productId: item.id,
+      message: `Porciones actualizadas: ${newPortions}`,
+    });
+
   } catch (error) {
   console.error("Error agregando porción:", error);
 
-  setInventoryActionError(
-    "No pudimos actualizar las porciones. Inténtalo nuevamente.",
-  );
+  setInventoryActionError({
+    productId: item.id,
+    message: "No pudimos actualizar las porciones. Inténtalo nuevamente.",
+  });
 } finally {
     setUpdatingProductId(null);
   }
@@ -286,15 +308,20 @@ export default function App() {
   const handleSave = async () => {
   setFormError("");
 
+  const productCode = barcode.trim();
   const name = form.name.trim();
   const portionsValue = Number(form.portions);
   const weightValue =
     form.weight === "" ? null : Number(form.weight);
 
-  if (!barcode) {
-    setFormError("Primero escanea o selecciona un código de barras.");
-    return;
-  }
+  if (!productCode) {
+  setFormError(
+    isManualEntry
+      ? "Escribe el código del producto."
+      : "Primero escanea un código de barras.",
+  );
+  return;
+}
 
   if (!name) {
     setFormError("El nombre del producto es obligatorio.");
@@ -313,18 +340,29 @@ export default function App() {
   }
 
   if (
-    weightValue !== null &&
-    (!Number.isFinite(weightValue) || weightValue < 0)
-  ) {
-    setFormError("El peso debe ser un número igual o mayor que 0.");
-    weightInputRef.current?.focus();
+  weightValue !== null &&
+  (!Number.isFinite(weightValue) || weightValue < 0)
+) {
+  setFormError("El peso debe ser un número igual o mayor que 0.");
+  weightInputRef.current?.focus();
+  return;
+}
+
+if (isManualEntry) {
+  const existingProduct = await getProduct(productCode);
+
+  if (existingProduct) {
+    setFormError(
+      "Este código ya está registrado. Puedes buscarlo en tu inventario.",
+    );
     return;
   }
+}
 
-  setIsSaving(true);
+setIsSaving(true);
 
   try {
-    await saveProduct(barcode, {
+    await saveProduct(productCode, {
       ...form,
       name,
       weight: weightValue ?? 0,
@@ -345,6 +383,7 @@ export default function App() {
     });
 
     setIsEditing(false);
+    setIsManualEntry(false);
     setScanKey((previous) => previous + 1);
 
     await loadProducts();
@@ -1114,13 +1153,23 @@ export default function App() {
     </div>
   </div>
 
-      {inventoryActionError && (
+      {inventoryActionError?.productId === item.id && (
+  <div
+    role="alert"
+    aria-live="assertive"
+    className="mb-3 rounded-xl border border-[var(--cupboard-danger)]/30 bg-red-500/10 px-3 py-2 text-xs font-medium text-[var(--cupboard-danger)]"
+  >
+    {inventoryActionError.message}
+  </div>
+)}
+
+      {inventoryActionSuccess?.productId === item.id && (
         <div
-          role="alert"
-          aria-live="assertive"
-          className="mb-3 rounded-xl border border-[var(--cupboard-danger)]/30 bg-red-500/10 px-3 py-2 text-xs font-medium text-[var(--cupboard-danger)]"
+          role="status"
+          aria-live="polite"
+          className="mb-3 rounded-xl border border-[var(--cupboard-success)]/30 bg-[var(--cupboard-success)]/10 px-3 py-2 text-xs font-medium text-[var(--cupboard-success)]"
         >
-          {inventoryActionError}
+          {inventoryActionSuccess.message}
         </div>
       )}
 
@@ -1189,14 +1238,34 @@ export default function App() {
                   </div>
 
                     <div className="mb-4 rounded-xl border border-[var(--cupboard-border)] bg-[var(--cupboard-surface-muted)] px-4 py-3">
-  <p className="text-sm font-semibold">
-    📷 Escanea un producto
-  </p>
+                        <p className="text-sm font-semibold">
+                          📷 Escanea un producto
+                        </p>
 
-  <p className="mt-1 text-xs text-[var(--cupboard-text-muted)]">
-    Apunta la cámara hacia el código de barras para identificarlo.
-  </p>
-</div>
+                        <p className="mt-1 text-xs text-[var(--cupboard-text-muted)]">
+                          Apunta la cámara hacia el código de barras para identificarlo.
+                        </p>
+
+                        <div className="mt-4 flex flex-col items-start gap-2 border-t border-[var(--cupboard-border)] pt-4 sm:flex-row sm:items-center sm:justify-between">
+                          <p className="text-xs text-[var(--cupboard-text-muted)]">
+                            ¿No puedes escanear el producto?
+                          </p>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setIsManualEntry(true);
+                              setBarcode("");
+                              setStatus("");
+                              setFormError("");
+                              setIsEditing(true);
+                            }}
+                            className="rounded-xl border border-[var(--cupboard-border)] bg-[var(--cupboard-surface)] px-4 py-2.5 text-sm font-semibold text-[var(--cupboard-text-muted)] transition hover:bg-[var(--cupboard-surface-muted)] hover:text-[var(--cupboard-text)] focus:outline-none focus:ring-2 focus:ring-[var(--cupboard-primary)]/30"
+                          >
+                            Agregar manualmente
+                          </button>
+                        </div>
+                      </div>
 
                   <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
@@ -1349,23 +1418,42 @@ export default function App() {
       {/* Barcode */}
       <div>
         <label
-          htmlFor="product-barcode"
-          className="mb-2 block text-sm font-semibold"
-        >
-          Barcode
-        </label>
+            htmlFor="product-barcode"
+            className="mb-2 block text-sm font-semibold"
+          >
+            {isManualEntry ? "Código del producto" : "Código de barras"}
+          </label>
 
-        <input
-          id="product-barcode"
-          type="text"
-          value={barcode}
-          readOnly
-          className="w-full cursor-not-allowed rounded-xl border border-[var(--cupboard-border)] bg-[var(--cupboard-surface-muted)] px-4 py-3 font-mono text-sm text-[var(--cupboard-text-muted)] outline-none"
-        />
+              <input
+                  id="product-barcode"
+                  type="text"
+                  inputMode="numeric"
+                  autoComplete="off"
+                  value={barcode}
+                  onChange={(event) => {
+                    if (isManualEntry) {
+                      setBarcode(event.target.value);
+                    }
+                  }}
+                  readOnly={!isManualEntry}
+                  placeholder={
+                    isManualEntry
+                      ? "Ej. 123456789"
+                      : undefined
+                  }
+                  className={[
+                    "w-full rounded-xl border border-[var(--cupboard-border)] px-4 py-3 font-mono text-sm outline-none transition",
+                    isManualEntry
+                      ? "bg-[var(--cupboard-surface)] focus:border-[var(--cupboard-primary)] focus:ring-2 focus:ring-[var(--cupboard-primary)]/20"
+                      : "cursor-not-allowed bg-[var(--cupboard-surface-muted)] text-[var(--cupboard-text-muted)]",
+                  ].join(" ")}
+                />
 
-        <p className="mt-1.5 text-xs text-[var(--cupboard-text-muted)]">
-          El código de barras identifica este producto y no puede modificarse.
-        </p>
+            <p className="mt-1.5 text-xs text-[var(--cupboard-text-muted)]">
+              {isManualEntry
+                ? "Escribe el número que identifica este producto."
+                : "El código de barras identifica este producto y no puede modificarse."}
+            </p>
       </div>
 
       {/* Name */}
@@ -1569,7 +1657,19 @@ aria-describedby={
     <div className="mt-7 flex flex-col-reverse gap-3 border-t border-[var(--cupboard-border)] pt-6 sm:flex-row sm:justify-end">
       <button
         type="button"
-        onClick={() => setIsEditing(false)}
+        onClick={() => {
+      if (isManualEntry) {
+        setBarcode("");
+        setStatus("");
+        setFormError("");
+        setIsEditing(false);
+        setIsManualEntry(false);
+        setScanKey((previous) => previous + 1);
+        return;
+      }
+
+      setIsEditing(false);
+    }}
         className="rounded-xl border border-[var(--cupboard-border)] bg-[var(--cupboard-surface)] px-5 py-3 text-sm font-semibold text-[var(--cupboard-text-muted)] transition hover:bg-[var(--cupboard-surface-muted)] hover:text-[var(--cupboard-text)]"
       >
         Cancelar
@@ -1605,6 +1705,7 @@ aria-describedby={
   setStatus("");
   setFormError("");
   setIsEditing(false);
+  setIsManualEntry(false);
   setScanKey((previous) => previous + 1);
 }}
       className="rounded-2xl border border-[var(--cupboard-border)] bg-[var(--cupboard-surface)] px-5 py-4 font-semibold transition hover:bg-[var(--cupboard-surface-muted)]"
