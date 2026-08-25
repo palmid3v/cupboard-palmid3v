@@ -776,6 +776,7 @@ setIsSaving(true);
               });
 
               setIsEditing(true);
+              setIsManualEntry(false);  
               setView("scanner");
               setSelectedProduct(null);
             }}
