@@ -19,30 +19,50 @@ export default function BarcodeScanner({ onScan }) {
     try {
       const codeReader = new BrowserMultiFormatReader();
 
-      controlsRef.current?.stop();
+controlsRef.current?.stop();
 
-      const controls = await codeReader.decodeFromVideoDevice(
-        null,
-        videoRef.current,
-        (result, error) => {
-          if (result && !hasScanned.current) {
-            hasScanned.current = true;
+const controls = await codeReader.decodeFromVideoDevice(
+  null,
+  videoRef.current,
+  (result, error) => {
+    if (result && !hasScanned.current) {
+      hasScanned.current = true;
 
-            const code = result.getText();
+      const code = result.getText();
 
-            console.log("SCANNED:", code);
+      console.log("SCANNED:", code);
 
-            setStatus("scanned");
+      setStatus("scanned");
 
-            onScan(code);
-          }
+      onScan(code);
+    }
 
-          if (error && !hasScanned.current) {
-            // ZXing emits many non-fatal scan errors while
-            // searching for a barcode. They are intentionally ignored.
-          }
-        },
+    if (error && !hasScanned.current) {
+      // ZXing emits many non-fatal scan errors while
+      // searching for a barcode. They are intentionally ignored.
+    }
+  },
+);
+
+const videoTrack =
+  videoRef.current?.srcObject?.getVideoTracks?.()[0];
+
+if (videoTrack) {
+  const capabilities = videoTrack.getCapabilities?.();
+
+  if (capabilities?.focusMode?.includes("continuous")) {
+    try {
+      await videoTrack.applyConstraints({
+        advanced: [{ focusMode: "continuous" }],
+      });
+    } catch (focusError) {
+      console.warn(
+        "No se pudo activar el enfoque continuo:",
+        focusError,
       );
+    }
+  }
+}
 
       controlsRef.current = controls;
 
