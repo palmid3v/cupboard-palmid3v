@@ -1,83 +1,43 @@
-# 🗄️ Cupboard
+# 🗄️ Cupboard — App Context
 
-Cupboard is a browser-based inventory control application focused on fast product registration, barcode scanning, stock visibility, and portion management.
+## 🎯 Purpose
+Inventory management focused on fast product registration, barcode scanning, stock visibility, and portion tracking.
 
-## ✨ Current Features
-
-- 📦 Inventory view
-- 🔎 Search
-- 🧮 Filters and sorting
+## ✨ Current features
+- 📦 Inventory
+- 🔎 Search/filter/sort
 - 📷 Barcode scanning
 - ⌨️ Manual barcode entry
-- ➕ Add portions
-- ➖ Consume portions
-- 🧾 Product detail view
-- 🖼️ Product image URL support
+- ➕ Add portions / ➖ consume portions
+- 🧾 Product detail
+- 🖼️ Product image URL
 - ⚠️ Low-stock filtering
-- 🌓 Light, dark, and system themes
+- 🌓 Light/dark/system themes
 - 🔥 Firestore persistence
 - 📱 PWA configuration
 
-## 📷 Barcode Stack
+## 📷 Scanner
+The dependency set includes `@zxing/browser` and `html5-qrcode`. The scanner supports existing-product lookup and new-product registration flow.
 
-The current dependency set includes @zxing/browser and html5-qrcode. The scanner can look up an existing product or start a new-product workflow.
+## 🔥 Data layer
+Firestore collection: `products`. Barcode is used as the document ID.
 
-## 🔥 Data Model
-
-Firestore uses the products collection and the barcode as the document ID.
-
-~~~text
-products/{barcode}
-├── name
-├── description
-├── weight
-├── portions
-├── imageUrl
-├── createdAt
-└── updatedAt
-~~~
-
-Current operations:
-- getProduct
-- saveProduct
-- getAllProducts
-- updatePortions
+Main service operations: `getProduct`, `saveProduct`, `getAllProducts`, `updatePortions`.
 
 ## 🧱 Stack
+React 19 · Vite 8 · Tailwind CSS 4 · Firebase 12 · Firestore · vite-plugin-pwa.
 
-- React 19.2.x
-- Vite 8.0.1
-- Tailwind CSS 4.3.x
-- Firebase 12.11.x
-- vite-plugin-pwa
-- basic SSL plugin
+## 📱 PWA boundary
+Standalone PWA behavior is configured, but the manifest icon set still needs finalization.
 
-## 🏗️ Architecture
-
-~~~text
-Scanner / Manual Entry
-        ↓
-React application
-        ↓
-services/products.js
-        ↓
-Firebase Firestore
-~~~
-
-## 📱 PWA
-
-VitePWA is configured with autoUpdate and standalone display. The current manifest still has an empty icons array, so the install icon set remains unfinished.
-
-## ▶️ Scripts
-
-~~~bash
+## ▶️ Commands
+```bash
 npm install
 npm run dev
 npm run lint
 npm run build
 npm run preview
-~~~
+```
 
-## 🧭 Current Boundaries
-
-Authentication, multi-user inventory, expiry workflows, movement history, shopping workflows, and richer analytics are not core functionality yet.
+## 📌 Status
+Active local-first inventory application; authentication, multi-user inventory, expiry workflows, movement history, shopping workflows, and advanced analytics are outside the current core scope.
