@@ -1,159 +1,83 @@
 # 🗄️ Cupboard
 
-A web-based inventory management application designed to help organize products, track stock, simplify inventory management, and progressively evolve into a practical personal inventory assistant.
+Cupboard is a browser-based inventory control application focused on fast product registration, barcode scanning, stock visibility, and portion management.
 
----
+## ✨ Current Features
 
-## 🎯 Project Overview
+- 📦 Inventory view
+- 🔎 Search
+- 🧮 Filters and sorting
+- 📷 Barcode scanning
+- ⌨️ Manual barcode entry
+- ➕ Add portions
+- ➖ Consume portions
+- 🧾 Product detail view
+- 🖼️ Product image URL support
+- ⚠️ Low-stock filtering
+- 🌓 Light, dark, and system themes
+- 🔥 Firestore persistence
+- 📱 PWA configuration
 
-Cupboard was created to solve a simple problem:
+## 📷 Barcode Stack
 
-> Keep track of what products you have, how much you have, and what needs attention.
+The current dependency set includes @zxing/browser and html5-qrcode. The scanner can look up an existing product or start a new-product workflow.
 
-The application combines product organization, inventory management, quantity tracking, and barcode scanning into a single interface.
+## 🔥 Data Model
 
-The project is designed primarily around household and kitchen inventory use cases, while keeping the architecture open for future expansion.
+Firestore uses the products collection and the barcode as the document ID.
 
-The long-term product direction includes:
+~~~text
+products/{barcode}
+├── name
+├── description
+├── weight
+├── portions
+├── imageUrl
+├── createdAt
+└── updatedAt
+~~~
 
-- Better barcode scanning
-- Inventory movements
-- Stock control
-- Expiration tracking
-- Alerts
-- Search and filtering
-- Dashboard and analytics
-- Replenishment and shopping workflows
-- Reports and export
-- Progressive Web App (PWA) capabilities
-- Future multi-user collaboration
-- Future AI-assisted inventory analysis
+Current operations:
+- getProduct
+- saveProduct
+- getAllProducts
+- updatePortions
 
----
+## 🧱 Stack
 
-## ✨ Core Features
+- React 19.2.x
+- Vite 8.0.1
+- Tailwind CSS 4.3.x
+- Firebase 12.11.x
+- vite-plugin-pwa
+- basic SSL plugin
 
-### 📦 Inventory Management
+## 🏗️ Architecture
 
-Current and planned inventory capabilities include:
+~~~text
+Scanner / Manual Entry
+        ↓
+React application
+        ↓
+services/products.js
+        ↓
+Firebase Firestore
+~~~
 
-- Product registration
-- Product organization
-- Inventory visualization
-- Product search
-- Quantity management
-- Portion management
-- Stock status
-- Categories
-- Units
-- Locations
-- Minimum stock
-- Inventory movements
-- Expiration information where applicable
+## 📱 PWA
 
-The exact current implementation and data model must be validated during the initial project audit.
+VitePWA is configured with autoUpdate and standalone display. The current manifest still has an empty icons array, so the install icon set remains unfinished.
 
----
+## ▶️ Scripts
 
-### 📷 Barcode Scanning
+~~~bash
+npm install
+npm run dev
+npm run lint
+npm run build
+npm run preview
+~~~
 
-Cupboard includes barcode-scanning functionality designed to simplify product registration and product lookup.
+## 🧭 Current Boundaries
 
-The application uses browser-based camera scanning technologies to identify products through their barcodes.
-
-Current technologies include:
-
-- ZXing
-- html5-qrcode
-
-The scanner is expected to evolve into a faster and more reliable workflow supporting:
-
-- Existing product detection
-- New product registration
-- Camera permission handling
-- Unknown barcode handling
-- Improved detection
-- Improved focus
-- Mobile optimization
-- iPhone and Android compatibility
-- Flashlight support where available
-
----
-
-### 🔥 Firebase Integration
-
-Product and inventory data are designed to persist through Firebase/Firestore.
-
-This provides the foundation for:
-
-- Cloud data storage
-- Product persistence
-- Inventory persistence
-- Inventory synchronization
-- Future multi-device usage
-- Future multi-user capabilities
-
-The current Firebase and Firestore implementation must be validated during the initial audit before architectural changes are made.
-
----
-
-## 🧩 Product Model
-
-The current product structure includes concepts such as:
-
-- Product name
-- Description
-- Weight
-- Portions
-- Image URL
-- Stock information
-
-The inventory domain is expected to evolve to support additional concepts such as:
-
-- Category
-- Unit
-- Location
-- Barcode
-- Minimum stock
-- Expiration date
-- Unit value
-- Inventory movement history
-
-The exact model must be confirmed through the project audit.
-
----
-
-## 🧠 Product Direction
-
-The long-term vision is to evolve Cupboard from a simple inventory tracker into a more complete inventory assistant.
-
-The intended evolution is:
-
-```text
-Product
-   ↓
-Barcode
-   ↓
-Inventory
-   ↓
-Quantity
-   ↓
-Stock Control
-   ↓
-Movements
-   ↓
-Expiration
-   ↓
-Alerts
-   ↓
-Dashboard & Analytics
-   ↓
-Shopping / Replenishment
-   ↓
-Reports
-   ↓
-PWA
-   ↓
-Future Collaboration
-   ↓
-Future AI Assistance
+Authentication, multi-user inventory, expiry workflows, movement history, shopping workflows, and richer analytics are not core functionality yet.
