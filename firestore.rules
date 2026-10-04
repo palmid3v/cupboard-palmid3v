@@ -64,8 +64,9 @@ service cloud.firestore {
       match /members/{memberId} {
         allow read: if member(householdId);
         allow create: if owner(householdId) || invitedMember(householdId);
-        allow update, delete: if owner(householdId)
+        allow update: if owner(householdId)
           && request.resource.data.role != 'admin';
+        allow delete: if owner(householdId);
       }
 
       match /products/{productId} {
