@@ -23,8 +23,8 @@ households/{householdId}/movements/{movementId}
 - 🟢 FASE 5 — Movements
 - 🟢 FASE 6 — Firebase Rules implementation + deployment checklist
 - 🟢 FASE 7 — Non-destructive migration tooling
-- 🟡 FASE 8 — Regression validation
-- 🔴 FASE 9 — Reset + migration
+- 🟢 FASE 8 — Regression validation
+- 🟡 FASE 9 — Reset + migration (gate reached; execution protected)
 
 **Blocked until FASE 8 regression passes.**
 - ⏳ FASE 10 — Cleanup
@@ -95,7 +95,7 @@ Workflow:
 
 Batch writes are chunked below Firestore's 500-write batch limit. citeturn0search5turn0search0
 
-No destructive operation belongs in this phase.
+No destructive operation is performed by the browser migration tool.
 
 ## FASE 8 — Regression
 
