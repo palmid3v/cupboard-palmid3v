@@ -29,6 +29,15 @@ function getCameraError(error) {
     };
   }
 
+  if (error?.name === "AbortError") {
+    return {
+      title: "La cámara se interrumpió",
+      message:
+        "La cámara fue reiniciada mientras se estaba iniciando. Vuelve a intentarlo.",
+      action: "Reiniciar cámara",
+    };
+  }
+
   return {
     title: "No pudimos iniciar la cámara",
     message:
