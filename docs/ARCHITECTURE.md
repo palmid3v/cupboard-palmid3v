@@ -20,8 +20,10 @@ React UI
              │      └── @zxing/browser
              │
              └── services/products.js
-                    └── Firebase Firestore
-                           └── products/{barcode}
+                    └── Firebase
+                           ├── Authentication
+                           └── Firestore
+                                └── households/{householdId}/products/{barcode}
 ```
 
 There is currently no separate backend API layer.
@@ -74,7 +76,7 @@ Keep Firestore calls behind this boundary where practical.
 
 ## Firebase
 
-`src/firebase.js` initializes Firebase and exports the Firestore instance.
+`src/firebase.js` initializes Firebase and exports Authentication and Firestore instances.
 
 Firebase Authentication now gates the application. Email/password accounts identify each user, while Firestore member documents provide household roles.
 
@@ -185,9 +187,9 @@ Before broader deployment, review environment configuration and Firebase securit
 
 ### Firestore security
 
-There is no authentication/authorization model in the current application.
+Authentication and household-scoped authorization are now implemented. Firestore Security Rules enforce membership and role-aware access.
 
-Before multi-user functionality, define identity, ownership, household membership, read/write permissions, and security rules.
+Firebase Storage is intentionally not part of the current runtime because image uploads are deferred until a billing-enabled plan is acceptable.
 
 ## Architectural rule
 
@@ -198,7 +200,7 @@ Do not add a backend, state-management library, database layer, or service archi
 
 ## Feature foundation
 
-Cupboard now contains a shared operations layer for expiry tracking, movement/history, shopping lists, recipes, inventory analytics, barcode catalog enrichment, product image processing, Firebase Storage uploads, household invitations, and role-aware membership.
+Cupboard now contains a shared operations layer for expiry tracking, movement/history, shopping lists, recipes, inventory analytics, barcode catalog enrichment, household invitations, and role-aware membership. Product images currently use remote URLs; Firebase Storage uploads are deferred.
 
 The UI exposes these capabilities through `WorkspacePanel.jsx`, while data access remains behind service boundaries in `src/services/`.
 
