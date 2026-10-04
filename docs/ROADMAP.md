@@ -67,8 +67,9 @@
 - ✅ Real online/offline/Firestore availability state in the UI.
 - ✅ Firestore persistent local cache for previously used inventory data.
 - ✅ Inventory listener with cache/server metadata.
-- 🟡 Expand offline-first UX, including clearer pending-sync feedback and edge-case recovery.
-- 🟡 Review conflict-handling expectations as the product becomes multi-user or multi-device.
+- ✅ Household-scoped inventory and role-aware permissions.
+- 🟡 Expand offline-first UX with clearer pending-sync feedback and edge-case recovery.
+- 🟡 Review conflict-handling expectations as the product becomes multi-device.
 
 ## Product opportunities
 
