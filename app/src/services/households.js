@@ -10,6 +10,7 @@ import {
 } from "firebase/firestore";
 
 import { db } from "../firebase";
+import { auth } from "./auth";
 
 export function setActiveHouseholdId(householdId) {
   if (typeof window !== "undefined") {
@@ -125,46 +126,50 @@ export async function getHousehold(householdId) {
 export async function ensureHouseholdForUser(user) {
   const profile = await getUserProfile(user.uid);
 
-  if (profile?.householdId) {
-    const household = await getHousehold(profile.householdId);
+  if (!profile?.householdId) {
+    throw new Error("HOUSEHOLD_INVITE_REQUIRED");
+  }
 
-    if (household) {
-      setActiveHouseholdId(household.id);
+  const household = await getHousehold(profile.householdId);
 
-      if (!household.legacyInventoryMigratedAt) {
-        try {
-          const migrated = await migrateLegacyProducts(household.id);
+  if (!household) {
+    throw new Error("HOUSEHOLD_NOT_FOUND");
+  }
 
-          if (migrated) {
-            await updateDoc(doc(db, "households", household.id), {
-              legacyInventoryMigratedAt: serverTimestamp(),
-              updatedAt: serverTimestamp(),
-            });
-            household.legacyInventoryMigratedAt = true;
-          }
-        } catch (error) {
-          console.warn("Legacy inventory migration skipped:", error);
-        }
+  setActiveHouseholdId(household.id);
+
+  if (!household.legacyInventoryMigratedAt && household.ownerUid === user.uid) {
+    try {
+      const migrated = await migrateLegacyProducts(household.id);
+
+      if (migrated) {
+        await updateDoc(doc(db, "households", household.id), {
+          legacyInventoryMigratedAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        });
+        household.legacyInventoryMigratedAt = true;
       }
-
-      return {
-        ...household,
-        role: profile.role || household.members?.[user.uid] || "member",
-      };
+    } catch (error) {
+      console.warn("Legacy inventory migration skipped:", error);
     }
   }
 
-  return createHouseholdForUser(user);
+  return {
+    ...household,
+    role: profile.role || household.members?.[user.uid] || "member",
+    isOwner: household.ownerUid === user.uid,
+  };
 }
 
-export async function createInvite(householdId, role = "member") {
-  const code = Math.random().toString(36).slice(2, 8).toUpperCase();
+export async function createInvite(householdId) {
+  const code = crypto.randomUUID().replace(/-/g, "").slice(0, 10).toUpperCase();
 
   await setDoc(doc(db, "householdInvites", code), {
     householdId,
-    role,
+    role: "member",
     createdAt: serverTimestamp(),
     expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
+    createdBy: auth.currentUser?.uid || null,
   });
 
   return code;
@@ -192,7 +197,7 @@ export async function joinHouseholdByCode(user, code) {
     throw new Error("HOUSEHOLD_NOT_FOUND");
   }
 
-  const role = invite.role || "member";
+  const role = "member";
 
   await setDoc(doc(db, "households", invite.householdId, "members", user.uid), {
     uid: user.uid,
@@ -222,5 +227,6 @@ export async function joinHouseholdByCode(user, code) {
     id: householdSnapshot.id,
     ...householdSnapshot.data(),
     role,
+    isOwner: householdSnapshot.data().ownerUid === user.uid,
   };
 }
