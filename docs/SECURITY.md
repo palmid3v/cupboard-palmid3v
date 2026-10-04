@@ -199,3 +199,12 @@ Then validate owner/editor/member behavior before FASE 8 is marked complete.
 Migration tooling is owner-only in the UI and intentionally non-destructive. It only creates missing catalog/inventory target documents. It does not delete or modify legacy `products` records.
 
 The migration writes are subject to the same Firestore Rules as normal catalog/inventory writes.
+
+
+## FASE 9 — destructive boundary
+
+The approved reset/migration does not reset Firebase globally. The only destructive target is `households/{householdId}/products/{barcode}`.
+
+The application requires owner authorization, complete catalog/inventory verification, and the exact gate phrase `⚠️ AHORA SÍ: RESET + MIGRACIÓN`.
+
+Users, households, members, invitations, catalog, inventory, movements, shopping items, recipes, expiry rules, and settings are preserved.
