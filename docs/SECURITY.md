@@ -141,3 +141,29 @@ Catalog updates preserve `createdBy` and are limited to product metadata fields.
 Household stock remains protected by the household membership and role rules.
 
 The catalog therefore does not grant a user access to another household's quantities, expiry dates, movements, shopping items, or settings.
+
+## 🧭 October 2026 inventory security boundary
+
+The approved target model introduces a dedicated household inventory collection:
+
+```text
+households/{householdId}/inventory/{barcode}
+```
+
+Security requirements for the final collection:
+
+- reads require verified authentication and household membership;
+- writes must be role-aware;
+- a user must not access another household's inventory;
+- catalog metadata must never expose household stock;
+- movement history remains household-scoped;
+- the legacy `products` collection remains preserved until migration is validated.
+
+### Security implementation status
+
+- 🟢 `productCatalog` rules are implemented.
+- 🟢 Inventory service boundary is implemented.
+- 🟡 Inventory Firestore Rules are pending the runtime adoption phase.
+- 🔴 Destructive migration is not authorized.
+
+The security rule for `inventory` must be deployed and regression-tested before any legacy data is removed.
