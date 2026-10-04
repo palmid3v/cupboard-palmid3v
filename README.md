@@ -20,7 +20,7 @@ The source of truth for behavior is the code in `app/src/`. Documentation is syn
 - 🏷️ Filters **Todos / Stock bajo / Disponibles**.
 - ↕️ Sorts by **Nombre A-Z / Más recientes / Menor stock / Mayor stock**.
 - 📊 Shows inventory summaries.
-- 🧾 Opens product details.
+- ✨ Opens an animated product detail experience with stock, expiry, weight, barcode, category, and minimum-stock context.
 - ➕ Adds one portion.
 - ➖ Consumes one portion.
 - ⚡ Updates the visible quantity optimistically without reloading the whole inventory.
@@ -37,6 +37,9 @@ Current product fields:
 - weight in grams
 - portions
 - optional image URL
+- category
+- expiry date
+- minimum stock threshold
 
 A barcode is the Firestore document identity.
 
@@ -185,7 +188,7 @@ The active product collection is household-scoped:
 households/{householdId}/products/{barcode}
 ```
 
-Authentication and membership are stored under users/{uid} and households/{householdId}/members/{uid}.
+Authentication and membership are stored under users/{uid} and households/{householdId}/members/{uid}. Firestore access requires a verified Firebase Authentication email.
 
 Service boundary:
 
@@ -227,7 +230,7 @@ The original MVP boundaries have now been implemented as the next Cupboard found
 - ✅ basic inventory analytics;
 - ✅ external barcode catalog enrichment;
 - ✅ automatic product image lookup;
-- 🟡 production rollout still requires enabling Email/Password Authentication and deploying the committed Firebase Security Rules.
+- 🟡 production rollout requires Email/Password Authentication, verified owner/member emails, and deployment of the committed Firebase Security Rules.
 - ⏸️ Firebase Storage uploads are intentionally deferred until a paid/billing-enabled Firebase plan is acceptable; image URLs remain supported.
 
 ## Development principle
@@ -245,10 +248,14 @@ Prefer small, explicit changes that improve the household inventory experience o
 
 Cupboard now uses invitation-only household access. The household owner is the **Administrador general / Propietario** and is the only person allowed to generate new access codes. New invited accounts enter as `member`; they cannot generate invitations or promote themselves. Registration without an invitation code is rejected.
 
-The owner can manage this from **Centro → Equipo**, including the local Firestore connection controls.
+The owner can manage this from **Centro → Equipo**, including the local Firestore connection controls. Every account must verify its email before household data can be read or written.
 
 ### 🟢 Firestore connection control
 
 The owner can see whether this browser is connected, connecting, offline/cache-backed, or in an error state. The owner can explicitly connect or disconnect this browser's Firestore network access. This does **not** shut down Firebase for other users. Firestore supports persistent local cache and explicit network enable/disable controls. citeturn7search0
 
 The main inventory indicator uses browser network state plus Firestore snapshot metadata to distinguish server-backed data from cached data. citeturn8search0
+
+## 📧 Email verification
+
+Cupboard now sends a Firebase verification email when an account is created and blocks household access until the address is verified. The verification screen supports resend and an explicit **Ya verifiqué mi correo** check. The pending invitation remains in local storage until verification completes, so the invite flow can resume without asking the user to enter the code again.
