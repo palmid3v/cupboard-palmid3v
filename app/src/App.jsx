@@ -10,6 +10,7 @@ import {
 } from "./services/products";
 import { addMovement } from "./services/features";
 import { auth } from "./services/auth";
+import { connectFirestore, disconnectFirestore } from "./firebase";
 
 function NavigationButton({
   icon,
@@ -239,19 +240,41 @@ export default function App() {
     };
 
     const handleOnline = () => {
+      if (window.localStorage.getItem("cupboard.firestoreNetwork") === "offline") {
+        setConnectionStatus("offline");
+        return;
+      }
+
       setConnectionStatus("connecting");
       startListener();
     };
 
+    const preferredNetwork = window.localStorage.getItem("cupboard.firestoreNetwork");
+
+    if (preferredNetwork === "offline") {
+      disconnectFirestore().catch((error) => console.error("No se pudo mantener Firestore desconectado:", error));
+    }
+
     startListener();
+
+    const handleFirestoreNetwork = (event) => {
+      if (event.detail === "offline") {
+        setConnectionStatus("offline");
+      } else if (event.detail === "online") {
+        setConnectionStatus("connecting");
+        startListener();
+      }
+    };
 
     window.addEventListener("offline", handleOffline);
     window.addEventListener("online", handleOnline);
+    window.addEventListener("cupboard:firestore-network", handleFirestoreNetwork);
 
     return () => {
       unsubscribe();
       window.removeEventListener("offline", handleOffline);
       window.removeEventListener("online", handleOnline);
+      window.removeEventListener("cupboard:firestore-network", handleFirestoreNetwork);
     };
   }, []);
 
