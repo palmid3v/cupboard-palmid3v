@@ -24,6 +24,13 @@ service cloud.firestore {
         && get(/databases/$(database)/documents/households/$(householdId)).data.ownerUid == request.auth.uid;
     }
 
+    function appOwner() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'
+        && get(/databases/$(database)/documents/households/$(get(/databases/$(database)/documents/users/$(request.auth.uid)).data.householdId)).data.ownerUid == request.auth.uid;
+    }
+
     function invitedMember(householdId) {
       return signedIn()
         && request.auth.uid == request.resource.data.uid
@@ -113,7 +120,7 @@ service cloud.firestore {
     // Legacy inventory is no longer writable by clients.
     // Existing data should be migrated into households/{householdId}/products.
     match /products/{productId} {
-      allow read: if signedIn();
+      allow read: if appOwner();
       allow write: if false;
     }
 
