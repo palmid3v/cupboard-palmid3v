@@ -9,13 +9,6 @@ import {
 import { createInvite, getActiveHouseholdId, getHousehold, getUserProfile } from "../services/households";
 import { getAllProducts, saveProduct } from "../services/products";
 import { seedCatalogFromProducts } from "../services/catalog";
-import {
-  migrateLegacyProductsToInventory,
-  previewLegacyInventoryMigration,
-  verifyLegacyInventoryMigration,
-  retireLegacyProducts,
-  RESET_MIGRATION_GATE,
-} from "../services/migration";
 import { auth, logout } from "../services/auth";
 import { connectFirestore, disconnectFirestore } from "../firebase";
 
@@ -89,11 +82,6 @@ export default function WorkspacePanel() {
   const [connectionBusy, setConnectionBusy] = useState(false);
   const [catalogSyncBusy, setCatalogSyncBusy] = useState(false);
   const [catalogSyncResult, setCatalogSyncResult] = useState(null);
-  const [migrationBusy, setMigrationBusy] = useState(false);
-  const [migrationPreview, setMigrationPreview] = useState(null);
-  const [migrationResult, setMigrationResult] = useState(null);
-  const [resetGateInput, setResetGateInput] = useState("");
-  const [resetBusy, setResetBusy] = useState(false);
 
   const householdId = getActiveHouseholdId();
   const isOwner = household?.ownerUid === auth.currentUser?.uid;
@@ -287,81 +275,6 @@ export default function WorkspacePanel() {
     }
   };
 
-  const inspectLegacyMigration = async () => {
-    if (!isOwner || migrationBusy) return;
-
-    setMigrationBusy(true);
-    setMigrationResult(null);
-    setError("");
-
-    try {
-      setMigrationPreview(await previewLegacyInventoryMigration());
-    } catch (err) {
-      console.error(err);
-      setError(
-        "No pudimos analizar los productos heredados. Revisa la conexión e inténtalo nuevamente.",
-      );
-    } finally {
-      setMigrationBusy(false);
-    }
-  };
-
-  const runLegacyMigration = async () => {
-    if (!isOwner || migrationBusy || !migrationPreview?.ready) return;
-
-    setMigrationBusy(true);
-    setMigrationResult(null);
-    setError("");
-
-    try {
-      const result = await migrateLegacyProductsToInventory();
-      const verification = await verifyLegacyInventoryMigration();
-
-      setMigrationResult({
-        ...result,
-        verification,
-      });
-      setMigrationPreview(await previewLegacyInventoryMigration());
-    } catch (err) {
-      console.error(err);
-      setError(
-        "No pudimos completar la migración no destructiva. No se eliminó ningún producto heredado.",
-      );
-    } finally {
-      setMigrationBusy(false);
-    }
-  };
-
-  const retireLegacyProductsNow = async () => {
-    if (!isOwner || resetBusy || resetGateInput !== RESET_MIGRATION_GATE) return;
-
-    setResetBusy(true);
-    setError("");
-
-    try {
-      const result = await retireLegacyProducts(resetGateInput);
-      setMigrationResult({
-        ...result,
-        verification: result.verification,
-        migrated: {
-          catalog: 0,
-          inventory: 0,
-        },
-      });
-      setResetGateInput("");
-      setMigrationPreview(await previewLegacyInventoryMigration());
-    } catch (err) {
-      console.error(err);
-      setError(
-        err?.message === "MIGRATION_INCOMPLETE"
-          ? "La migración no está completa. No se eliminó ningún producto heredado."
-          : "No pudimos completar el retiro del modelo heredado. No se eliminó ningún producto si la operación no llegó a ejecutarse.",
-      );
-    } finally {
-      setResetBusy(false);
-    }
-  };
-
   const createHouseholdInvite = async () => {
     if (!householdId || !isOwner) return;
     setBusy(true);
@@ -544,86 +457,6 @@ export default function WorkspacePanel() {
                 <p className="mt-3 text-xs font-semibold text-[var(--cupboard-success)]">
                   ✓ {catalogSyncResult.message} ({catalogSyncResult.count} productos revisados).
                 </p>
-              )}
-            </div>
-          )}
-
-          {isOwner && (
-            <div className="mt-5 rounded-2xl border border-[var(--cupboard-info)]/20 bg-[var(--cupboard-info)]/5 p-4">
-              <p className="text-sm font-extrabold">Migración preparada · FASE 7</p>
-              <p className="mt-1 text-xs leading-5 text-[var(--cupboard-text-muted)]">
-                Analiza y copia los datos que faltan desde <code>products</code> hacia <code>productCatalog</code> e <code>inventory</code>. Esta herramienta no borra ni modifica los productos heredados.
-              </p>
-
-              <div className="mt-4 flex flex-col gap-2 sm:flex-row">
-                <button
-                  type="button"
-                  onClick={inspectLegacyMigration}
-                  disabled={migrationBusy}
-                  className="rounded-xl border border-[var(--cupboard-border)] px-4 py-2.5 text-xs font-bold disabled:opacity-50"
-                >
-                  {migrationBusy ? "Analizando..." : "Analizar migración"}
-                </button>
-
-                {migrationPreview?.ready && (
-                  <button
-                    type="button"
-                    onClick={runLegacyMigration}
-                    disabled={migrationBusy || (migrationPreview.catalogMissing === 0 && migrationPreview.inventoryMissing === 0)}
-                    className="rounded-xl bg-[var(--cupboard-primary)] px-4 py-2.5 text-xs font-extrabold text-[#10140d] disabled:opacity-50"
-                  >
-                    {migrationBusy ? "Migrando..." : "Copiar datos faltantes"}
-                  </button>
-                )}
-              </div>
-
-              {migrationPreview && (
-                <div className="mt-4 grid gap-2 sm:grid-cols-3">
-                  <div className="rounded-xl bg-[var(--cupboard-bg)] p-3">
-                    <p className="text-[10px] uppercase tracking-[0.12em] text-[var(--cupboard-text-subtle)]">Heredados</p>
-                    <p className="mt-1 text-2xl font-extrabold">{migrationPreview.total}</p>
-                  </div>
-                  <div className="rounded-xl bg-[var(--cupboard-bg)] p-3">
-                    <p className="text-[10px] uppercase tracking-[0.12em] text-[var(--cupboard-text-subtle)]">Catálogo faltante</p>
-                    <p className="mt-1 text-2xl font-extrabold">{migrationPreview.catalogMissing}</p>
-                  </div>
-                  <div className="rounded-xl bg-[var(--cupboard-bg)] p-3">
-                    <p className="text-[10px] uppercase tracking-[0.12em] text-[var(--cupboard-text-subtle)]">Inventario faltante</p>
-                    <p className="mt-1 text-2xl font-extrabold">{migrationPreview.inventoryMissing}</p>
-                  </div>
-                </div>
-              )}
-
-              {migrationResult && (
-                <p className="mt-3 text-xs font-semibold text-[var(--cupboard-success)]">
-                  ✓ Migración verificada. Catálogo e inventario: {migrationResult.verification.complete ? "completos" : "pendientes"}.
-                </p>
-              )}
-
-              {migrationPreview?.total > 0 && migrationPreview.catalogMissing === 0 && migrationPreview.inventoryMissing === 0 && (
-                <div className="mt-5 rounded-2xl border border-[var(--cupboard-danger)]/25 bg-[var(--cupboard-danger)]/5 p-4">
-                  <p className="text-sm font-extrabold text-[var(--cupboard-danger)]">Retiro del modelo heredado</p>
-                  <p className="mt-1 text-xs leading-5 text-[var(--cupboard-text-muted)]">
-                    Esta acción elimina únicamente <code>households/{'{'}householdId{'}'}/products</code>. No elimina usuarios, hogares, catálogo, inventario, movimientos ni configuraciones.
-                  </p>
-                  <p className="mt-3 text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--cupboard-text-subtle)]">
-                    Escribe exactamente: {RESET_MIGRATION_GATE}
-                  </p>
-                  <SmallInput
-                    value={resetGateInput}
-                    onChange={(event) => setResetGateInput(event.target.value)}
-                    placeholder={RESET_MIGRATION_GATE}
-                    aria-label="Confirmación del reset y migración"
-                  />
-                  <button
-                    type="button"
-                    onClick={retireLegacyProductsNow}
-                    disabled={resetBusy || resetGateInput !== RESET_MIGRATION_GATE}
-                    className="mt-3 rounded-xl bg-[var(--cupboard-danger)] px-4 py-2.5 text-xs font-extrabold text-white disabled:opacity-50"
-                  >
-                    {resetBusy ? "Retirando..." : "Retirar modelo heredado"}
-                  </button>
-                </div>
               )}
             </div>
           )}
