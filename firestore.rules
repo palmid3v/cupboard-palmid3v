@@ -1,0 +1,102 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function member(householdId) {
+      return signedIn()
+        && exists(/databases/$(database)/documents/households/$(householdId)/members/$(request.auth.uid));
+    }
+
+    function role(householdId) {
+      return get(/databases/$(database)/documents/households/$(householdId)/members/$(request.auth.uid)).data.role;
+    }
+
+    function editor(householdId) {
+      return member(householdId) && (role(householdId) == 'admin' || role(householdId) == 'editor');
+    }
+
+    function admin(householdId) {
+      return member(householdId) && role(householdId) == 'admin';
+    }
+
+    match /users/{userId} {
+      allow read, create, update: if signedIn() && request.auth.uid == userId;
+      allow delete: if false;
+    }
+
+    match /households/{householdId} {
+      allow get, list: if member(householdId);
+      allow create: if signedIn()
+        && request.resource.data.ownerUid == request.auth.uid
+        && request.resource.data.members[request.auth.uid] == 'admin';
+      allow update: if admin(householdId);
+      allow delete: if admin(householdId);
+
+      match /members/{memberId} {
+        allow read: if member(householdId);
+        allow create: if admin(householdId)
+          || (signedIn()
+            && request.auth.uid == memberId
+            && exists(/databases/$(database)/documents/householdInvites/$(request.resource.data.inviteCode)));
+        allow update, delete: if admin(householdId);
+      }
+
+      match /products/{productId} {
+        allow read: if member(householdId);
+        allow create, update, delete: if editor(householdId);
+      }
+
+      match /movements/{movementId} {
+        allow read: if member(householdId);
+        allow create: if editor(householdId);
+        allow update, delete: if admin(householdId);
+      }
+
+      match /shoppingItems/{itemId} {
+        allow read: if member(householdId);
+        allow create, update, delete: if editor(householdId);
+      }
+
+      match /recipes/{recipeId} {
+        allow read: if member(householdId);
+        allow create, update, delete: if editor(householdId);
+      }
+
+      match /expiryRules/{ruleId} {
+        allow read: if member(householdId);
+        allow create, update, delete: if editor(householdId);
+      }
+
+      match /settings/{settingId} {
+        allow read: if member(householdId);
+        allow create, update, delete: if admin(householdId);
+      }
+    }
+
+    match /householdInvites/{inviteCode} {
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && request.resource.data.householdId is string
+        && admin(request.resource.data.householdId);
+      allow delete: if signedIn()
+        && admin(resource.data.householdId);
+      allow update: if false;
+    }
+
+    // Legacy inventory is readable only while the first authenticated admin
+    // migrates the existing collection into a household-scoped collection.
+    match /products/{productId} {
+      allow read, update: if signedIn() && !('householdId' in resource.data);
+      allow create: if false;
+      allow delete: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
