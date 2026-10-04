@@ -160,3 +160,13 @@ Cupboard now treats the household owner as the Administrador general / Propietar
 ## Connection model
 
 The owner can control the Firestore network connection for the current browser from Centro → Equipo. Connected, connecting, offline/cache, and error states are surfaced in the UI. This is a client-local connection control, not a global Firebase shutdown.
+
+
+## October 2026 security and UX checkpoint
+
+- Email verification is now required before household Firestore access.
+- Firebase verification email is sent at signup; AuthGate supports resend and explicit refresh/check.
+- Pending household invitations remain stored locally until verification succeeds.
+- Firestore Rules independently require `request.auth.token.email_verified == true` and bind profile/member email to the verified Firebase email.
+- Product detail has been extracted into `app/src/components/ProductDetail.jsx` with animated stock feedback, expiry state, product image treatment, category, weight, barcode, and minimum-stock metadata.
+- Existing Firebase users, households, invites, and products are intentionally preserved. No reset has been performed or approved as an operational step yet.
