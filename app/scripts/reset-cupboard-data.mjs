@@ -33,8 +33,10 @@ function assertSafeTarget(pathName) {
 
   const allowed =
     pathName === TOP_LEVEL_USER_COLLECTION ||
+    pathName.startsWith(`${TOP_LEVEL_USER_COLLECTION}/`) ||
     pathName === HOUSEHOLD_COLLECTION ||
     pathName === INVITE_COLLECTION ||
+    pathName.startsWith(`${INVITE_COLLECTION}/`) ||
     pathName.startsWith(`${HOUSEHOLD_COLLECTION}/`);
 
   if (!allowed) {
