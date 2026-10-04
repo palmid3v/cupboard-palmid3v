@@ -36,6 +36,7 @@ service cloud.firestore {
       return signedIn()
         && request.auth.uid == request.resource.data.uid
         && request.resource.data.role == 'member'
+        && request.resource.data.email == request.auth.token.email
         && request.resource.data.inviteCode is string
         && exists(/databases/$(database)/documents/householdInvites/$(request.resource.data.inviteCode))
         && get(/databases/$(database)/documents/householdInvites/$(request.resource.data.inviteCode)).data.householdId == householdId
@@ -49,7 +50,8 @@ service cloud.firestore {
         && request.auth.uid == userId
         && request.resource.data.role == 'member'
         && request.resource.data.householdId is string
-        && request.resource.data.keys().hasAll(['householdId', 'role', 'email', 'displayName'])
+        && request.resource.data.keys().hasAll(['householdId', 'role', 'email', 'displayName', 'inviteCode'])
+        && request.resource.data.email == request.auth.token.email
         && request.resource.data.keys().hasOnly(['householdId', 'role', 'email', 'displayName', 'inviteCode', 'createdAt', 'updatedAt'])
         && exists(/databases/$(database)/documents/householdInvites/$(request.resource.data.inviteCode))
         && get(/databases/$(database)/documents/householdInvites/$(request.resource.data.inviteCode)).data.householdId == request.resource.data.householdId;
@@ -58,7 +60,8 @@ service cloud.firestore {
         && request.auth.uid == userId
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName', 'email', 'updatedAt'])
         && request.resource.data.householdId == resource.data.householdId
-        && request.resource.data.role == resource.data.role;
+        && request.resource.data.role == resource.data.role
+        && request.resource.data.email == request.auth.token.email;
 
       allow delete: if false;
     }
