@@ -117,3 +117,51 @@ updatedAt
 ```
 
 Existing products are intentionally preserved as the current development dataset. No database reset or product deletion is part of this implementation.
+
+
+## Shared product catalog
+
+The new global catalog is:
+
+```text
+productCatalog/{barcode}
+```
+
+It stores stable product identity metadata:
+
+| Field | Meaning |
+| --- | --- |
+| document ID | Barcode |
+| name | Canonical product name |
+| description | Product description |
+| brand | Brand when known |
+| weight | Reference weight in grams |
+| imageUrl | Optional product image |
+| category | Product category |
+| createdBy | User who first created the catalog entry |
+| createdAt | Catalog creation time |
+| updatedAt | Last catalog metadata update |
+
+It intentionally does **not** store household stock, portions, expiry date, or minimum stock.
+
+The current household inventory remains:
+
+```text
+households/{householdId}/products/{barcode}
+```
+
+This is intentionally temporary. Existing products are being preserved as the working dataset until the explicit reset + migration checkpoint.
+
+### Recognition rule
+
+A barcode is treated as:
+
+1. **Existing inventory** when the household already has the barcode.
+2. **Known catalog product** when the global catalog has the barcode but the household does not.
+3. **New product** when neither location contains the barcode.
+
+A known catalog product is never copied as a second global product. Its canonical metadata is reused and only household-specific inventory fields are created for the new household.
+
+### Current catalog bootstrap
+
+The owner can use **Centro → Catálogo → Preparar catálogo** to create missing catalog entries from the current household products. This operation is non-destructive: it does not update, delete, or reset the existing household inventory.
