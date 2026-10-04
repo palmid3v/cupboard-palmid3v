@@ -231,4 +231,4 @@ The audit confirmed that the current `products` document mixes canonical product
 
 ### FASE 3 decision
 
-`app/src/services/inventory.js` is now the approved service boundary for the final household inventory model. Runtime adoption is intentionally deferred to the next phase so the existing dataset remains safe.
+`app/src/services/inventory.js` is now the approved service boundary for the final household inventory model. Runtime adoption is complete. The legacy collection remains only for migration and rollback safety until FASE 8 and the explicit reset gate.
