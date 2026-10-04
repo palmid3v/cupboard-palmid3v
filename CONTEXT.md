@@ -59,9 +59,7 @@ Data access
 └── services/
     ├── products.js
     ├── catalog.js
-    ├── inventory.js
-    └── migration.js
-        └── Firestore
+    ├── inventory.js        └── Firestore
             ├── productCatalog/{barcode}
             ├── households/{householdId}/inventory/{barcode}
             └── households/{householdId}/movements/{movementId}
@@ -72,7 +70,7 @@ Data access
 Firestore collection:
 
 ```text
-products/{barcode}
+inventory/{barcode}
 ```
 
 The barcode is the document ID.
@@ -175,7 +173,7 @@ The owner can control the Firestore network connection for the current browser f
 - Pending household invitations remain stored locally until verification succeeds.
 - Firestore Rules independently require `request.auth.token.email_verified == true` and bind profile/member email to the verified Firebase email.
 - Product detail has been extracted into `app/src/components/ProductDetail.jsx` with animated stock feedback, expiry state, product image treatment, category, weight, barcode, and minimum-stock metadata.
-- Existing Firebase users, households, invites, and products are intentionally preserved. No reset has been performed or approved as an operational step yet.
+- Firebase users, households, invites, catalog, inventory, and movements are preserved. The catalog/inventory migration is complete.
 
 ## October 2026 architecture checkpoint
 
@@ -188,7 +186,9 @@ The owner can control the Firestore network connection for the current browser f
 - 🟢 FASE 5 — Movements
 - 🟢 FASE 6 — Rules implementation
 - 🟢 FASE 7 — Non-destructive migration tooling
-- 🟡 FASE 8 — Regression validation
+- 🟢 FASE 8 — Regression validation
+- 🟢 FASE 9 — Reset + migration
+- 🟢 FASE 10 — Cleanup
 
 ### Target data model
 
@@ -208,12 +208,8 @@ households/{householdId}/movements/{movementId}
 - `saveInventoryProduct`
 - `updateInventoryPortions`
 
-The application now uses dedicated catalog/inventory collections at runtime. Legacy household `products` remains only as migration input until FASE 8 and the reset gate are complete.
+The application now uses dedicated catalog/inventory collections at runtime. The legacy household product model has been retired from the runtime and Rules.
 
 ### Safety gate
 
-No reset or destructive migration is approved. FASE 9 remains blocked. The explicit gate remains:
-
-> ⚠️ **AHORA SÍ: RESET + MIGRACIÓN**
-
-Only after runtime adoption, movements, Rules, migration preparation, and regression validation pass.
+The migration gate was completed after runtime adoption, movements, Rules, migration preparation, and regression validation passed. FASE 10 cleanup is complete.
