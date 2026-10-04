@@ -5,6 +5,7 @@ import {
   doc,
   getDoc,
   getDocs,
+  onSnapshot,
   serverTimestamp,
   setDoc,
   updateDoc,
@@ -75,6 +76,25 @@ export async function getAllProducts() {
 
   return querySnapshot.docs.map((productDoc) =>
     normalizeProduct(productDoc.id, productDoc.data()),
+  );
+}
+
+// 🔄 Subscribe to inventory changes and connection metadata
+export function subscribeToProducts(onData, onError) {
+  return onSnapshot(
+    collection(db, "products"),
+    { includeMetadataChanges: true },
+    (snapshot) => {
+      const data = snapshot.docs.map((productDoc) =>
+        normalizeProduct(productDoc.id, productDoc.data()),
+      );
+
+      onData(data, {
+        fromCache: snapshot.metadata.fromCache,
+        hasPendingWrites: snapshot.metadata.hasPendingWrites,
+      });
+    },
+    onError,
   );
 }
 
