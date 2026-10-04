@@ -91,3 +91,8 @@ Do not add these fields preemptively without a product requirement.
 ## Data-model rule
 
 Keep the product document small until the product actually needs more information.
+
+
+## Household ownership
+
+The household owner is the general administrator. New users join through invitation codes and receive member access. Role and household ownership fields are protected by Firestore Rules.
