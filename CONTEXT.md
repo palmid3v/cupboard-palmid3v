@@ -59,7 +59,8 @@ Data access
 └── services/
     ├── products.js
     ├── catalog.js
-    ├── inventory.js        └── Firestore
+    └── inventory.js
+             └── Firestore
             ├── productCatalog/{barcode}
             ├── households/{householdId}/inventory/{barcode}
             └── households/{householdId}/movements/{movementId}
@@ -67,22 +68,15 @@ Data access
 
 ## Data identity
 
-Firestore collection:
+Firestore model:
 
 ```text
-inventory/{barcode}
+productCatalog/{barcode}
+households/{householdId}/inventory/{barcode}
+households/{householdId}/movements/{movementId}
 ```
 
-The barcode is the document ID.
-
-Product fields:
-- name
-- description
-- weight
-- portions
-- imageUrl
-- createdAt
-- updatedAt
+The barcode is the document ID for both catalog and inventory records. Shared identity and household state are intentionally separated.
 
 ## Important behavior
 
