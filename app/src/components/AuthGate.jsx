@@ -47,13 +47,11 @@ function AuthScreen({ mode, setMode, onSuccess }) {
           throw new Error("PASSWORD_SHORT");
         }
 
-        const credential = await signUp(email, password, displayName);
-
         if (inviteCode.trim()) {
-          const household = await joinHouseholdByCode(credential.user, inviteCode);
-          onSuccess(household);
+          window.localStorage.setItem("cupboard.pendingInvite", inviteCode.trim().toUpperCase());
         }
 
+        await signUp(email, password, displayName);
         return;
       }
 
@@ -237,7 +235,15 @@ export default function AuthGate({ children }) {
       }
 
       try {
-        const nextHousehold = await ensureHouseholdForUser(nextUser);
+        const pendingInvite = window.localStorage.getItem("cupboard.pendingInvite");
+        const nextHousehold = pendingInvite
+          ? await joinHouseholdByCode(nextUser, pendingInvite)
+          : await ensureHouseholdForUser(nextUser);
+
+        if (pendingInvite) {
+          window.localStorage.removeItem("cupboard.pendingInvite");
+        }
+
         setHousehold(nextHousehold);
       } catch (err) {
         console.error(err);
