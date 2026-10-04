@@ -207,3 +207,12 @@ The UI exposes these capabilities through `WorkspacePanel.jsx`, while data acces
 ## Motion system
 
 The UI uses lightweight CSS animations for page entry, ambient background orbs, status transitions, and interactive elevation. Reduced-motion preferences disable non-essential animations.
+
+
+## Authentication and ownership
+
+The household owner is the general administrator. New registrations require an invitation and new invitations grant member access only. Firestore Rules protect role and household ownership fields from self-editing.
+
+## Owner connection controls
+
+WorkspacePanel exposes owner-only controls for generating invitation codes and enabling or disabling the Firestore network connection for the current browser. This is a client-local control, not a global Firebase shutdown. Cached data remains available while the network is disabled.
