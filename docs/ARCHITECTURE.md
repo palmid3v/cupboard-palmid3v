@@ -249,7 +249,7 @@ households/{householdId}/products/{barcode}
 Current household inventory
 ```
 
-The runtime now uses `productCatalog/{barcode}` plus `households/{householdId}/inventory/{barcode}`. The legacy household `products` collection is retained only as migration input until regression and the reset gate are complete.
+The runtime uses `productCatalog/{barcode}` plus `households/{householdId}/inventory/{barcode}`. Inventory history is stored under `households/{householdId}/movements/{movementId}`.
 
 Barcode lookup order:
 
@@ -265,7 +265,7 @@ Current household product?
         └── no → new product form
 ```
 
-This is an incremental bridge toward the post-reset inventory model. The future reset will migrate household `products` into the final `inventory` representation without discarding the canonical product information.
+The catalog/inventory separation is now the final runtime model. The migration is complete and no legacy household product collection is required by the application.
 
 ## 🧭 October 2026 architecture checkpoint
 
@@ -310,11 +310,11 @@ The service intentionally stores household-specific state only:
 - createdAt;
 - updatedAt.
 
-### Migration bridge
+### Runtime persistence boundary
 
-`src/services/products.js` remains the compatibility boundary for the current live application. The legacy `households/{householdId}/products` collection is still preserved as the working dataset.
+`src/services/products.js` remains the small UI-facing facade for product operations. It composes shared catalog identity with household inventory state.
 
-The new inventory service is now the runtime source of truth. Legacy products are no longer used for normal inventory reads/writes.
+The runtime has no dependency on the retired mixed household product model.
 
 ### Architectural rule
 
