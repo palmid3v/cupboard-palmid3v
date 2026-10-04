@@ -468,7 +468,7 @@ export default function WorkspacePanel() {
             <SmallInput value={catalogBarcode} onChange={(event) => setCatalogBarcode(event.target.value)} placeholder="Código de barras" inputMode="numeric" />
             <button disabled={busy} className="rounded-xl bg-[var(--cupboard-primary)] px-4 text-xs font-extrabold text-[#10140d] disabled:opacity-50">{busy ? "Buscando" : "Buscar"}</button>
           </form>
-          {catalogResult && (
+                    {catalogResult && (
             <div className="mt-5 rounded-3xl bg-[var(--cupboard-bg)] p-5">
               {catalogResult.notFound ? (
                 <p className="text-sm text-[var(--cupboard-text-muted)]">No encontramos ese producto.</p>
@@ -477,16 +477,25 @@ export default function WorkspacePanel() {
                   <div className="flex h-32 w-32 shrink-0 items-center justify-center rounded-2xl bg-white p-3">
                     {catalogResult.imageUrl ? <img src={catalogResult.imageUrl} alt="" className="max-h-full max-w-full object-contain mix-blend-multiply" /> : "📦"}
                   </div>
+
                   <div className="min-w-0">
                     <p className="text-xl font-extrabold">{catalogResult.name || "Producto sin nombre"}</p>
                     <p className="mt-1 text-sm text-[var(--cupboard-text-muted)]">{catalogResult.brand || "Marca no disponible"}</p>
                     <p className="mt-3 text-xs text-[var(--cupboard-text-subtle)]">{catalogResult.category || "Categoría no disponible"}</p>
-                    <button type="button" onClick={saveCatalogProduct} className="mt-4 rounded-xl bg-[var(--cupboard-primary)] px-4 py-2.5 text-xs font-extrabold text-[#10140d]">Agregar a mi alacena</button>
+                    <button
+                      type="button"
+                      onClick={saveCatalogProduct}
+                      className="mt-4 rounded-xl bg-[var(--cupboard-primary)] px-4 py-2.5 text-xs font-extrabold text-[#10140d]"
+                    >
+                      Agregar a mi alacena
+                    </button>
                   </div>
                 </div>
               )}
             </div>
           )}
+
+          </div>
         </PanelCard>
       )}
 
