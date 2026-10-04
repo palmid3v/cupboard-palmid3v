@@ -206,3 +206,18 @@ export async function verifyLegacyInventoryMigration() {
     inventoryMissing: preview.inventoryMissing,
   };
 }
+
+
+/**
+ * Destructive operations are intentionally not exposed from this service.
+ *
+ * FASE 9 requires an explicit human-operated reset after:
+ * 1. migration preview;
+ * 2. migration execution;
+ * 3. verification;
+ * 4. regression approval.
+ *
+ * The repository keeps legacy deletion out of the browser runtime so an
+ * accidental click cannot erase Firebase data.
+ */
+export const RESET_MIGRATION_GATE = "⚠️ AHORA SÍ: RESET + MIGRACIÓN";
