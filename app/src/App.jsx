@@ -825,7 +825,7 @@ setIsSaving(true);
                           >
                             <div className="relative flex h-40 items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_center,var(--cupboard-surface-raised),var(--cupboard-surface-muted))]">
                               {item.imageUrl ? (
-                                <div className="flex h-[132px] w-[78%] max-w-[220px] items-center justify-center overflow-hidden rounded-2xl bg-white p-4 shadow-[var(--cupboard-shadow-sm)]">
+                                <div className="flex h-[116px] w-[116px] items-center justify-center overflow-hidden rounded-[1.25rem] bg-white p-2.5 shadow-[var(--cupboard-shadow-sm)]">
                                   <img
                                     src={item.imageUrl}
                                     alt=""
