@@ -76,7 +76,7 @@ Keep Firestore calls behind this boundary where practical.
 
 `src/firebase.js` initializes Firebase and exports the Firestore instance.
 
-Authentication is not currently part of the application.
+Firebase Authentication now gates the application. Email/password accounts identify each user, while Firestore member documents provide household roles.
 
 ### Connectivity status
 
@@ -194,3 +194,14 @@ Before multi-user functionality, define identity, ownership, household membershi
 > **Keep the current system understandable.**
 
 Do not add a backend, state-management library, database layer, or service architecture simply because larger applications commonly use one.
+
+
+## Feature foundation
+
+Cupboard now contains a shared operations layer for expiry tracking, movement/history, shopping lists, recipes, inventory analytics, barcode catalog enrichment, product image processing, Firebase Storage uploads, household invitations, and role-aware membership.
+
+The UI exposes these capabilities through `WorkspacePanel.jsx`, while data access remains behind service boundaries in `src/services/`.
+
+## Motion system
+
+The UI uses lightweight CSS animations for page entry, ambient background orbs, status transitions, and interactive elevation. Reduced-motion preferences disable non-essential animations.
