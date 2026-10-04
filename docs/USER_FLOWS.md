@@ -137,11 +137,13 @@ There is no active light/dark/system selector.
 
 ## 10. “Inventario conectado”
 
-The connected indicator is currently visual only.
+The connected indicator reflects browser network state and Firestore snapshot metadata.
 
-It does not prove that Firestore is reachable at that exact moment.
+It distinguishes connected, offline/cache-backed, and connection-error states.
 
-Actual availability is determined by Firestore operations when they execute.
+## Image URL
+
+Product registration accepts a remote image URL. Local file uploads are deferred until Firebase Storage is enabled.
 
 ## UX rule
 
