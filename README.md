@@ -333,7 +333,7 @@ The service is intentionally not wired as the runtime source of truth yet. Exist
 The operational roadmap is now stored at the repository root:
 
 ```text
-STEP-BY-STEP-CUPBOARD-PALMID3V-LAST-UPDATED.md
+STEP-BY-STEP-CUPBOARD-2026-10-04.md
 ```
 
 Use that document as the checklist for the architecture migration.
