@@ -57,37 +57,24 @@ async function readLegacyProducts() {
   );
 }
 
-async function readInventorySnapshot(barcodes) {
-  const householdId = requireHouseholdId();
-
-  const refs = barcodes.map((barcode) =>
-    doc(db, "households", householdId, "inventory", barcode),
-  );
-
-  const snapshots = await Promise.all(refs.map((ref) => getDocs(collection(ref))));
-  return snapshots;
-}
-
 async function buildMigrationPlan(legacyProducts) {
   const householdId = requireHouseholdId();
+  const inventorySnapshot = await getDocs(
+    collection(db, "households", householdId, "inventory"),
+  );
+  const inventoryIds = new Set(inventorySnapshot.docs.map((item) => item.id));
 
-  const plan = await Promise.all(
+  return Promise.all(
     legacyProducts.map(async (product) => {
       const catalog = await getCatalogProduct(product.id);
-      const inventorySnapshot = await getDocs(
-        collection(db, "households", householdId, "inventory"),
-      );
-      const inventory = inventorySnapshot.docs.find((item) => item.id === product.id);
 
       return {
         product,
         catalogExists: Boolean(catalog),
-        inventoryExists: Boolean(inventory),
+        inventoryExists: inventoryIds.has(product.id),
       };
     }),
   );
-
-  return plan;
 }
 
 /**
