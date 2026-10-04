@@ -96,3 +96,24 @@ Keep the product document small until the product actually needs more informatio
 ## Household ownership
 
 The household owner is the general administrator. New users join through invitation codes and receive member access. Role and household ownership fields are protected by Firestore Rules.
+
+
+## Authentication state
+
+Firebase Authentication remains the identity source. Household Firestore access requires the Firebase ID token claim `email_verified == true`.
+
+## Product fields used by the current detail experience
+
+```text
+name
+ description
+weight
+portions
+imageUrl
+category
+expiryDate
+minStock
+updatedAt
+```
+
+Existing products are intentionally preserved as the current development dataset. No database reset or product deletion is part of this implementation.
