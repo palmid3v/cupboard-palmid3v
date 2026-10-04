@@ -194,6 +194,10 @@ export default function App() {
   const [isManualEntry, setIsManualEntry] = useState(false);
   const sortMenuRef = useRef(null);
 
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent("cupboard:connection-status", { detail: connectionStatus }));
+  }, [connectionStatus]);
+
   const loadProducts = async () => {
     setIsLoadingProducts(true);
 
