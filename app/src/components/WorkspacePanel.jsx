@@ -11,6 +11,15 @@ import { getAllProducts, saveProduct } from "../services/products";
 import { auth, logout } from "../services/auth";
 import { connectFirestore, disconnectFirestore } from "../firebase";
 
+function parseDateOnly(value, endOfDay = false) {
+  if (!value) return null;
+  const [year, month, day] = String(value).split("-").map(Number);
+  if (![year, month, day].every(Number.isFinite)) return null;
+  return endOfDay
+    ? new Date(year, month - 1, day, 23, 59, 59, 999)
+    : new Date(year, month - 1, day);
+}
+
 const tabs = [
   ["expiry", "⏳", "Caducidad"],
   ["history", "↔", "Movimientos"],
@@ -140,14 +149,20 @@ export default function WorkspacePanel() {
   };
 
   const expiryBuckets = useMemo(() => {
-    const today = new Date();
-    const week = new Date();
-    week.setDate(today.getDate() + 7);
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const week = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 7, 23, 59, 59, 999);
 
     return {
-      expired: products.filter((item) => item.expiryDate && new Date(item.expiryDate) < today),
-      soon: products.filter((item) => item.expiryDate && new Date(item.expiryDate) >= today && new Date(item.expiryDate) <= week),
-      tracked: products.filter((item) => item.expiryDate),
+      expired: products.filter((item) => {
+        const expiry = parseDateOnly(item.expiryDate, true);
+        return expiry && expiry < today;
+      }),
+      soon: products.filter((item) => {
+        const expiry = parseDateOnly(item.expiryDate, true);
+        return expiry && expiry >= today && expiry <= week;
+      }),
+      tracked: products.filter((item) => Boolean(parseDateOnly(item.expiryDate))),
     };
   }, [products]);
 
