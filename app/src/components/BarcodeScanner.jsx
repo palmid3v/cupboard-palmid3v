@@ -41,6 +41,7 @@ export default function BarcodeScanner({ onScan, restartToken = 0 }) {
   const videoRef = useRef(null);
   const controlsRef = useRef(null);
   const requestIdRef = useRef(0);
+  const startupPromiseRef = useRef(null);
   const onScanRef = useRef(onScan);
   const hasScanned = useRef(false);
 
@@ -74,6 +75,17 @@ export default function BarcodeScanner({ onScan, restartToken = 0 }) {
   }, []);
 
   const startScanner = useCallback(async () => {
+    // Never let two asynchronous camera startups compete for the same
+    // <video>. React StrictMode and retry/restart actions can otherwise
+    // overlap while getUserMedia() is still resolving.
+    if (startupPromiseRef.current) {
+      try {
+        await startupPromiseRef.current;
+      } catch {
+        // The previous startup reports its own error.
+      }
+    }
+
     const requestId = requestIdRef.current + 1;
     requestIdRef.current = requestId;
 
@@ -81,79 +93,94 @@ export default function BarcodeScanner({ onScan, restartToken = 0 }) {
     setStatus("starting");
     setErrorState(null);
 
-    try {
-      controlsRef.current?.stop();
-    } catch {
-      // Previous controls may already be stopped.
-    }
-
-    controlsRef.current = null;
-
-    const video = videoRef.current;
-
-    if (!video) return;
-
-    if (video.srcObject) {
+    const startupPromise = (async () => {
       try {
-        video.srcObject.getTracks?.().forEach((track) => track.stop());
+        controlsRef.current?.stop();
       } catch {
-        // Ignore cleanup failures before requesting a new stream.
+        // Previous controls may already be stopped.
       }
 
-      video.srcObject = null;
-    }
+      controlsRef.current = null;
 
-    const codeReader = new BrowserMultiFormatReader();
+      const video = videoRef.current;
 
-    const controls = await codeReader.decodeFromVideoDevice(
-      null,
-      video,
-      (result) => {
-        if (requestId !== requestIdRef.current) return;
+      if (!video) return;
 
-        if (result && !hasScanned.current) {
-          hasScanned.current = true;
-
-          const code = result.getText();
-
-          console.log("SCANNED:", code);
-          setStatus("scanned");
-          onScanRef.current?.(code);
-        }
-
-        // ZXing emits repeated scan errors while looking for a barcode.
-        // They are expected and intentionally ignored here.
-      },
-    );
-
-    if (requestId !== requestIdRef.current) {
-      controls?.stop();
-      return;
-    }
-
-    controlsRef.current = controls;
-
-    const videoTrack = video.srcObject?.getVideoTracks?.()[0];
-
-    if (videoTrack) {
-      const capabilities = videoTrack.getCapabilities?.();
-
-      if (capabilities?.focusMode?.includes("continuous")) {
+      if (video.srcObject) {
         try {
-          await videoTrack.applyConstraints({
-            advanced: [{ focusMode: "continuous" }],
-          });
-        } catch (focusError) {
-          console.warn(
-            "No se pudo activar el enfoque continuo:",
-            focusError,
-          );
+          video.srcObject.getTracks?.().forEach((track) => track.stop());
+        } catch {
+          // Ignore cleanup failures before requesting a new stream.
+        }
+
+        video.srcObject = null;
+      }
+
+      const codeReader = new BrowserMultiFormatReader();
+
+      const controls = await codeReader.decodeFromVideoDevice(
+        undefined,
+        video,
+        (result) => {
+          if (requestId !== requestIdRef.current) return;
+
+          if (result && !hasScanned.current) {
+            hasScanned.current = true;
+
+            const code = result.getText();
+
+            console.log("SCANNED:", code);
+            setStatus("scanned");
+            onScanRef.current?.(code);
+          }
+
+          // ZXing emits repeated scan errors while looking for a barcode.
+          // They are expected and intentionally ignored here.
+        },
+      );
+
+      if (requestId !== requestIdRef.current) {
+        controls?.stop();
+        return;
+      }
+
+      controlsRef.current = controls;
+
+      const videoTrack = video.srcObject?.getVideoTracks?.()[0];
+
+      if (videoTrack) {
+        console.log("[Scanner] Cámara:", videoTrack.label);
+        console.log("[Scanner] Configuración:", videoTrack.getSettings?.());
+
+        const capabilities = videoTrack.getCapabilities?.();
+
+        if (capabilities?.focusMode?.includes("continuous")) {
+          try {
+            await videoTrack.applyConstraints({
+              advanced: [{ focusMode: "continuous" }],
+            });
+          } catch (focusError) {
+            console.warn(
+              "No se pudo activar el enfoque continuo:",
+              focusError,
+            );
+          }
         }
       }
-    }
 
-    if (requestId === requestIdRef.current) {
-      setStatus("scanning");
+      if (requestId === requestIdRef.current) {
+        setStatus("scanning");
+      }
+    })();
+
+    startupPromiseRef.current = startupPromise;
+
+    try {
+      await startupPromise;
+    } finally {
+      if (startupPromiseRef.current === startupPromise) {
+        startupPromiseRef.current = null;
+      }
     }
   }, []);
 
@@ -164,13 +191,7 @@ export default function BarcodeScanner({ onScan, restartToken = 0 }) {
       try {
         await startScanner();
       } catch (error) {
-        if (
-          cancelled ||
-          error?.name === "AbortError" ||
-          error?.name === "NotFoundException"
-        ) {
-          return;
-        }
+        if (cancelled) return;
 
         console.error("SCANNER ERROR:", error);
         setErrorState(getCameraError(error));
@@ -191,12 +212,8 @@ export default function BarcodeScanner({ onScan, restartToken = 0 }) {
 
     window.setTimeout(() => {
       void startScanner().catch((error) => {
-        if (
-          error?.name === "AbortError" ||
-          error?.name === "NotFoundException"
-        ) {
-          return;
-        }
+        // A failed restart should be visible instead of leaving the scanner
+        // permanently stuck in the "Preparando cámara..." state.
 
         console.error("SCANNER ERROR:", error);
         setErrorState(getCameraError(error));
