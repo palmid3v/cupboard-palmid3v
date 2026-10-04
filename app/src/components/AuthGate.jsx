@@ -10,6 +10,8 @@ import {
   signIn,
   signUp,
   watchAuthState,
+  resendVerificationEmail,
+  refreshCurrentUser,
 } from "../services/auth";
 
 function AuthField({ label, ...props }) {
@@ -225,33 +227,164 @@ function AuthScreen({ mode, setMode, onSuccess }) {
   );
 }
 
+function VerificationScreen({ user, onVerified }) {
+  const [busy, setBusy] = useState(false);
+  const [checking, setChecking] = useState(false);
+  const [sent, setSent] = useState(true);
+  const [error, setError] = useState("");
+
+  const resend = async () => {
+    setBusy(true);
+    setError("");
+    setSent(false);
+
+    try {
+      await resendVerificationEmail(user);
+      setSent(true);
+    } catch (err) {
+      console.error(err);
+      setError(
+        err.code === "auth/too-many-requests"
+          ? "Espera un momento antes de solicitar otro correo."
+          : "No pudimos reenviar el correo de verificación.",
+      );
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const checkVerification = async () => {
+    setChecking(true);
+    setError("");
+
+    try {
+      const refreshed = await refreshCurrentUser();
+
+      if (!refreshed?.emailVerified) {
+        setError("Tu correo todavía aparece como no verificado. Abre el enlace del correo y vuelve a comprobarlo.");
+        return;
+      }
+
+      await onVerified(refreshed);
+    } catch (err) {
+      console.error(err);
+      setError("No pudimos comprobar el estado de tu correo. Inténtalo nuevamente.");
+    } finally {
+      setChecking(false);
+    }
+  };
+
+  return (
+    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[var(--cupboard-bg)] px-4 py-10">
+      <div className="pointer-events-none absolute inset-0 opacity-70">
+        <div className="cupboard-orb cupboard-orb-one" />
+        <div className="cupboard-orb cupboard-orb-two" />
+      </div>
+
+      <section className="relative w-full max-w-md animate-cupboard-enter">
+        <div className="mb-8 text-center">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-[1.5rem] bg-[var(--cupboard-primary-soft)] text-3xl shadow-[0_18px_50px_rgb(0_0_0_/_0.35)]">
+            📬
+          </div>
+          <p className="mt-5 text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--cupboard-primary)]">
+            Verificación necesaria
+          </p>
+          <h1 className="mt-2 text-3xl font-extrabold tracking-tight">
+            Confirma tu correo.
+          </h1>
+          <p className="mt-2 text-sm leading-6 text-[var(--cupboard-text-muted)]">
+            Enviamos un enlace de verificación a{" "}
+            <strong className="text-[var(--cupboard-text)]">{user.email}</strong>.
+            Confirma que tienes acceso a este correo antes de entrar a la alacena.
+          </p>
+        </div>
+
+        <section className="rounded-[2rem] border border-[var(--cupboard-border)] bg-[var(--cupboard-surface)] p-6 shadow-[var(--cupboard-shadow-md)] sm:p-8">
+          <div className="rounded-2xl border border-[var(--cupboard-primary)]/20 bg-[var(--cupboard-primary-soft)] p-4">
+            <p className="text-sm font-bold text-[var(--cupboard-success)]">
+              📧 Revisa tu bandeja de entrada
+            </p>
+            <p className="mt-1 text-xs leading-5 text-[var(--cupboard-text-muted)]">
+              Si no lo encuentras, revisa spam o promociones. El código de invitación quedará guardado mientras completas la verificación.
+            </p>
+          </div>
+
+          {sent && (
+            <div role="status" className="mt-4 rounded-2xl border border-[var(--cupboard-success)]/20 bg-[var(--cupboard-surface-muted)] px-4 py-3 text-xs text-[var(--cupboard-text-muted)]">
+              Correo de verificación enviado.
+            </div>
+          )}
+
+          {error && (
+            <div role="alert" className="mt-4 rounded-2xl border border-[var(--cupboard-danger)]/25 bg-[var(--cupboard-danger)]/10 px-4 py-3 text-sm text-[var(--cupboard-danger)]">
+              {error}
+            </div>
+          )}
+
+          <button
+            type="button"
+            onClick={checkVerification}
+            disabled={busy || checking}
+            className="mt-5 w-full rounded-2xl bg-[var(--cupboard-primary)] px-5 py-3.5 text-sm font-extrabold text-[#10140d] shadow-[0_12px_30px_rgb(120_168_91_/_0.15)] transition duration-300 hover:-translate-y-0.5 hover:bg-[var(--cupboard-primary-hover)] disabled:opacity-50"
+          >
+            {checking ? "Comprobando..." : "Ya verifiqué mi correo"}
+          </button>
+
+          <button
+            type="button"
+            onClick={resend}
+            disabled={busy || checking}
+            className="mt-3 w-full rounded-2xl border border-[var(--cupboard-border)] bg-[var(--cupboard-surface-muted)] px-5 py-3.5 text-xs font-bold text-[var(--cupboard-text)] transition duration-300 hover:border-[var(--cupboard-primary)]/40 disabled:opacity-50"
+          >
+            {busy ? "Enviando..." : "Reenviar correo de verificación"}
+          </button>
+        </section>
+
+        <p className="mt-5 text-center text-[10px] uppercase tracking-[0.16em] text-[var(--cupboard-text-subtle)]">
+          🔐 Tu correo ayuda a proteger el inventario compartido
+        </p>
+      </section>
+    </main>
+  );
+}
+
 export default function AuthGate({ children }) {
   const [user, setUser] = useState(undefined);
   const [authMode, setAuthMode] = useState("signin");
   const [household, setHousehold] = useState(null);
   const [error, setError] = useState("");
 
+  const connectVerifiedUser = async (nextUser) => {
+    const pendingInvite = window.localStorage.getItem("cupboard.pendingInvite");
+
+    const nextHousehold = pendingInvite
+      ? await joinHouseholdByCode(nextUser, pendingInvite)
+      : await ensureHouseholdForUser(nextUser);
+
+    if (pendingInvite) {
+      window.localStorage.removeItem("cupboard.pendingInvite");
+    }
+
+    setHousehold(nextHousehold);
+    setError("");
+  };
+
   useEffect(() => {
     return watchAuthState(async (nextUser) => {
       setUser(nextUser);
       setError("");
+      setHousehold(null);
 
       if (!nextUser) {
-        setHousehold(null);
+        return;
+      }
+
+      if (!nextUser.emailVerified) {
         return;
       }
 
       try {
-        const pendingInvite = window.localStorage.getItem("cupboard.pendingInvite");
-        const nextHousehold = pendingInvite
-          ? await joinHouseholdByCode(nextUser, pendingInvite)
-          : await ensureHouseholdForUser(nextUser);
-
-        if (pendingInvite) {
-          window.localStorage.removeItem("cupboard.pendingInvite");
-        }
-
-        setHousehold(nextHousehold);
+        await connectVerifiedUser(nextUser);
       } catch (err) {
         console.error(err);
         const householdMessages = {
@@ -259,7 +392,7 @@ export default function AuthGate({ children }) {
           HOUSEHOLD_NOT_FOUND: "La alacena compartida ya no está disponible.",
           INVITE_NOT_FOUND: "El código de invitación no existe.",
           INVITE_EXPIRED: "El código de invitación ya expiró.",
-          "permission-denied": "Firebase rechazó el acceso. Revisa que las reglas publicadas estén actualizadas.",
+          "permission-denied": "Firebase rechazó el acceso. Verifica tu correo, el código de invitación y las reglas publicadas.",
         };
         setError(householdMessages[err.message] || householdMessages[err.code] || "No pudimos conectar tu cuenta con la alacena. Inténtalo nuevamente.");
       }
@@ -282,6 +415,18 @@ export default function AuthGate({ children }) {
         mode={authMode}
         setMode={setAuthMode}
         onSuccess={setHousehold}
+      />
+    );
+  }
+
+  if (!user.emailVerified) {
+    return (
+      <VerificationScreen
+        user={user}
+        onVerified={async (verifiedUser) => {
+          setUser(verifiedUser);
+          await connectVerifiedUser(verifiedUser);
+        }}
       />
     );
   }
