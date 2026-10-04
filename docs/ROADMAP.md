@@ -128,3 +128,24 @@ Smarter home workflows
 ```
 
 Build trust in the basic inventory experience before adding complexity.
+
+
+## Access and administration
+
+- ✅ Owner / general administrator model
+- ✅ Invitation-only registration for new household members
+- ✅ New invitations grant member access
+- ✅ Owner-only invitation controls
+- 🟡 Member management: list, revoke, and role management where product policy allows
+- 🟡 Invitation lifecycle: revoke and usage tracking
+
+## Connectivity
+
+- ✅ Connected/offline/error runtime state
+- ✅ Firestore cache/server metadata
+- ✅ Owner-facing connect/disconnect controls for the current browser
+- 🟡 Better pending-write and synchronization feedback
+- 🟡 Global service-health dashboard if Cupboard later needs monitoring across all clients
+- 🔵 Multi-device/global presence monitoring
+
+The current connection control is intentionally client-local. It does not turn Firebase on or off for every user.
