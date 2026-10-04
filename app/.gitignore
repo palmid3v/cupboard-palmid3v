@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Local Firebase Admin credentials — never commit
+firebase-service-account*.json
+service-account*.json
+*.service-account.json
