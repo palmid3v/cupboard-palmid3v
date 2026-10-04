@@ -12,7 +12,6 @@ function NavigationButton({
   label,
   active,
   onClick,
-  badge,
 }) {
   return (
     <button
@@ -20,33 +19,14 @@ function NavigationButton({
       onClick={onClick}
       aria-current={active ? "page" : undefined}
       className={[
-        "group flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left transition-all duration-200",
-        "focus:outline-none focus:ring-2 focus:ring-[var(--cupboard-primary)]/30",
+        "flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-medium transition",
         active
-          ? "bg-[var(--cupboard-primary-soft)] text-[var(--cupboard-primary)] shadow-[inset_3px_0_0_var(--cupboard-primary)]"
+          ? "bg-[var(--cupboard-primary-soft)] text-[var(--cupboard-primary)]"
           : "text-[var(--cupboard-text-muted)] hover:bg-[var(--cupboard-surface-muted)] hover:text-[var(--cupboard-text)]",
       ].join(" ")}
     >
-      <span
-        aria-hidden="true"
-        className={[
-          "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-lg transition-all",
-          active
-            ? "bg-[var(--cupboard-primary)]/15"
-            : "bg-[var(--cupboard-surface-muted)] group-hover:bg-[var(--cupboard-surface-raised)]",
-        ].join(" ")}
-      >
-        {icon}
-      </span>
-      <span className="min-w-0 flex-1">
-        <span className="block text-sm font-semibold">{label}</span>
-        {badge ? (
-          <span className="mt-0.5 block text-[10px] font-medium text-[var(--cupboard-text-subtle)]">
-            {badge}
-          </span>
-        ) : null}
-      </span>
-      {active ? <span className="h-1.5 w-1.5 rounded-full bg-[var(--cupboard-primary)]" /> : null}
+      <span aria-hidden="true">{icon}</span>
+      <span>{label}</span>
     </button>
   );
 }
@@ -63,21 +43,16 @@ function MobileNavigationButton({
       onClick={onClick}
       aria-current={active ? "page" : undefined}
       className={[
-        "flex min-w-0 flex-1 flex-col items-center gap-1.5 rounded-2xl px-2 py-2.5 text-[10px] font-semibold transition-all duration-200",
+        "flex min-w-0 flex-1 flex-col items-center gap-1 rounded-xl px-2 py-2 text-[11px] font-medium transition",
         active
           ? "bg-[var(--cupboard-primary-soft)] text-[var(--cupboard-primary)]"
-          : "text-[var(--cupboard-text-muted)] hover:text-[var(--cupboard-text)]",
+          : "text-[var(--cupboard-text-muted)]",
       ].join(" ")}
     >
-      <span
-        className={[
-          "flex h-8 w-8 items-center justify-center rounded-xl text-base",
-          active ? "bg-[var(--cupboard-primary)]/15" : "bg-[var(--cupboard-surface-muted)]",
-        ].join(" ")}
-        aria-hidden="true"
-      >
+      <span className="text-lg" aria-hidden="true">
         {icon}
       </span>
+
       <span>{label}</span>
     </button>
   );
@@ -393,7 +368,80 @@ setIsSaving(true);
   })
   .sort((a, b) => {
     if (inventorySort === "name") {
+      return (a.name || "").localeCompare(
+        b.name || "",
+        "es",
+        { sensitivity: "base" },
+      );
+    }
+
+    if (inventorySort === "low-stock") {
       return (
+        (Number(a.portions) || 0) -
+        (Number(b.portions) || 0)
+      );
+    }
+
+    if (inventorySort === "high-stock") {
+      return (
+        (Number(b.portions) || 0) -
+        (Number(a.portions) || 0)
+      );
+    }
+
+    if (inventorySort === "recent") {
+      const aTime = a.updatedAt?.toMillis?.() || 0;
+      const bTime = b.updatedAt?.toMillis?.() || 0;
+
+      return bTime - aTime;
+    }
+
+    return 0;
+  })
+
+  
+  const statusConfig = {
+    found: {
+      label: "Producto encontrado",
+      className:
+        "border-[var(--cupboard-success)]/30 bg-[var(--cupboard-primary-soft)] text-[var(--cupboard-success)]",
+    },
+
+    new: {
+      label: "Producto nuevo · completa la información",
+      className:
+        "border-[var(--cupboard-warning)]/30 bg-amber-500/10 text-[var(--cupboard-warning)]",
+    },
+
+    saved: {
+      label: "Producto guardado correctamente",
+      className:
+        "border-[var(--cupboard-success)]/30 bg-[var(--cupboard-primary-soft)] text-[var(--cupboard-success)]",
+    },
+
+    error: {
+      label: "No pudimos guardar el producto",
+      className:
+        "border-[var(--cupboard-danger)]/30 bg-red-500/10 text-[var(--cupboard-danger)]",
+    },
+  };
+
+  const pageTitle = {
+    inventory: "Tu inventario",
+    scanner: "Scanner",
+    settings: "Ajustes",
+  };
+
+  const pageDescription = {
+    inventory:
+      "Controla tus productos, cantidades y existencias desde un solo lugar.",
+    scanner:
+      "Escanea códigos de barras para buscar o registrar productos.",
+    settings:
+      "Personaliza Cupboard según tus preferencias.",
+  };
+
+  return (
     <div className="min-h-screen bg-[var(--cupboard-bg)] text-[var(--cupboard-text)]">
       <div className="mx-auto flex min-h-screen w-full max-w-[1600px]">
         <aside className="sticky top-0 hidden h-screen w-[248px] shrink-0 flex-col border-r border-[var(--cupboard-border)] bg-[var(--cupboard-surface)]/90 px-4 py-5 backdrop-blur lg:flex">
