@@ -183,11 +183,15 @@ The development configuration includes local SSL support, which is useful becaus
 
 ## 🔥 Firestore data layer
 
-The active product collection is household-scoped:
+The active runtime data model is split by responsibility:
 
 ```text
-households/{householdId}/products/{barcode}
+productCatalog/{barcode}
+households/{householdId}/inventory/{barcode}
+households/{householdId}/movements/{movementId}
 ```
+
+The legacy `households/{householdId}/products/{barcode}` collection remains only as migration input.
 
 Authentication and membership are stored under users/{uid} and households/{householdId}/members/{uid}. Firestore access requires a verified Firebase Authentication email.
 
@@ -326,7 +330,7 @@ saveInventoryProduct(barcode, data)
 updateInventoryPortions(barcode, newPortions)
 ```
 
-The service is intentionally not wired as the runtime source of truth yet. Existing household products remain the live working dataset while FASE 4–8 are completed.
+The inventory service is now the runtime source of truth. Existing household products are preserved only as migration input while FASE 8 regression is completed.
 
 ### Step-by-step guide
 
@@ -343,9 +347,40 @@ Use that document as the checklist for the architecture migration.
 - 🟢 FASE 1 — Catalog: approved.
 - 🟢 FASE 2 — Audit: approved.
 - 🟢 FASE 3 — Inventory foundation: approved.
-- 🟡 FASE 4 — Runtime adoption: next.
+- 🟢 FASE 4 — Runtime adoption.
+- 🟢 FASE 5 — Movements.
+- 🟢 FASE 6 — Rules implementation.
+- 🟢 FASE 7 — Migration tooling.
+- 🟡 FASE 8 — Regression validation.
 - 🔴 Reset + migration: blocked.
 
 > ⚠️ **AHORA SÍ: RESET + MIGRACIÓN** is not authorized yet.
 
 The repository is intentionally preserving the current Firebase data until the migration procedure and regression suite are ready.
+
+## 🧭 October 2026 migration tooling
+
+Owner-only migration controls are available under **Centro → Catálogo**.
+
+The workflow is intentionally non-destructive:
+
+1. Analyze the legacy `products` collection.
+2. Show missing catalog/inventory target records.
+3. Copy only missing target records.
+4. Verify target coverage.
+5. Leave legacy products untouched.
+
+The migration tool is idempotent and does not authorize the destructive reset. FASE 9 remains blocked until FASE 8 regression passes.
+
+### Firebase Rules deployment
+
+Rules are versioned in `firestore.rules` but are not deployed by `npm run dev`.
+
+Deploy manually:
+
+```powershell
+firebase deploy --only firestore:rules
+```
+
+After deployment, validate owner/editor/member access, verified-email enforcement, inventory writes, movement writes, and denied non-member access before marking regression complete.
+
