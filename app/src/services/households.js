@@ -11,6 +11,7 @@ import {
   updateDoc,
   where,
   writeBatch,
+  deleteDoc,
 } from "firebase/firestore";
 
 import { db } from "../firebase";
@@ -34,7 +35,7 @@ export async function getUserProfile(uid) {
 async function migrateLegacyProducts(householdId) {
   const legacy = await getDocs(collection(db, "products"));
 
-  if (legacy.empty) return;
+  if (legacy.empty) return false;
 
   for (let index = 0; index < legacy.docs.length; index += 450) {
     const batch = writeBatch(db);
@@ -53,6 +54,18 @@ async function migrateLegacyProducts(householdId) {
 
     await batch.commit();
   }
+
+  for (let index = 0; index < legacy.docs.length; index += 450) {
+    const batch = writeBatch(db);
+
+    legacy.docs.slice(index, index + 450).forEach((product) => {
+      batch.delete(doc(db, "products", product.id));
+    });
+
+    await batch.commit();
+  }
+
+  return true;
 }
 
 export async function createHouseholdForUser(user) {
@@ -122,6 +135,23 @@ export async function ensureHouseholdForUser(user) {
 
     if (household) {
       setActiveHouseholdId(household.id);
+
+      if (!household.legacyInventoryMigratedAt) {
+        try {
+          const migrated = await migrateLegacyProducts(household.id);
+
+          if (migrated) {
+            await updateDoc(doc(db, "households", household.id), {
+              legacyInventoryMigratedAt: serverTimestamp(),
+              updatedAt: serverTimestamp(),
+            });
+            household.legacyInventoryMigratedAt = true;
+          }
+        } catch (error) {
+          console.warn("Legacy inventory migration skipped:", error);
+        }
+      }
+
       return {
         ...household,
         role: profile.role || household.members?.[user.uid] || "member",
