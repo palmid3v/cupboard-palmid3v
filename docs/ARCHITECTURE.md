@@ -165,15 +165,18 @@ Existing product OR new-product form
 Validate form
       ↓
 saveProduct()
+      ├── ensure catalog identity
+      └── write household inventory
+           └── optional initial movement in same batch
       ↓
-Firestore create/update
+Success
       ↓
-Reload inventory
+Clear form + return to inventory
       ↓
-Return to inventory
+Realtime inventory listener updates visible list
 ```
 
-Unlike +1/-1, saving a product intentionally reloads inventory because a new/edited product needs to be incorporated into the inventory collection.
+The save flow intentionally does not perform an immediate full inventory reload after a successful write. The existing realtime inventory subscription is already responsible for updating the visible list.
 
 ## Current debt
 
@@ -235,19 +238,19 @@ WorkspacePanel exposes owner-only controls for generating invitation codes and e
 
 ## Shared product catalog
 
-Cupboard now separates product identity from household stock at the service boundary.
+Cupboard separates reusable product identity from household stock at the service boundary.
 
 ```text
 productCatalog/{barcode}
   ↓
 Product identity shared across households
 
-households/{householdId}/products/{barcode}
+households/{householdId}/inventory/{barcode}
   ↓
 Current household inventory
 ```
 
-The runtime uses `productCatalog/{barcode}` plus `households/{householdId}/inventory/{barcode}`. Inventory history is stored under `households/{householdId}/movements/{movementId}`.
+The runtime uses `productCatalog/{barcode}` plus `households/{householdId}/inventory/{barcode}`. Inventory history is stored under `households/{householdId}/movements/{movementId}`. The retired mixed household `products` collection is no longer a runtime or Rules boundary.
 
 Barcode lookup order:
 
@@ -317,3 +320,8 @@ The runtime has no dependency on the retired mixed household product model.
 ### Architectural rule
 
 > Product identity must be reusable across households. Stock must remain household-scoped. Movement history must remain household-scoped.
+## October 4, 2026 reliability checkpoint
+
+The scanner boundary now serializes asynchronous camera startup, cleans obsolete streams, reports interrupted startup errors, supports retry, and attempts continuous focus when supported. Real-device iPhone scanning has been validated.
+
+The product save boundary now treats the Firestore write as the primary success condition and relies on the realtime inventory listener for post-save list updates. This specifically prevents a secondary refresh failure from being surfaced as a false save error.
