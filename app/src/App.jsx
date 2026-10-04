@@ -1186,6 +1186,21 @@ setIsSaving(true);
                         <input id="product-portions" ref={portionsInputRef} name="portions" type="number" min="0" placeholder="0" value={form.portions} onChange={handleChange} className="w-full rounded-2xl border border-[var(--cupboard-border)] bg-[var(--cupboard-bg)] px-4 py-3.5 text-sm outline-none transition placeholder:text-[var(--cupboard-text-subtle)] focus:border-[var(--cupboard-primary)] focus:ring-4 focus:ring-[var(--cupboard-primary)]/10" />
                       </div>
 
+                      <div>
+                        <label htmlFor="product-min-stock" className="mb-2 block text-xs font-bold uppercase tracking-[0.12em] text-[var(--cupboard-text-subtle)]">Stock mínimo</label>
+                        <input id="product-min-stock" name="minStock" type="number" min="0" placeholder="5" value={form.minStock} onChange={handleChange} className="w-full rounded-2xl border border-[var(--cupboard-border)] bg-[var(--cupboard-bg)] px-4 py-3.5 text-sm outline-none transition placeholder:text-[var(--cupboard-text-subtle)] focus:border-[var(--cupboard-primary)] focus:ring-4 focus:ring-[var(--cupboard-primary)]/10" />
+                      </div>
+
+                      <div>
+                        <label htmlFor="product-expiry" className="mb-2 block text-xs font-bold uppercase tracking-[0.12em] text-[var(--cupboard-text-subtle)]">Caducidad</label>
+                        <input id="product-expiry" name="expiryDate" type="date" value={form.expiryDate} onChange={handleChange} className="w-full rounded-2xl border border-[var(--cupboard-border)] bg-[var(--cupboard-bg)] px-4 py-3.5 text-sm outline-none transition focus:border-[var(--cupboard-primary)] focus:ring-4 focus:ring-[var(--cupboard-primary)]/10" />
+                      </div>
+
+                      <div className="lg:col-span-2">
+                        <label htmlFor="product-category" className="mb-2 block text-xs font-bold uppercase tracking-[0.12em] text-[var(--cupboard-text-subtle)]">Categoría</label>
+                        <input id="product-category" name="category" type="text" placeholder="Ej. Pasta, lácteos, bebidas..." value={form.category} onChange={handleChange} className="w-full rounded-2xl border border-[var(--cupboard-border)] bg-[var(--cupboard-bg)] px-4 py-3.5 text-sm outline-none transition placeholder:text-[var(--cupboard-text-subtle)] focus:border-[var(--cupboard-primary)] focus:ring-4 focus:ring-[var(--cupboard-primary)]/10" />
+                      </div>
+
                       <div className="lg:col-span-2">
                         <label htmlFor="product-image" className="mb-2 block text-xs font-bold uppercase tracking-[0.12em] text-[var(--cupboard-text-subtle)]">Imagen <span className="normal-case font-normal tracking-normal">· opcional</span></label>
                         <input id="product-image" name="imageUrl" type="url" placeholder="https://..." value={form.imageUrl} onChange={handleChange} className="w-full rounded-2xl border border-[var(--cupboard-border)] bg-[var(--cupboard-bg)] px-4 py-3.5 text-sm outline-none transition placeholder:text-[var(--cupboard-text-subtle)] focus:border-[var(--cupboard-primary)] focus:ring-4 focus:ring-[var(--cupboard-primary)]/10" />
