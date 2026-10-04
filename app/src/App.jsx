@@ -4,6 +4,7 @@ import WorkspacePanel from "./components/WorkspacePanel";
 import ProductDetail from "./components/ProductDetail";
 import {
   getProduct,
+  findProductByBarcode,
   saveProduct,
   getAllProducts,
   subscribeToProducts,
@@ -387,9 +388,10 @@ export default function App() {
   setIsLookingUp(true);
 
   try {
-    const product = await getProduct(code);
+    const result = await findProductByBarcode(code);
 
-    if (product) {
+    if (result.source === "inventory") {
+      const product = result.product;
       setStatus("found");
 
       setForm({
@@ -401,6 +403,20 @@ export default function App() {
         category: product.category || "",
         expiryDate: product.expiryDate || "",
         minStock: product.minStock ?? 5,
+      });
+    } else if (result.source === "catalog") {
+      const product = result.product;
+      setStatus("catalog");
+
+      setForm({
+        name: product.name || "",
+        description: product.description || "",
+        weight: product.weight || "",
+        portions: "",
+        imageUrl: product.imageUrl || "",
+        category: product.category || "",
+        expiryDate: "",
+        minStock: 5,
       });
     } else {
       setStatus("new");
@@ -416,7 +432,7 @@ export default function App() {
         minStock: 5,
       });
     }
-    } catch (error) {
+  } catch (error) {
     console.error("Error buscando producto:", error);
 
     setStatus("error");
@@ -621,9 +637,15 @@ setIsSaving(true);
   
   const statusConfig = {
     found: {
-      label: "Producto encontrado",
+      label: "Producto encontrado en tu alacena",
       className:
         "border-[var(--cupboard-success)]/30 bg-[var(--cupboard-primary-soft)] text-[var(--cupboard-success)]",
+    },
+
+    catalog: {
+      label: "Producto reconocido · listo para agregar",
+      className:
+        "border-[var(--cupboard-primary)]/30 bg-[var(--cupboard-primary-soft)] text-[var(--cupboard-primary)]",
     },
 
     new: {
@@ -656,7 +678,7 @@ setIsSaving(true);
     inventory:
       "Controla tus productos, cantidades y existencias desde un solo lugar.",
     scanner:
-      "Escanea códigos de barras para buscar o registrar productos.",
+      "Escanea un producto conocido o registra uno nuevo para tu alacena.",
     workspace:
       "Caducidad, historial, compras, recetas, analítica, catálogo y equipo.",
     settings:
