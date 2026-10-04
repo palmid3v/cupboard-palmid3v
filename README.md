@@ -384,3 +384,20 @@ firebase deploy --only firestore:rules
 
 After deployment, validate owner/editor/member access, verified-email enforcement, inventory writes, movement writes, and denied non-member access before marking regression complete.
 
+
+
+## 🧭 FASE 9 — guarded migration
+
+> **⚠️ AHORA SÍ: RESET + MIGRACIÓN**
+
+FASE 9 retires only the obsolete `households/{householdId}/products/{barcode}` collection after migration verification.
+
+Canonical data remains in `productCatalog/{barcode}`, `households/{householdId}/inventory/{barcode}`, and `households/{householdId}/movements/{movementId}`.
+
+The application does not reset Firebase globally. The owner must explicitly enter the gate phrase before legacy product documents can be deleted.
+
+### Phase status
+
+- 🟢 FASE 8 — Regression
+- 🟢 FASE 9 — Guarded legacy retirement
+- 🟡 FASE 10 — Cleanup
