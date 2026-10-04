@@ -13,6 +13,8 @@ import {
   migrateLegacyProductsToInventory,
   previewLegacyInventoryMigration,
   verifyLegacyInventoryMigration,
+  retireLegacyProducts,
+  RESET_MIGRATION_GATE,
 } from "../services/migration";
 import { auth, logout } from "../services/auth";
 import { connectFirestore, disconnectFirestore } from "../firebase";
@@ -90,6 +92,8 @@ export default function WorkspacePanel() {
   const [migrationBusy, setMigrationBusy] = useState(false);
   const [migrationPreview, setMigrationPreview] = useState(null);
   const [migrationResult, setMigrationResult] = useState(null);
+  const [resetGateInput, setResetGateInput] = useState("");
+  const [resetBusy, setResetBusy] = useState(false);
 
   const householdId = getActiveHouseholdId();
   const isOwner = household?.ownerUid === auth.currentUser?.uid;
@@ -328,6 +332,36 @@ export default function WorkspacePanel() {
     }
   };
 
+  const retireLegacyProductsNow = async () => {
+    if (!isOwner || resetBusy || resetGateInput !== RESET_MIGRATION_GATE) return;
+
+    setResetBusy(true);
+    setError("");
+
+    try {
+      const result = await retireLegacyProducts(resetGateInput);
+      setMigrationResult({
+        ...result,
+        verification: result.verification,
+        migrated: {
+          catalog: 0,
+          inventory: 0,
+        },
+      });
+      setResetGateInput("");
+      setMigrationPreview(await previewLegacyInventoryMigration());
+    } catch (err) {
+      console.error(err);
+      setError(
+        err?.message === "MIGRATION_INCOMPLETE"
+          ? "La migración no está completa. No se eliminó ningún producto heredado."
+          : "No pudimos completar el retiro del modelo heredado. No se eliminó ningún producto si la operación no llegó a ejecutarse.",
+      );
+    } finally {
+      setResetBusy(false);
+    }
+  };
+
   const createHouseholdInvite = async () => {
     if (!householdId || !isOwner) return;
     setBusy(true);
@@ -562,8 +596,34 @@ export default function WorkspacePanel() {
 
               {migrationResult && (
                 <p className="mt-3 text-xs font-semibold text-[var(--cupboard-success)]">
-                  ✓ Migración no destructiva completada: {migrationResult.migrated.catalog} fichas de catálogo y {migrationResult.migrated.inventory} registros de inventario. Verificación: {migrationResult.verification.complete ? "completa" : "pendiente"}.
+                  ✓ Migración verificada. Catálogo e inventario: {migrationResult.verification.complete ? "completos" : "pendientes"}.
                 </p>
+              )}
+
+              {migrationPreview?.total > 0 && migrationPreview.catalogMissing === 0 && migrationPreview.inventoryMissing === 0 && (
+                <div className="mt-5 rounded-2xl border border-[var(--cupboard-danger)]/25 bg-[var(--cupboard-danger)]/5 p-4">
+                  <p className="text-sm font-extrabold text-[var(--cupboard-danger)]">Retiro del modelo heredado</p>
+                  <p className="mt-1 text-xs leading-5 text-[var(--cupboard-text-muted)]">
+                    Esta acción elimina únicamente <code>households/{'{'}householdId{'}'}/products</code>. No elimina usuarios, hogares, catálogo, inventario, movimientos ni configuraciones.
+                  </p>
+                  <p className="mt-3 text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--cupboard-text-subtle)]">
+                    Escribe exactamente: {RESET_MIGRATION_GATE}
+                  </p>
+                  <SmallInput
+                    value={resetGateInput}
+                    onChange={(event) => setResetGateInput(event.target.value)}
+                    placeholder={RESET_MIGRATION_GATE}
+                    aria-label="Confirmación del reset y migración"
+                  />
+                  <button
+                    type="button"
+                    onClick={retireLegacyProductsNow}
+                    disabled={resetBusy || resetGateInput !== RESET_MIGRATION_GATE}
+                    className="mt-3 rounded-xl bg-[var(--cupboard-danger)] px-4 py-2.5 text-xs font-extrabold text-white disabled:opacity-50"
+                  >
+                    {resetBusy ? "Retirando..." : "Retirar modelo heredado"}
+                  </button>
+                </div>
               )}
             </div>
           )}
