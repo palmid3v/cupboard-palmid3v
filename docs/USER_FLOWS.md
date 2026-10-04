@@ -168,3 +168,41 @@ Invited member: receive an owner-generated code, register with the code, join th
 Centro → Equipo shows the current Firestore client state and provides Conectar base de datos / Desconectar controls. The control applies to the current browser only and does not shut down Firebase for other users.
 
 During startup, account and household resolution is shown as Conectando con Cupboard…; a permanent error is shown only when resolution actually fails.
+
+
+## Email verification flow
+
+```text
+Create account
+      ↓
+Firebase sends verification email
+      ↓
+Verification screen
+      ├── Reenviar correo
+      └── Ya verifiqué mi correo
+                ↓
+          refresh Firebase user
+                ↓
+          emailVerified = true
+                ↓
+       pending invite / household
+                ↓
+             Cupboard
+```
+
+The pending invitation is retained until verification succeeds. Unverified users cannot access household data because Firestore Rules independently require a verified Firebase email.
+
+## Existing product detail flow
+
+```text
+Inventory
+   ↓
+Open product
+   ↓
+Animated product detail
+   ├── stock state + progress
+   ├── +1 / consume controls
+   ├── weight / barcode / expiry / minimum stock
+   ├── product image treatment
+   └── edit product
+```
