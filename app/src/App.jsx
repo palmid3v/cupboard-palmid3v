@@ -38,26 +38,6 @@ function applyTheme(theme) {
   root.dataset.theme = theme;
 }
 
-function ThemeButton({ value, current, children, onClick }) {
-  const active = current === value;
-
-  return (
-    <button
-      type="button"
-      onClick={() => onClick(value)}
-      aria-pressed={active}
-      className={[
-        "rounded-lg px-3 py-2 text-xs font-medium transition",
-        active
-          ? "bg-[var(--cupboard-primary)] text-white shadow-sm"
-          : "text-[var(--cupboard-text-muted)] hover:bg-[var(--cupboard-surface-muted)] hover:text-[var(--cupboard-text)]",
-      ].join(" ")}
-    >
-      {children}
-    </button>
-  );
-}
-
 function NavigationButton({
   icon,
   label,
