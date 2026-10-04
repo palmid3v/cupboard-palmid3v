@@ -6,23 +6,13 @@
 
 It is deliberately smaller and more human than a warehouse-management application.
 
-## The problem
-
-Household inventory often lives in people's memory. That creates repeated friction: forgetting what is already at home, buying duplicates, not knowing how much remains, and having to inspect cupboards manually.
-
-Cupboard turns that mental bookkeeping into a simple digital inventory.
-
-## Who it is for
-
-Cupboard is for a person or household that wants to stay organized.
-
-Examples include someone managing a kitchen, a family keeping track of common products, roommates organizing shared supplies, or anyone who simply likes knowing what is available at home.
-
-The product should not assume inventory-management expertise.
-
 ## Core job to be done
 
 > When I need to know what I have at home, I want to check it quickly and update it without friction.
+
+## Current MVP promise
+
+Today Cupboard can register products, scan barcodes, enter barcodes manually, find existing products, show inventory, search/filter/sort, identify low stock, add/consume portions, update quantities optimistically, recover from failed quantity persistence, show product details, display optional product images, persist products in Firestore, and run as a configured PWA.
 
 ## Product loop
 
@@ -50,52 +40,51 @@ Review       Register
     └──── Update inventory ────┘
 ```
 
+## Who it is for
+
+Cupboard is for a person or household that wants to stay organized.
+
+It should not assume inventory-management expertise.
+
 ## Product personality
 
 Cupboard should feel:
+- 🏠 hommie;
+- 🌿 calm;
+- 📦 organized;
+- 👨‍👩‍👧‍👦 household-friendly;
+- ✨ simple;
+- 🧹 tidy rather than corporate.
 
-- 🏠 hommie
-- 🌿 calm
-- 📦 organized
-- 👨‍👩‍👧‍👦 family-friendly
-- ✨ simple
-- 🧹 tidy rather than corporate
+## Current boundaries
 
-“Organized” does not mean “cold”.
-
-## Current MVP promise
-
-Today Cupboard can register products, find products by barcode, scan with a camera, manually enter barcodes, show inventory, search/filter/sort, identify low stock, add/consume portions, show product details, persist products in Firestore, remember appearance preferences, and run as a configured PWA.
-
-## What Cupboard is not today
-
-The following are not current functionality:
-
-- household accounts
-- authentication
-- shared permissions
-- expiration management
-- shopping automation
-- recipe intelligence
-- meal planning
-- analytics
-- purchase history
-- supplier management
-
-Do not describe future ideas as existing features.
+Not implemented:
+- authentication;
+- household accounts;
+- shared permissions;
+- offline-first inventory;
+- live Firestore connectivity status;
+- expiry management;
+- shopping automation;
+- recipes;
+- meal planning;
+- analytics;
+- purchase history;
+- supplier management;
+- automatic product catalog enrichment;
+- automatic product image/background processing.
 
 ## Product success
 
-For the current stage, success is not feature count.
+At this stage, success is not feature count.
 
 A successful experience lets a user:
-
 1. open the app;
 2. understand the inventory immediately;
 3. find a product quickly;
 4. change a quantity with minimal effort;
 5. register a new product without confusion;
-6. leave knowing the inventory is up to date.
+6. leave knowing the intended inventory update was persisted.
 
 ## Future product test
 
