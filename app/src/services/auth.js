@@ -42,7 +42,21 @@ export async function signUp(email, password, displayName) {
 }
 
 export function watchAuthState(callback) {
-  return onAuthStateChanged(auth, callback);
+  return onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+      await callback(null);
+      return;
+    }
+
+    try {
+      await reload(user);
+      await user.getIdToken(true);
+    } catch (error) {
+      console.warn("Unable to refresh Firebase session:", error);
+    }
+
+    await callback(user);
+  });
 }
 
 export async function resetPassword(email) {
