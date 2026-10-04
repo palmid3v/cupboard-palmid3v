@@ -4,6 +4,7 @@ import {
   getProduct,
   saveProduct,
   getAllProducts,
+  subscribeToProducts,
   updatePortions,
 } from "./services/products";
 
@@ -58,6 +59,96 @@ function MobileNavigationButton({
   );
 }
 
+
+function ConnectionStatus({ status, compact = false }) {
+  const config = {
+    connected: {
+      icon: "🟢",
+      title: "Inventario conectado",
+      description: "Firestore disponible",
+      badge: "ACTIVO",
+      color: "var(--cupboard-success)",
+      soft: "var(--cupboard-primary-soft)",
+    },
+    offline: {
+      icon: "🟡",
+      title: "Sin conexión",
+      description: "Mostrando datos disponibles",
+      badge: "SIN CONEXIÓN",
+      color: "var(--cupboard-warning)",
+      soft: "rgb(213 162 77 / 0.10)",
+    },
+    error: {
+      icon: "🔴",
+      title: "No se pudo conectar",
+      description: "Revisa tu conexión",
+      badge: "ERROR",
+      color: "var(--cupboard-danger)",
+      soft: "rgb(213 107 94 / 0.10)",
+    },
+    connecting: {
+      icon: "🟡",
+      title: "Conectando con Firestore",
+      description: "Comprobando disponibilidad",
+      badge: "CONECTANDO",
+      color: "var(--cupboard-warning)",
+      soft: "rgb(213 162 77 / 0.10)",
+    },
+  };
+
+  const current = config[status] || config.connecting;
+
+  if (compact) {
+    return (
+      <div
+        className="flex items-center gap-2 rounded-2xl border border-[var(--cupboard-border)] bg-[var(--cupboard-surface)] px-3 py-2.5"
+        title={current.description}
+      >
+        <span
+          className="h-2 w-2 rounded-full"
+          style={{ backgroundColor: current.color }}
+          aria-hidden="true"
+        />
+        <span className="text-xs font-semibold text-[var(--cupboard-text-muted)]">
+          {current.title}
+        </span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-3xl border border-[var(--cupboard-border)] bg-[linear-gradient(145deg,var(--cupboard-surface-muted),var(--cupboard-surface))] p-4 shadow-[var(--cupboard-shadow-sm)]">
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--cupboard-text-subtle)]">
+            Estado
+          </p>
+          <p className="mt-1 text-sm font-semibold">{current.title}</p>
+        </div>
+        <span
+          className="flex h-9 w-9 items-center justify-center rounded-xl text-base"
+          style={{ backgroundColor: current.soft }}
+          aria-hidden="true"
+        >
+          {current.icon}
+        </span>
+      </div>
+
+      <div className="mt-4 flex items-center justify-between border-t border-[var(--cupboard-border)] pt-3">
+        <span className="text-[10px] font-medium text-[var(--cupboard-text-subtle)]">
+          {current.description}
+        </span>
+        <span
+          className="text-[10px] font-bold"
+          style={{ color: current.color }}
+        >
+          {current.badge}
+        </span>
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
   const [view, setView] = useState("inventory");
   const [selectedProduct, setSelectedProduct] = useState(null);
@@ -75,6 +166,7 @@ export default function App() {
   const [isEditing, setIsEditing] = useState(false);
   const [products, setProducts] = useState([]);
   const [isLoadingProducts, setIsLoadingProducts] = useState(true);
+  const [connectionStatus, setConnectionStatus] = useState("connecting");
   const [status, setStatus] = useState("");
   const [formError, setFormError] = useState("");
   const [isSaving, setIsSaving] = useState(false);
@@ -96,13 +188,51 @@ export default function App() {
     try {
       const data = await getAllProducts();
       setProducts(data);
+    } catch (error) {
+      console.error("Error cargando productos:", error);
     } finally {
       setIsLoadingProducts(false);
     }
   };
 
   useEffect(() => {
-    loadProducts();
+    const unsubscribe = subscribeToProducts(
+      (data, metadata) => {
+        setProducts(data);
+        setIsLoadingProducts(false);
+
+        if (!navigator.onLine || metadata.fromCache) {
+          setConnectionStatus("offline");
+          return;
+        }
+
+        setConnectionStatus("connected");
+      },
+      (error) => {
+        console.error("Error escuchando el inventario:", error);
+        setIsLoadingProducts(false);
+        setConnectionStatus(
+          navigator.onLine ? "error" : "offline",
+        );
+      },
+    );
+
+    const handleOffline = () => {
+      setConnectionStatus("offline");
+    };
+
+    const handleOnline = () => {
+      setConnectionStatus("connecting");
+    };
+
+    window.addEventListener("offline", handleOffline);
+    window.addEventListener("online", handleOnline);
+
+    return () => {
+      unsubscribe();
+      window.removeEventListener("offline", handleOffline);
+      window.removeEventListener("online", handleOnline);
+    };
   }, []);
 
   useEffect(() => {
@@ -470,21 +600,7 @@ setIsSaving(true);
           </div>
 
           <div className="mt-auto">
-            <div className="rounded-3xl border border-[var(--cupboard-border)] bg-[linear-gradient(145deg,var(--cupboard-surface-muted),var(--cupboard-surface))] p-4 shadow-[var(--cupboard-shadow-sm)]">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--cupboard-text-subtle)]">Estado</p>
-                  <p className="mt-1 text-sm font-semibold">Inventario conectado</p>
-                </div>
-                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--cupboard-primary-soft)]">
-                  <span className="h-2.5 w-2.5 rounded-full bg-[var(--cupboard-success)] shadow-[0_0_0_5px_rgb(120_168_91_/_0.10)]" />
-                </span>
-              </div>
-              <div className="mt-4 flex items-center justify-between border-t border-[var(--cupboard-border)] pt-3">
-                <span className="text-[10px] font-medium text-[var(--cupboard-text-subtle)]">Datos sincronizados</span>
-                <span className="text-[10px] font-bold text-[var(--cupboard-success)]">ACTIVO</span>
-              </div>
-            </div>
+            <ConnectionStatus status={connectionStatus} />
           </div>
         </aside>
 
@@ -503,10 +619,7 @@ setIsSaving(true);
               </div>
 
               <div className="hidden shrink-0 items-center gap-2 sm:flex">
-                <div className="flex items-center gap-2 rounded-2xl border border-[var(--cupboard-border)] bg-[var(--cupboard-surface)] px-3 py-2.5">
-                  <span className="h-2 w-2 rounded-full bg-[var(--cupboard-success)]" />
-                  <span className="text-xs font-semibold text-[var(--cupboard-text-muted)]">Conectado</span>
-                </div>
+                <ConnectionStatus status={connectionStatus} compact />
                 <button type="button" onClick={() => setView("scanner")} className="rounded-2xl bg-[var(--cupboard-primary)] px-4 py-2.5 text-xs font-bold text-[#10140d] shadow-[0_8px_20px_rgb(120_168_91_/_0.14)] transition hover:-translate-y-0.5 hover:bg-[var(--cupboard-primary-hover)]">
                   + Escanear
                 </button>
