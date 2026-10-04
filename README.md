@@ -6,11 +6,11 @@ Cupboard is a home-first inventory app for keeping products in a kitchen or hous
 
 ## Current status
 
-**Functional MVP · active development**
+**Functional MVP · active development · real-device validation in progress**
 
 The repository currently contains a React/Vite application with Firestore persistence, browser barcode scanning, manual barcode registration, responsive inventory workflows, optimistic portion updates, a custom dark UI, and PWA configuration.
 
-The source of truth for behavior is the code in `app/src/`. Documentation is synchronized with the implemented behavior and separates **current**, **pending**, and **future** work.
+The source of truth for behavior is the code in `app/src/`. Documentation is synchronized with the implemented behavior and separates **current**, **pending**, and **future** work. The active priority is reliability of the scan → recognize → save → inventory loop, especially on real mobile devices.
 
 ## What Cupboard does today
 
@@ -221,22 +221,39 @@ Keep Firestore access behind this service boundary where practical.
 
 ## 🚧 Current boundaries
 
-The original MVP boundaries have now been implemented as the next Cupboard foundation:
+Implemented foundation:
 
-- ✅ authentication with Firebase Authentication;
-- ✅ multi-user households with admin/editor roles and invitation codes;
-- ✅ Firestore Security Rules for household-scoped access;
-- ✅ offline-first Firestore persistence;
-- ✅ live connectivity monitoring with connected/offline/error states;
-- ✅ expiry dates and low-stock thresholds;
-- ✅ movement/history tracking;
-- ✅ shopping lists;
+- ✅ Firebase Authentication and email verification;
+- ✅ invitation-only households and role-aware membership;
+- ✅ Firestore Security Rules;
+- ✅ shared catalog + household inventory separation;
+- ✅ movement/history records;
+- ✅ offline/cache-backed Firestore behavior;
+- ✅ expiry tracking;
+- ✅ shopping list;
 - ✅ recipe storage;
-- ✅ basic inventory analytics;
-- ✅ external barcode catalog enrichment;
-- ✅ automatic product image lookup;
-- 🟡 production rollout requires Email/Password Authentication, verified owner/member emails, and deployment of the committed Firebase Security Rules.
-- ⏸️ Firebase Storage uploads are intentionally deferred until a paid/billing-enabled Firebase plan is acceptable; image URLs remain supported.
+- ✅ basic analytics;
+- ✅ external barcode catalog lookup;
+- ✅ remote image URLs;
+- ✅ scanner startup-race protection and retry;
+- ✅ responsive mobile/desktop inventory flow;
+- ✅ false-success save-flow fix.
+
+Pending:
+
+- 🟡 broader iOS/Safari and Android scanner coverage;
+- 🟡 camera focus/positioning UX hardening;
+- 🟡 role-aware write guidance;
+- 🟡 finer-grained save/error states;
+- 🟡 reduce N+1 catalog hydration reads;
+- 🟡 automated Firebase Rules/Auth regression coverage;
+- 🟡 final PWA icon/install/update validation;
+- 🟡 deeper offline/reconnect/conflict testing.
+
+Deferred:
+
+- ⏸️ Firebase Storage uploads until a billing-enabled Firebase plan is acceptable.
+
 
 ## Development principle
 
@@ -321,3 +338,14 @@ After deployment, validate owner/editor/member access, verified-email enforcemen
 FASE 10 removed the migration-only UI and service, retired the obsolete household product Rules boundary, and synchronized the documentation with the final runtime model.
 
 The remaining work is normal product maintenance: scanner/browser coverage, PWA verification, offline-sync polish, architecture extraction, and future household workflows.
+
+## October 4, 2026 checkpoint
+
+Today's reliability work added scanner startup-race protection, explicit interrupted-camera recovery, real-device iPhone barcode validation, and a save-flow fix that prevents a secondary refresh problem from being reported as a primary write failure.
+
+Relevant commits:
+- `ea5eddf52e6b93f1b0c906ff59c116a0b2fdd996` — prevent camera startup race
+- `c31341e5e02cbae651c9807c4d606fe9910ba98e` — surface interrupted camera errors
+- `437fedabbfd648b23a5f2f4db9aa7bedfb3eafdb` — avoid false product save errors
+
+The next documented phases are FASE 13–18 in `docs/ROADMAP.md` and the operational step-by-step file.
