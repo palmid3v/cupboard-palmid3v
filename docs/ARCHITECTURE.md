@@ -19,7 +19,12 @@ React UI
              ├── BarcodeScanner.jsx
              │      └── @zxing/browser
              │
-             └── services/products.js
+             └── services/
+       ├── products.js       ← runtime product facade
+       ├── catalog.js        ← shared identity
+       ├── inventory.js      ← household stock
+       ├── migration.js      ← non-destructive migration tooling
+       └── features.js
                     └── Firebase
                            ├── Authentication
                            └── Firestore
@@ -59,11 +64,14 @@ Camera-specific behavior should remain out of the product data service.
 
 ## Data boundary
 
-Firestore access is concentrated in:
+Firestore access is concentrated behind explicit service boundaries:
 
-`src/services/products.js`
+- `src/services/catalog.js` — shared product identity;
+- `src/services/inventory.js` — household inventory and movement-aware writes;
+- `src/services/products.js` — UI compatibility facade;
+- `src/services/migration.js` — owner-only, non-destructive legacy migration.
 
-Current API:
+Current UI-facing API:
 
 ```js
 getProduct(barcode)
@@ -241,7 +249,7 @@ households/{householdId}/products/{barcode}
 Current household inventory
 ```
 
-The current runtime keeps the existing household `products` collection so the live test dataset is not disrupted. New barcode registrations call the shared catalog first and then create/update the household product.
+The runtime now uses `productCatalog/{barcode}` plus `households/{householdId}/inventory/{barcode}`. The legacy household `products` collection is retained only as migration input until regression and the reset gate are complete.
 
 Barcode lookup order:
 
@@ -306,7 +314,7 @@ The service intentionally stores household-specific state only:
 
 `src/services/products.js` remains the compatibility boundary for the current live application. The legacy `households/{householdId}/products` collection is still preserved as the working dataset.
 
-The new inventory service is therefore **implemented but not yet the runtime source of truth**. Switching the UI to it is the next application phase.
+The new inventory service is now the runtime source of truth. Legacy products are no longer used for normal inventory reads/writes.
 
 ### Architectural rule
 
