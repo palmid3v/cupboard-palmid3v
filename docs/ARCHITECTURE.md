@@ -225,3 +225,36 @@ WorkspacePanel exposes owner-only controls for generating invitation codes and e
 ## Product detail boundary
 
 `src/components/ProductDetail.jsx` owns the product detail presentation, stock status, expiry state, metadata, image treatment, and quantity micro-interactions. `App.jsx` remains responsible for product state and persistence callbacks. This keeps the visual experience replaceable without moving Firestore logic into the component.
+
+
+## Shared product catalog
+
+Cupboard now separates product identity from household stock at the service boundary.
+
+```text
+productCatalog/{barcode}
+  ↓
+Product identity shared across households
+
+households/{householdId}/products/{barcode}
+  ↓
+Current household inventory
+```
+
+The current runtime keeps the existing household `products` collection so the live test dataset is not disrupted. New barcode registrations call the shared catalog first and then create/update the household product.
+
+Barcode lookup order:
+
+```text
+Scan barcode
+   ↓
+Current household product?
+   ├── yes → open existing inventory
+   └── no
+        ↓
+   Shared product catalog?
+        ├── yes → prefill product → user enters household quantity
+        └── no → new product form
+```
+
+This is an incremental bridge toward the post-reset inventory model. The future reset will migrate household `products` into the final `inventory` representation without discarding the canonical product information.
