@@ -41,7 +41,7 @@ service cloud.firestore {
         && request.resource.data.role == 'member'
         && request.resource.data.householdId is string
         && request.resource.data.keys().hasAll(['householdId', 'role', 'email', 'displayName'])
-        && request.resource.data.keys().hasOnly(['householdId', 'role', 'email', 'displayName', 'createdAt', 'updatedAt'])
+        && request.resource.data.keys().hasOnly(['householdId', 'role', 'email', 'displayName', 'inviteCode', 'createdAt', 'updatedAt'])
         && exists(/databases/$(database)/documents/householdInvites/$(request.resource.data.inviteCode))
         && get(/databases/$(database)/documents/householdInvites/$(request.resource.data.inviteCode)).data.householdId == request.resource.data.householdId;
 
