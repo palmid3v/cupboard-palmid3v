@@ -825,12 +825,27 @@ setIsSaving(true);
                           >
                             <div className="relative flex h-40 items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_center,var(--cupboard-surface-raised),var(--cupboard-surface-muted))]">
                               {item.imageUrl ? (
-                                <img src={item.imageUrl} alt="" onError={(event) => { event.currentTarget.style.display = "none"; event.currentTarget.nextElementSibling?.classList.remove("hidden"); }} className="h-full w-full object-contain p-5 transition duration-300 group-hover:scale-105" />
+                                <div className="flex h-[132px] w-[78%] max-w-[220px] items-center justify-center overflow-hidden rounded-2xl bg-white p-4 shadow-[var(--cupboard-shadow-sm)]">
+                                  <img
+                                    src={item.imageUrl}
+                                    alt=""
+                                    onError={(event) => {
+                                      event.currentTarget.style.display = "none";
+                                      event.currentTarget.parentElement?.classList.add("hidden");
+                                      event.currentTarget.parentElement?.parentElement?.querySelector("[data-image-fallback]")?.classList.remove("hidden");
+                                    }}
+                                    className="max-h-full max-w-full object-contain transition duration-300 group-hover:scale-105"
+                                  />
+                                </div>
                               ) : null}
-                              <div className={[
-                                "h-16 w-16 items-center justify-center rounded-2xl bg-[var(--cupboard-surface)] text-3xl shadow-[var(--cupboard-shadow-sm)]",
-                                item.imageUrl ? "hidden" : "flex",
-                              ].join(" ")} aria-hidden="true">📦</div>
+                              <div
+                                data-image-fallback
+                                className={[
+                                  "h-16 w-16 items-center justify-center rounded-2xl bg-[var(--cupboard-surface)] text-3xl shadow-[var(--cupboard-shadow-sm)]",
+                                  item.imageUrl ? "hidden" : "flex",
+                                ].join(" ")}
+                                aria-hidden="true"
+                              >📦</div>
                               <span className={["absolute left-3 top-3 rounded-full px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.12em]", cardStatus[1]].join(" ")}>{cardStatus[0]}</span>
                             </div>
 
@@ -910,7 +925,7 @@ setIsSaving(true);
                           <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-[var(--cupboard-text-subtle)]">Código</p>
                           <p className="mt-1 truncate font-mono text-sm font-semibold">{isLookingUp ? "Buscando producto..." : barcode || "Esperando escaneo..."}</p>
                         </div>
-                        <button type="button" onClick={() => setScanKey((previous) => previous + 1)} className="shrink-0 rounded-xl border border-[var(--cupboard-border)] px-3 py-2 text-xs font-bold text-[var(--cupboard-text-muted)] transition hover:bg-[var(--cupboard-surface-muted)] hover:text-[var(--cupboard-text)]">↻ Repetir</button>
+                        <button type="button" onClick={() => setScannerRestart((previous) => previous + 1)} className="shrink-0 rounded-xl border border-[var(--cupboard-border)] px-3 py-2 text-xs font-bold text-[var(--cupboard-text-muted)] transition hover:bg-[var(--cupboard-surface-muted)] hover:text-[var(--cupboard-text)]">↻ Repetir</button>
                       </div>
                     </div>
                   </section>
@@ -1016,7 +1031,7 @@ setIsSaving(true);
                     )}
 
                     <div className="mt-7 flex flex-col-reverse gap-3 border-t border-[var(--cupboard-border)] pt-6 sm:flex-row sm:justify-end">
-                      <button type="button" onClick={() => { if (isManualEntry) { setBarcode(""); setStatus(""); setFormError(""); setIsEditing(false); setIsManualEntry(false); setScanKey((previous) => previous + 1); return; } setIsEditing(false); }} className="rounded-2xl border border-[var(--cupboard-border)] bg-[var(--cupboard-surface-muted)] px-5 py-3.5 text-sm font-bold text-[var(--cupboard-text-muted)] transition hover:text-[var(--cupboard-text)]">Cancelar</button>
+                      <button type="button" onClick={() => { if (isManualEntry) { setBarcode(""); setStatus(""); setFormError(""); setIsEditing(false); setIsManualEntry(false); setScannerRestart((previous) => previous + 1); return; } setIsEditing(false); }} className="rounded-2xl border border-[var(--cupboard-border)] bg-[var(--cupboard-surface-muted)] px-5 py-3.5 text-sm font-bold text-[var(--cupboard-text-muted)] transition hover:text-[var(--cupboard-text)]">Cancelar</button>
                       <button type="button" onClick={handleSave} disabled={!barcode || isSaving} className="rounded-2xl bg-[var(--cupboard-primary)] px-5 py-3.5 text-sm font-bold text-[#10140d] shadow-[0_8px_20px_rgb(120_168_91_/_0.12)] transition hover:-translate-y-0.5 hover:bg-[var(--cupboard-primary-hover)] disabled:cursor-not-allowed disabled:opacity-40">{isSaving ? "Guardando..." : "Guardar producto"}</button>
                     </div>
                   </section>
