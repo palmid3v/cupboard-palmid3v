@@ -105,13 +105,18 @@ function ConnectionStatus({ status, compact = false }) {
         title={current.description}
       >
         <span
-          className="h-2 w-2 rounded-full"
+          className="h-2 w-2 shrink-0 rounded-full"
           style={{ backgroundColor: current.color }}
           aria-hidden="true"
         />
-        <span className="text-xs font-semibold text-[var(--cupboard-text-muted)]">
-          {current.title}
-        </span>
+        <div className="min-w-0">
+          <p className="truncate text-xs font-semibold text-[var(--cupboard-text-muted)]">
+            {current.title}
+          </p>
+          <p className="truncate text-[10px] text-[var(--cupboard-text-subtle)]">
+            {current.description}
+          </p>
+        </div>
       </div>
     );
   }
@@ -625,6 +630,10 @@ setIsSaving(true);
                 </button>
               </div>
             </header>
+
+            <div className="mb-5 sm:hidden">
+              <ConnectionStatus status={connectionStatus} />
+            </div>
 
             {selectedProduct && (
               <section className="space-y-5">
