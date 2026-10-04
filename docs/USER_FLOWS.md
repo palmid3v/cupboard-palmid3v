@@ -113,12 +113,15 @@ Save flow:
 Validate
    ↓
 saveProduct()
+   ├── ensure shared catalog identity
+   └── write household inventory
+       └── optional initial movement batch
    ↓
-Firestore create/update
+Success
    ↓
-Reload inventory
+Clear form
    ↓
-Return to inventory
+Realtime listener updates inventory
 ```
 
 ## 8. Product images
@@ -206,3 +209,9 @@ Animated product detail
    ├── product image treatment
    └── edit product
 ```
+
+## October 4 mobile validation
+
+The scanner was tested through a real iPhone camera path. Barcode detection succeeded and the product lookup flow reached the expected product state. Camera focus/positioning still needs broader device testing, especially when recognition takes longer.
+
+A transient Firebase Authentication 503 was also observed during testing. It recovered without a code change and is documented as a recoverable availability condition rather than a product-save or scanner error.
