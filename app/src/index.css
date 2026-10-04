@@ -10,25 +10,31 @@
     "Segoe UI",
     sans-serif;
 
-  color-scheme: light;
+  color-scheme: dark;
 
-  --cupboard-bg: #f6f8f5;
-  --cupboard-surface: #ffffff;
-  --cupboard-surface-muted: #eef3ed;
+  /* Cupboard — pantry-inspired dark palette */
+  --cupboard-bg: #12100d;
+  --cupboard-surface: #1b1814;
+  --cupboard-surface-muted: #242018;
+  --cupboard-surface-raised: #2b261d;
 
-  --cupboard-text: #172018;
-  --cupboard-text-muted: #687269;
+  --cupboard-text: #f4ead9;
+  --cupboard-text-muted: #b5a994;
+  --cupboard-text-subtle: #877c6b;
 
-  --cupboard-primary: #3f7d4a;
-  --cupboard-primary-hover: #33683d;
-  --cupboard-primary-soft: #e4f0e5;
+  --cupboard-primary: #78a85b;
+  --cupboard-primary-hover: #8fbd6d;
+  --cupboard-primary-soft: #24351d;
 
-  --cupboard-border: #dce4dc;
+  --cupboard-accent: #c98955;
+  --cupboard-accent-soft: #39271b;
 
-  --cupboard-success: #3f7d4a;
-  --cupboard-warning: #c58b24;
-  --cupboard-danger: #c94b4b;
-  --cupboard-info: #4d78a8;
+  --cupboard-border: #3a3328;
+
+  --cupboard-success: #78a85b;
+  --cupboard-warning: #d5a24d;
+  --cupboard-danger: #d56b5e;
+  --cupboard-info: #7698b8;
 
   --cupboard-radius-sm: 0.5rem;
   --cupboard-radius-md: 0.75rem;
@@ -36,10 +42,10 @@
   --cupboard-radius-xl: 1.25rem;
 
   --cupboard-shadow-sm:
-    0 1px 2px rgb(23 32 24 / 0.05);
+    0 1px 2px rgb(0 0 0 / 0.24);
 
   --cupboard-shadow-md:
-    0 8px 24px rgb(23 32 24 / 0.08);
+    0 10px 28px rgb(0 0 0 / 0.28);
 
   color: var(--cupboard-text);
   background: var(--cupboard-bg);
@@ -50,32 +56,12 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+:root[data-theme="light"] {
+  color-scheme: dark;
+}
+
 :root[data-theme="dark"] {
   color-scheme: dark;
-
-  --cupboard-bg: #0f1511;
-  --cupboard-surface: #171f19;
-  --cupboard-surface-muted: #202a21;
-
-  --cupboard-text: #edf4ee;
-  --cupboard-text-muted: #9ba99d;
-
-  --cupboard-primary: #70b878;
-  --cupboard-primary-hover: #83c58a;
-  --cupboard-primary-soft: #1d3422;
-
-  --cupboard-border: #2b382d;
-
-  --cupboard-success: #70b878;
-  --cupboard-warning: #e0ad4f;
-  --cupboard-danger: #e06a6a;
-  --cupboard-info: #76a4d4;
-
-  --cupboard-shadow-sm:
-    0 1px 2px rgb(0 0 0 / 0.2);
-
-  --cupboard-shadow-md:
-    0 8px 24px rgb(0 0 0 / 0.25);
 }
 
 * {
@@ -93,7 +79,9 @@ body {
   min-height: 100vh;
   margin: 0;
 
-  background: var(--cupboard-bg);
+  background:
+    radial-gradient(circle at top right, rgb(120 168 91 / 0.07), transparent 34rem),
+    var(--cupboard-bg);
   color: var(--cupboard-text);
 
   transition:
@@ -129,5 +117,10 @@ a {
 
 ::selection {
   background: var(--cupboard-primary);
-  color: #ffffff;
+  color: #10120d;
+}
+
+:focus-visible {
+  outline: 2px solid var(--cupboard-primary);
+  outline-offset: 2px;
 }
