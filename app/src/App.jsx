@@ -9,6 +9,7 @@ import {
   updatePortions,
 } from "./services/products";
 import { addMovement } from "./services/features";
+import { uploadProductImage } from "./services/images";
 import { auth } from "./services/auth";
 
 function NavigationButton({
@@ -181,6 +182,7 @@ export default function App() {
   const [status, setStatus] = useState("");
   const [formError, setFormError] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [isLookingUp, setIsLookingUp] = useState(false);
   const [updatingProductId, setUpdatingProductId] = useState(null);
   const [inventoryActionError, setInventoryActionError] = useState(null);
@@ -1204,6 +1206,41 @@ setIsSaving(true);
                       <div className="lg:col-span-2">
                         <label htmlFor="product-image" className="mb-2 block text-xs font-bold uppercase tracking-[0.12em] text-[var(--cupboard-text-subtle)]">Imagen <span className="normal-case font-normal tracking-normal">· opcional</span></label>
                         <input id="product-image" name="imageUrl" type="url" placeholder="https://..." value={form.imageUrl} onChange={handleChange} className="w-full rounded-2xl border border-[var(--cupboard-border)] bg-[var(--cupboard-bg)] px-4 py-3.5 text-sm outline-none transition placeholder:text-[var(--cupboard-text-subtle)] focus:border-[var(--cupboard-primary)] focus:ring-4 focus:ring-[var(--cupboard-primary)]/10" />
+
+                        <div className="mt-3 flex flex-col gap-3 rounded-2xl border border-[var(--cupboard-border)] bg-[var(--cupboard-surface-muted)] p-4 sm:flex-row sm:items-center sm:justify-between">
+                          <div>
+                            <p className="text-xs font-bold">Limpiar imagen automáticamente</p>
+                            <p className="mt-1 text-[10px] leading-5 text-[var(--cupboard-text-muted)]">Sube una foto y Cupboard elimina fondos blancos y recorta el exceso antes de guardarla.</p>
+                          </div>
+                          <label className="shrink-0 cursor-pointer rounded-xl bg-[var(--cupboard-surface)] px-4 py-2.5 text-xs font-bold text-[var(--cupboard-text)] transition hover:-translate-y-0.5">
+                            {isUploadingImage ? "Procesando..." : "Subir foto"}
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              disabled={isUploadingImage || !barcode}
+                              onChange={async (event) => {
+                                const file = event.target.files?.[0];
+                                if (!file) return;
+
+                                setIsUploadingImage(true);
+                                setFormError("");
+
+                                try {
+                                  const imageUrl = await uploadProductImage(file, barcode);
+                                  setForm((current) => ({ ...current, imageUrl }));
+                                } catch (error) {
+                                  console.error(error);
+                                  setFormError("No pudimos procesar la imagen. Usa una imagen de menos de 8 MB.");
+                                } finally {
+                                  setIsUploadingImage(false);
+                                  event.target.value = "";
+                                }
+                              }}
+                            />
+                          </label>
+                        </div>
+
                         {form.imageUrl && (
                           <div className="mt-3 overflow-hidden rounded-2xl border border-[var(--cupboard-border)] bg-[var(--cupboard-surface-muted)] p-3">
                             <div className="flex min-h-40 items-center justify-center rounded-xl bg-[var(--cupboard-bg)] p-4">
