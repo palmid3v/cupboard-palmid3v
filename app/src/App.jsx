@@ -532,41 +532,51 @@ setIsSaving(true);
           }
         : null,
     );
-
-    setStatus("saved");
-    setFormError("");
-
-    setBarcode("");
-
-    setForm({
-      name: "",
-      description: "",
-      weight: "",
-      portions: "",
-      imageUrl: "",
-      category: "",
-      expiryDate: "",
-      minStock: 5,
-    });
-
-    setIsEditing(false);
-    setIsManualEntry(false);
-    setScannerRestart((previous) => previous + 1);
-
-    await loadProducts();
-
-    setView("inventory");
   } catch (error) {
-    console.error(error);
+    console.error("Error guardando producto:", error);
+    setStatus("error");
+
+    const saveErrorMessages = {
+      "permission-denied":
+        "No tienes permisos para agregar productos a esta alacena.",
+      unavailable:
+        "No pudimos conectar con la base de datos. Revisa tu conexión e inténtalo nuevamente.",
+      "failed-precondition":
+        "La base de datos no está disponible en este momento. Inténtalo nuevamente.",
+    };
 
     setFormError(
-      "No pudimos guardar el producto. Inténtalo nuevamente.",
+      saveErrorMessages[error?.code] ||
+        "No pudimos guardar el producto. Inténtalo nuevamente.",
     );
+    return;
   } finally {
     setIsSaving(false);
   }
-};
 
+  setStatus("saved");
+  setFormError("");
+  setBarcode("");
+
+  setForm({
+    name: "",
+    description: "",
+    weight: "",
+    portions: "",
+    imageUrl: "",
+    category: "",
+    expiryDate: "",
+    minStock: 5,
+  });
+
+  setIsEditing(false);
+  setIsManualEntry(false);
+  setScannerRestart((previous) => previous + 1);
+
+  // La suscripción del inventario actualiza la lista cuando Firestore confirma el cambio.
+  // Evitamos una segunda lectura que podía competir con el guardado en dispositivos lentos.
+  setView("inventory");
+};
   const inventorySummary = {
   products: products.length,
 
