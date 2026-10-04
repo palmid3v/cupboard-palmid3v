@@ -100,3 +100,9 @@ The retired household product collection is no longer part of the application's 
 ## Operational principle
 
 Keep authorization in Firestore Rules, not only in React UI. Client-side visibility is a convenience; Rules are the security boundary.
+
+## Runtime availability versus authorization
+
+Firebase Authentication can temporarily return availability errors such as HTTP 503 / `auth/the-service-is-currently-unavailable`. This should be communicated as a recoverable service/connectivity condition, not as a permission failure.
+
+Separately, a catalog product can be readable by a verified user while household inventory writes still require an editor-capable role. Recognizing a barcode and having permission to add that product to a household are different security decisions.
