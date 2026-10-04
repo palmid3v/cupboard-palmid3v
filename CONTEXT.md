@@ -5,7 +5,7 @@
 - Repository: `palmid3v/cupboard-palmid3v`
 - Owner: PALMI-D3V
 - Type: Home-first inventory web application
-- Stage: Functional MVP / active development
+- Stage: Functional MVP / active development / reliability hardening
 - Experience: Mobile-first with responsive desktop support
 - Current visual direction: dark-only, warm, calm, green-centered
 
@@ -148,7 +148,7 @@ npm run preview
 
 ## Status
 
-Cupboard is an active functional MVP. The current priority is polish, reliability, scanner stability, visual consistency, and maintainable documentation.
+Cupboard is an active functional MVP. The current priority is reliability of the scan → recognize → save → inventory loop, especially on real mobile devices, followed by permissions UX, error taxonomy, performance, offline/PWA hardening, automated regression, and incremental component extraction.
 
 
 ## Access model
@@ -207,3 +207,9 @@ The application now uses dedicated catalog/inventory collections at runtime. The
 ### Safety gate
 
 The migration gate was completed after runtime adoption, movements, Rules, migration preparation, and regression validation passed. FASE 10 cleanup is complete.
+
+## October 4, 2026 checkpoint
+
+Scanner startup-race protection and interrupted-camera recovery are implemented. Real-device iPhone scanning has been validated. The save flow was corrected so a secondary refresh cannot falsely report that the primary product write failed. A transient Firebase Auth HTTP 503 was observed during testing and recovered without a code change; Auth availability remains a recoverable runtime condition.
+
+Next phases: scanner hardening, role-aware save UX, save-state taxonomy, performance, offline/PWA validation, automated regression, and incremental App.jsx extraction.
