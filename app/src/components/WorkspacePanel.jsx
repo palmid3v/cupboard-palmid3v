@@ -38,6 +38,20 @@ function SmallInput(props) {
   );
 }
 
+function getInitialConnectionStatus() {
+  if (typeof window === "undefined") return "connecting";
+
+  const preferredNetwork = window.localStorage.getItem("cupboard.firestoreNetwork");
+  if (preferredNetwork === "offline") return "offline";
+
+  const storedStatus = window.localStorage.getItem("cupboard.connectionStatus");
+  if (["connected", "offline", "error"].includes(storedStatus)) {
+    return storedStatus;
+  }
+
+  return navigator.onLine ? "connecting" : "offline";
+}
+
 export default function WorkspacePanel() {
   const [tab, setTab] = useState("expiry");
   const [products, setProducts] = useState([]);
@@ -54,7 +68,7 @@ export default function WorkspacePanel() {
   const [recipeDescription, setRecipeDescription] = useState("");
   const [catalogBarcode, setCatalogBarcode] = useState("");
   const [catalogResult, setCatalogResult] = useState(null);
-  const [connectionStatus, setConnectionStatus] = useState("connecting");
+  const [connectionStatus, setConnectionStatus] = useState(getInitialConnectionStatus);
   const [connectionBusy, setConnectionBusy] = useState(false);
 
   const householdId = getActiveHouseholdId();
@@ -418,12 +432,21 @@ export default function WorkspacePanel() {
             </div>
 
             <div className="mt-5">
-              <button type="button" onClick={createHouseholdInvite} disabled={busy} className="rounded-xl bg-[var(--cupboard-primary)] px-4 py-2.5 text-xs font-extrabold text-[#10140d] disabled:opacity-50">
-                {busy ? "Generando..." : "Generar código de acceso"}
+              <button type="button" onClick={createHouseholdInvite} disabled={busy} className="inline-flex items-center gap-2 rounded-xl bg-[var(--cupboard-primary)] px-4 py-2.5 text-xs font-extrabold text-[#10140d] transition duration-300 hover:-translate-y-0.5 hover:bg-[var(--cupboard-primary-hover)] disabled:cursor-wait disabled:opacity-60">
+                {busy && <span aria-hidden="true" className="h-3 w-3 animate-spin rounded-full border-2 border-[#10140d]/30 border-t-[#10140d]" />}
+                {busy ? "Generando..." : inviteCode ? "Generar otro código" : "Generar código de acceso"}
               </button>
               {inviteCode && (
-                <div className="mt-4 rounded-2xl border border-[var(--cupboard-primary)]/20 bg-[var(--cupboard-primary-soft)] p-5">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-[var(--cupboard-primary)]">Código de acceso</p>
+                <div
+                  key={inviteCode}
+                  role="status"
+                  aria-live="polite"
+                  className="cupboard-invite-reveal mt-4 rounded-2xl border border-[var(--cupboard-primary)]/20 bg-[var(--cupboard-primary-soft)] p-5"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-[var(--cupboard-primary)]">Código de acceso</p>
+                    <span className="rounded-full bg-[var(--cupboard-primary)]/15 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.12em] text-[var(--cupboard-primary)]">Nuevo</span>
+                  </div>
                   <p className="mt-2 font-mono text-3xl font-black tracking-[0.2em]">{inviteCode}</p>
                   <p className="mt-2 text-xs leading-5 text-[var(--cupboard-text-muted)]">Compártelo con una persona de confianza. El registro con este código la conectará como miembro, nunca como administrador.</p>
                 </div>
@@ -438,16 +461,34 @@ export default function WorkspacePanel() {
               Controla la conexión de este dispositivo con Firestore y comprueba si Cupboard está trabajando contra el servidor o con los datos locales.
             </p>
 
-            <div className="mt-6 rounded-2xl bg-[var(--cupboard-surface-muted)] p-5">
-              <p className="text-xs text-[var(--cupboard-text-muted)]">Estado actual</p>
-              <p className="mt-1 text-xl font-extrabold">
-                {connectionStatus === "connected" && "🟢 Conectada"}
-                {connectionStatus === "connecting" && "🟡 Conectando..."}
-                {connectionStatus === "offline" && "🟡 Desconectada"}
-                {connectionStatus === "error" && "🔴 Error de conexión"}
-              </p>
-              <p className="mt-2 text-xs text-[var(--cupboard-text-subtle)]">
-                {connectionStatus === "connected" ? "Firestore está disponible desde este dispositivo." : "Los datos locales pueden seguir disponibles gracias a la persistencia offline."}
+            <div className="mt-6 rounded-2xl bg-[var(--cupboard-surface-muted)] p-5 transition-all duration-500">
+              <div className="flex items-center gap-3">
+                <span
+                  aria-hidden="true"
+                  className={[
+                    "h-3 w-3 shrink-0 rounded-full shadow-[0_0_0_4px_rgb(0_0_0_/_0.08)]",
+                    connectionStatus === "connected" && "bg-[var(--cupboard-success)]",
+                    connectionStatus === "connecting" && "bg-[var(--cupboard-warning)] animate-pulse",
+                    connectionStatus === "offline" && "bg-[var(--cupboard-warning)]",
+                    connectionStatus === "error" && "bg-[var(--cupboard-danger)]",
+                  ].filter(Boolean).join(" ")}
+                />
+                <div>
+                  <p className="text-xs text-[var(--cupboard-text-muted)]">Estado actual</p>
+                  <p className="mt-0.5 text-xl font-extrabold">
+                    {connectionStatus === "connected" && "Conectada"}
+                    {connectionStatus === "connecting" && "Conectando..."}
+                    {connectionStatus === "offline" && "Desconectada"}
+                    {connectionStatus === "error" && "Error de conexión"}
+                  </p>
+                </div>
+              </div>
+              <p className="mt-3 text-xs text-[var(--cupboard-text-subtle)]">
+                {connectionStatus === "connected"
+                  ? "Firestore está disponible desde este dispositivo."
+                  : connectionStatus === "offline"
+                    ? "Cupboard está usando los datos locales disponibles."
+                    : "Comprobando la conexión con Firestore…"}
               </p>
             </div>
 
