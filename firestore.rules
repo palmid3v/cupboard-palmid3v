@@ -41,7 +41,8 @@ service cloud.firestore {
         allow create: if admin(householdId)
           || (signedIn()
             && request.auth.uid == memberId
-            && exists(/databases/$(database)/documents/householdInvites/$(request.resource.data.inviteCode)));
+            && exists(/databases/$(database)/documents/householdInvites/$(request.resource.data.inviteCode))
+            && get(/databases/$(database)/documents/householdInvites/$(request.resource.data.inviteCode)).data.householdId == householdId);
         allow update, delete: if admin(householdId);
       }
 
