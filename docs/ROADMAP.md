@@ -185,3 +185,52 @@ The reset must wait until:
 > ⚠️ **AHORA SÍ: RESET + MIGRACIÓN**
 
 Only after that warning should any destructive Firebase operation be performed.
+
+## 🧭 October 2026 architecture migration checkpoint
+
+### FASE 1 — Shared catalog
+- ✅ Implemented.
+- ✅ Existing household products can seed `productCatalog`.
+- ✅ Barcode lookup recognizes inventory → catalog → new product.
+- 🔴 Reset remains blocked.
+
+### FASE 2 — Data-model audit
+**🟢 APPROVED**
+
+Completed decisions:
+- ✅ `productCatalog` owns reusable product identity.
+- ✅ household `inventory` owns household stock state.
+- ✅ `movements` remain household-scoped.
+- ✅ `households/{householdId}/products` is classified as the legacy mixed model.
+- ✅ Field responsibilities are documented before migration.
+
+### FASE 3 — Inventory foundation
+**🟢 APPROVED**
+
+Completed:
+- ✅ Created `app/src/services/inventory.js`.
+- ✅ Added household-scoped inventory lookup.
+- ✅ Added inventory listing.
+- ✅ Added inventory subscription with Firestore metadata.
+- ✅ Added inventory create/update boundary.
+- ✅ Added portion update boundary.
+- ✅ Kept runtime on the legacy collection until the migration bridge is fully tested.
+
+### FASE 4 — Runtime adoption
+**⏭️ NEXT**
+
+The next implementation phase will connect the new inventory service to:
+- scanner;
+- dashboard;
+- search/filter/sort;
+- product detail;
+- portion updates;
+- registration.
+
+### Migration gate
+
+The project must not move to destructive migration until FASES 4–8 are complete.
+
+> ⚠️ **AHORA SÍ: RESET + MIGRACIÓN**
+
+remains disabled until the full checklist passes.
