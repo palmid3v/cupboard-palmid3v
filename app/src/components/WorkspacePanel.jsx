@@ -9,6 +9,7 @@ import {
 import { createInvite, getActiveHouseholdId, getHousehold, getUserProfile } from "../services/households";
 import { getAllProducts, saveProduct } from "../services/products";
 import { auth, logout } from "../services/auth";
+import { connectFirestore, disconnectFirestore } from "../firebase";
 
 const tabs = [
   ["expiry", "⏳", "Caducidad"],
@@ -53,8 +54,11 @@ export default function WorkspacePanel() {
   const [recipeDescription, setRecipeDescription] = useState("");
   const [catalogBarcode, setCatalogBarcode] = useState("");
   const [catalogResult, setCatalogResult] = useState(null);
+  const [connectionStatus, setConnectionStatus] = useState("connecting");
+  const [connectionBusy, setConnectionBusy] = useState(false);
 
   const householdId = getActiveHouseholdId();
+  const isOwner = household?.ownerUid === auth.currentUser?.uid;
 
   useEffect(() => {
     let cancelled = false;
@@ -84,6 +88,42 @@ export default function WorkspacePanel() {
       cleanups.forEach((cleanup) => cleanup?.());
     };
   }, [householdId]);
+
+  useEffect(() => {
+    const handleConnectionStatus = (event) => {
+      setConnectionStatus(event.detail);
+    };
+
+    window.addEventListener("cupboard:connection-status", handleConnectionStatus);
+    return () => window.removeEventListener("cupboard:connection-status", handleConnectionStatus);
+  }, []);
+
+  const openDatabaseConnection = async () => {
+    setConnectionBusy(true);
+    setConnectionStatus("connecting");
+
+    try {
+      await connectFirestore();
+    } catch (err) {
+      console.error(err);
+      setConnectionStatus("error");
+    } finally {
+      setConnectionBusy(false);
+    }
+  };
+
+  const closeDatabaseConnection = async () => {
+    setConnectionBusy(true);
+
+    try {
+      await disconnectFirestore();
+    } catch (err) {
+      console.error(err);
+      setConnectionStatus("error");
+    } finally {
+      setConnectionBusy(false);
+    }
+  };
 
   const expiryBuckets = useMemo(() => {
     const today = new Date();
@@ -181,11 +221,11 @@ export default function WorkspacePanel() {
   };
 
   const createHouseholdInvite = async () => {
-    if (!householdId) return;
+    if (!householdId || !isOwner) return;
     setBusy(true);
 
     try {
-      setInviteCode(await createInvite(householdId, "editor"));
+      setInviteCode(await createInvite(householdId));
     } finally {
       setBusy(false);
     }
@@ -195,7 +235,7 @@ export default function WorkspacePanel() {
     <section className="space-y-5">
       <div className="overflow-x-auto pb-1">
         <div className="flex min-w-max gap-2">
-          {tabs.map(([id, icon, label]) => (
+          {tabs.filter(([id]) => id !== "team" || isOwner).map(([id, icon, label]) => (
             <button
               key={id}
               type="button"
@@ -362,33 +402,77 @@ export default function WorkspacePanel() {
         </PanelCard>
       )}
 
-      {tab === "team" && (
-        <PanelCard>
-          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--cupboard-primary)]">Equipo</p>
-          <h2 className="mt-2 text-2xl font-extrabold">Abre la alacena a personas de confianza.</h2>
-          <p className="mt-2 text-sm text-[var(--cupboard-text-muted)]">Sesiones separadas, una misma alacena y permisos por rol.</p>
-          <div className="mt-6 rounded-2xl bg-[var(--cupboard-surface-muted)] p-5">
-            <p className="text-xs text-[var(--cupboard-text-muted)]">Tu rol</p>
-            <p className="mt-1 text-xl font-extrabold">{profile?.role || "miembro"}</p>
-          </div>
-          {(profile?.role === "admin") && (
+      {tab === "team" && isOwner && (
+        <div className="grid gap-5 lg:grid-cols-2">
+          <PanelCard>
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--cupboard-primary)]">Administración general</p>
+            <h2 className="mt-2 text-2xl font-extrabold">Tú controlas la alacena.</h2>
+            <p className="mt-2 text-sm leading-6 text-[var(--cupboard-text-muted)]">
+              Eres el propietario y administrador general de esta instancia. Los invitados entran como miembros y no pueden generar nuevos accesos.
+            </p>
+
+            <div className="mt-6 rounded-2xl bg-[var(--cupboard-surface-muted)] p-5">
+              <p className="text-xs text-[var(--cupboard-text-muted)]">Rol actual</p>
+              <p className="mt-1 text-xl font-extrabold">Administrador general · Propietario</p>
+              <p className="mt-2 text-xs text-[var(--cupboard-text-subtle)]">{profile?.email || auth.currentUser?.email || "Cuenta actual"}</p>
+            </div>
+
             <div className="mt-5">
-              <button type="button" onClick={createHouseholdInvite} disabled={busy} className="rounded-xl bg-[var(--cupboard-primary)] px-4 py-2.5 text-xs font-extrabold text-[#10140d]">
-                Generar invitación de editor
+              <button type="button" onClick={createHouseholdInvite} disabled={busy} className="rounded-xl bg-[var(--cupboard-primary)] px-4 py-2.5 text-xs font-extrabold text-[#10140d] disabled:opacity-50">
+                {busy ? "Generando..." : "Generar código de acceso"}
               </button>
               {inviteCode && (
                 <div className="mt-4 rounded-2xl border border-[var(--cupboard-primary)]/20 bg-[var(--cupboard-primary-soft)] p-5">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-[var(--cupboard-primary)]">Código</p>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-[var(--cupboard-primary)]">Código de acceso</p>
                   <p className="mt-2 font-mono text-3xl font-black tracking-[0.2em]">{inviteCode}</p>
-                  <p className="mt-2 text-xs text-[var(--cupboard-text-muted)]">Comparte este código con la persona que quieras conectar a esta alacena.</p>
+                  <p className="mt-2 text-xs leading-5 text-[var(--cupboard-text-muted)]">Compártelo con una persona de confianza. El registro con este código la conectará como miembro, nunca como administrador.</p>
                 </div>
               )}
             </div>
-          )}
-          <button type="button" onClick={logout} className="mt-6 rounded-xl border border-[var(--cupboard-border)] px-4 py-2.5 text-xs font-bold text-[var(--cupboard-text-muted)]">
-            Cerrar sesión
-          </button>
-        </PanelCard>
+          </PanelCard>
+
+          <PanelCard>
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--cupboard-info)]">Conexión</p>
+            <h2 className="mt-2 text-2xl font-extrabold">Abrir Cupboard.</h2>
+            <p className="mt-2 text-sm leading-6 text-[var(--cupboard-text-muted)]">
+              Controla la conexión de este dispositivo con Firestore y comprueba si Cupboard está trabajando contra el servidor o con los datos locales.
+            </p>
+
+            <div className="mt-6 rounded-2xl bg-[var(--cupboard-surface-muted)] p-5">
+              <p className="text-xs text-[var(--cupboard-text-muted)]">Estado actual</p>
+              <p className="mt-1 text-xl font-extrabold">
+                {connectionStatus === "connected" && "🟢 Conectada"}
+                {connectionStatus === "connecting" && "🟡 Conectando..."}
+                {connectionStatus === "offline" && "🟡 Desconectada"}
+                {connectionStatus === "error" && "🔴 Error de conexión"}
+              </p>
+              <p className="mt-2 text-xs text-[var(--cupboard-text-subtle)]">
+                {connectionStatus === "connected" ? "Firestore está disponible desde este dispositivo." : "Los datos locales pueden seguir disponibles gracias a la persistencia offline."}
+              </p>
+            </div>
+
+            <div className="mt-5 flex flex-col gap-2 sm:flex-row">
+              <button type="button" onClick={openDatabaseConnection} disabled={connectionBusy || connectionStatus === "connected"} className="flex-1 rounded-xl bg-[var(--cupboard-primary)] px-4 py-2.5 text-xs font-extrabold text-[#10140d] disabled:opacity-50">
+                {connectionBusy ? "Conectando..." : "Conectar base de datos"}
+              </button>
+              <button type="button" onClick={closeDatabaseConnection} disabled={connectionBusy || connectionStatus === "offline"} className="flex-1 rounded-xl border border-[var(--cupboard-border)] px-4 py-2.5 text-xs font-bold text-[var(--cupboard-text-muted)] disabled:opacity-50">
+                Desconectar
+              </button>
+            </div>
+
+            <p className="mt-4 text-[10px] leading-5 text-[var(--cupboard-text-subtle)]">
+              Este control afecta la conexión Firestore de este dispositivo, no apaga Firebase para los demás usuarios.
+            </p>
+          </PanelCard>
+
+          <PanelCard className="lg:col-span-2">
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--cupboard-accent)]">Sesión</p>
+            <h2 className="mt-2 text-2xl font-extrabold">Cerrar sesión.</h2>
+            <button type="button" onClick={logout} className="mt-5 rounded-xl border border-[var(--cupboard-border)] px-4 py-2.5 text-xs font-bold text-[var(--cupboard-text-muted)]">
+              Cerrar sesión
+            </button>
+          </PanelCard>
+        </div>
       )}
     </section>
   );
