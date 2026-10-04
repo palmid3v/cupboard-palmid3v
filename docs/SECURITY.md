@@ -6,8 +6,6 @@ Cupboard uses Firebase Authentication with email/password accounts.
 
 Email verification is mandatory before a user can access household data.
 
-The client flow is:
-
 ```text
 Account
   ↓
@@ -20,191 +18,85 @@ Invitation / existing household
 Household data
 ```
 
-The verification screen supports:
-
-- resend verification email;
-- explicit verification-state refresh;
-- preserving the pending household invitation until verification succeeds.
-
 ## Firestore authorization
 
-Firestore Rules independently require:
+Firestore Rules independently require verified authentication:
 
-```text
-request.auth != null
-AND
-request.auth.token.email_verified == true
-```
+`request.auth != null && request.auth.token.email_verified == true`
 
-This means hiding the application behind a React screen is not the security boundary.
+A user must also belong to the requested household.
 
-### Household access
+### Roles
 
-A user must also be a member of:
-
-```text
-households/{householdId}/members/{uid}
-```
-
-Roles currently used:
-
-- `admin` — household owner/general administrator;
-- `editor` — can modify household inventory/features where allowed;
+- `admin` — household owner/general administrator.
+- `editor` — can modify household inventory/features where allowed.
 - `member` — can read household data but does not receive owner/editor write privileges.
 
 ## Invitations
 
 Invitation documents live under:
 
-```text
-householdInvites/{inviteCode}
-```
+`householdInvites/{inviteCode}`
 
-They contain:
-
-- household ID;
-- role;
-- creation timestamp;
-- expiration timestamp;
-- creator UID.
-
-Invited membership creation requires:
-
-- authenticated verified user;
-- matching invitation code;
-- matching household;
-- member role;
-- unexpired invitation.
+Membership creation requires a matching, unexpired invitation and a verified authenticated user.
 
 The invited user is granted membership before the household document is read, avoiding a pre-membership permission failure.
 
 ## Protected identity fields
 
-Users cannot change their own:
-
-- `householdId`;
-- `role`.
+Users cannot change their own household or role.
 
 Household ownership cannot be reassigned by the client.
 
-## Current operational policy
+## Shared catalog security
 
-The existing Firebase data is intentionally preserved while the security and UX changes are being implemented.
-
-**No reset, deletion, or destructive migration is part of this checkpoint.**
-
-Any future clean reset must be an explicit operational step performed before the reset implementation is enabled.
-
-## Deployment checklist
-
-Before deploying the new rules:
-
-1. Confirm the current household owner has verified their email.
-2. Confirm Email/Password Authentication is enabled in Firebase.
-3. Deploy `firestore.rules`.
-4. Sign in with the verified owner.
-5. Generate a fresh invitation.
-6. Test a second account with an unverified email.
-7. Verify that the second account is blocked before verification.
-8. Verify the email and confirm the invitation flow resumes.
-9. Confirm both users can access the intended household.
-10. Confirm a member cannot generate invitations.
-
-## Data preservation
-
-Existing household products remain valid test data.
-
-Do not delete:
-
-- `households`;
-- `households/*/products`;
-- `householdInvites`;
-- Firebase Authentication users;
-
-as part of this implementation.
-
-A future reset will be announced explicitly before any destructive operation.
-
-
-## Shared product catalog
-
-The shared catalog is readable by any verified signed-in Cupboard user because it contains product identity metadata rather than household inventory.
+`productCatalog/{barcode}` contains reusable product identity metadata.
 
 Catalog creation requires:
 
-- verified Firebase email;
+- verified authentication;
 - `createdBy == request.auth.uid`;
-- an allowlisted set of product metadata fields.
+- required product metadata;
+- an allowlisted field set.
 
-Catalog updates preserve `createdBy` and are limited to product metadata fields. Deletion is disabled from the client.
+Catalog updates preserve `createdBy` and are limited to metadata fields. Client-side catalog deletion is disabled.
 
-Household stock remains protected by the household membership and role rules.
+## Household inventory security
 
-The catalog therefore does not grant a user access to another household's quantities, expiry dates, movements, shopping items, or settings.
+`households/{householdId}/inventory/{barcode}`
 
-## 🧭 October 2026 inventory security boundary
+- reads require verified household membership;
+- writes require an editor-capable role;
+- users cannot access another household's inventory;
+- household state remains separate from shared catalog metadata.
 
-The approved target model introduces a dedicated household inventory collection:
+## Movement security
 
-```text
-households/{householdId}/inventory/{barcode}
-```
+`households/{householdId}/movements/{movementId}`
 
-Security requirements for the final collection:
+- reads require household membership;
+- creation requires an editor-capable role;
+- updates/deletes are owner-only;
+- movement data remains household-scoped.
 
-- reads require verified authentication and household membership;
-- writes must be role-aware;
-- a user must not access another household's inventory;
-- catalog metadata must never expose household stock;
-- movement history remains household-scoped;
-- the legacy `products` collection remains preserved until migration is validated.
+## Firestore Rules deployment
 
-### Security implementation status
+Rules are versioned in `firestore.rules` but are not deployed by `npm run dev`.
 
-- 🟢 `productCatalog` rules are implemented.
-- 🟢 Inventory service boundary is implemented.
-- 🟡 Inventory Firestore Rules are pending the runtime adoption phase.
-- 🔴 Destructive migration is not authorized.
-
-The security rule for `inventory` must be deployed and regression-tested before any legacy data is removed.
-
-## October 2026 inventory security checkpoint
-
-### FASE 6 — implemented
-
-The committed Rules now enforce:
-
-- verified Firebase email for every authenticated Firestore boundary;
-- household membership before inventory reads;
-- admin/editor role for inventory create/update/delete;
-- exact inventory field allowlist and basic type/range validation;
-- exact movement field allowlist;
-- movement type limited to `add` or `consume`;
-- positive movement quantity;
-- authenticated user ID preserved when present;
-- movement timestamps required;
-- catalog creator ownership preserved on catalog updates;
-- no client-side deletion of shared catalog records.
-
-Deploy manually with:
+Deploy explicitly:
 
 ```powershell
 firebase deploy --only firestore:rules
 ```
 
-Then validate owner/editor/member behavior before FASE 8 is marked complete.
+After deployment, validate owner/editor/member access and verified-email enforcement.
 
-### FASE 7 — migration security
+## Data safety
 
-Migration tooling is owner-only in the UI and intentionally non-destructive. It only creates missing catalog/inventory target documents. It does not delete or modify legacy `products` records.
+The October 2026 catalog/inventory migration has completed.
 
-The migration writes are subject to the same Firestore Rules as normal catalog/inventory writes.
+The retired household product collection is no longer part of the application's Firestore Rules boundary. FASE 10 removes migration-only runtime access rather than introducing another destructive operation.
 
+## Operational principle
 
-## FASE 9 — destructive boundary
-
-The approved reset/migration does not reset Firebase globally. The only destructive target is `households/{householdId}/products/{barcode}`.
-
-The application requires owner authorization, complete catalog/inventory verification, and the exact gate phrase `⚠️ AHORA SÍ: RESET + MIGRACIÓN`.
-
-Users, households, members, invitations, catalog, inventory, movements, shopping items, recipes, expiry rules, and settings are preserved.
+Keep authorization in Firestore Rules, not only in React UI. Client-side visibility is a convenience; Rules are the security boundary.
