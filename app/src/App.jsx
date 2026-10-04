@@ -7,37 +7,6 @@ import {
   updatePortions,
 } from "./services/products";
 
-const THEME_KEY = "cupboard-theme";
-
-function getInitialTheme() {
-  const savedTheme = localStorage.getItem(THEME_KEY);
-
-  if (
-    savedTheme === "light" ||
-    savedTheme === "dark" ||
-    savedTheme === "system"
-  ) {
-    return savedTheme;
-  }
-
-  return "system";
-}
-
-function applyTheme(theme) {
-  const root = document.documentElement;
-
-  if (theme === "system") {
-    const prefersDark = window.matchMedia(
-      "(prefers-color-scheme: dark)",
-    ).matches;
-
-    root.dataset.theme = prefersDark ? "dark" : "light";
-    return;
-  }
-
-  root.dataset.theme = theme;
-}
-
 function NavigationButton({
   icon,
   label,
@@ -132,27 +101,6 @@ export default function App() {
   useEffect(() => {
     loadProducts();
   }, []);
-
-  useEffect(() => {
-    localStorage.setItem(THEME_KEY, theme);
-    applyTheme(theme);
-  }, [theme]);
-
-  useEffect(() => {
-    if (theme !== "system") return;
-
-    const mediaQuery = window.matchMedia(
-      "(prefers-color-scheme: dark)",
-    );
-
-    const handleChange = () => applyTheme("system");
-
-    mediaQuery.addEventListener("change", handleChange);
-
-    return () => {
-      mediaQuery.removeEventListener("change", handleChange);
-    };
-  }, [theme]);
 
   const openProduct = (item) => {
   setInventoryActionError(null);
