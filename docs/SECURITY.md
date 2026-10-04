@@ -124,3 +124,20 @@ Do not delete:
 as part of this implementation.
 
 A future reset will be announced explicitly before any destructive operation.
+
+
+## Shared product catalog
+
+The shared catalog is readable by any verified signed-in Cupboard user because it contains product identity metadata rather than household inventory.
+
+Catalog creation requires:
+
+- verified Firebase email;
+- `createdBy == request.auth.uid`;
+- an allowlisted set of product metadata fields.
+
+Catalog updates preserve `createdBy` and are limited to product metadata fields. Deletion is disabled from the client.
+
+Household stock remains protected by the household membership and role rules.
+
+The catalog therefore does not grant a user access to another household's quantities, expiry dates, movements, shopping items, or settings.
