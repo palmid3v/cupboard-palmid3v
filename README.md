@@ -268,39 +268,16 @@ Cupboard now sends a Firebase verification email when an account is created and 
 
 ## 🏷️ Shared barcode catalog
 
-Cupboard now distinguishes between **product identity** and **household inventory**.
+Cupboard separates **product identity** from **household inventory**.
 
 - `productCatalog/{barcode}` stores reusable product metadata.
 - `households/{householdId}/inventory/{barcode}` stores household-specific stock and state.
-- Scanning first checks the current household, then the shared catalog, then treats the barcode as a new product.
-- A known catalog product can be added to a household without re-entering its identity information.
-- The owner can seed the current inventory into the shared catalog from **Centro → Catálogo → Preparar catálogo**.
+- `households/{householdId}/movements/{movementId}` stores inventory history.
+- Scanning checks household inventory first, then the shared catalog, then treats the barcode as new.
+- A known catalog product can be added to a household without duplicating canonical identity data.
+- The owner can prepare the shared catalog from current inventory through **Centro → Catálogo**.
 
-The dedicated household `inventory` model is now the runtime source of truth.
-
-### ⚠️ Reset gate
-
-No reset is currently authorized.
-
-The destructive reset will happen only after the migration path and regression tests are ready and the project explicitly reaches:
-
-> **⚠️ AHORA SÍ: RESET + MIGRACIÓN**
-
-At that point the existing product data will be preserved as canonical catalog data and migrated into the new household inventory model before old structures are removed.
-
-## 🧭 October 2026 — approved inventory architecture
-
-Cupboard is now transitioning from the mixed household product model to a separated catalog/inventory model.
-
-### Current
-
-```text
-productCatalog/{barcode}
-        +
-households/{householdId}/products/{barcode}  ← legacy live dataset
-```
-
-### Target
+## 🧭 October 2026 — final architecture
 
 ```text
 productCatalog/{barcode}
@@ -312,65 +289,20 @@ households/{householdId}/inventory/{barcode}
 households/{householdId}/movements/{movementId}
 ```
 
-### New service foundation
+The catalog/inventory migration has completed. The former mixed household product model is no longer used by the runtime or Firestore Rules.
 
-The repository now contains:
+### Phase status
 
-```text
-app/src/services/inventory.js
-```
-
-with:
-
-```js
-getInventoryProduct(barcode)
-getAllInventory()
-subscribeToInventory(onData, onError)
-saveInventoryProduct(barcode, data)
-updateInventoryPortions(barcode, newPortions)
-```
-
-The inventory service is now the runtime source of truth. Existing household products are preserved only as migration input while FASE 8 regression is completed.
-
-### Step-by-step guide
-
-The operational roadmap is now stored at the repository root:
-
-```text
-STEP-BY-STEP-CUPBOARD-2026-10-04.md
-```
-
-Use that document as the checklist for the architecture migration.
-
-### Current phase status
-
-- 🟢 FASE 1 — Catalog: approved.
-- 🟢 FASE 2 — Audit: approved.
-- 🟢 FASE 3 — Inventory foundation: approved.
-- 🟢 FASE 4 — Runtime adoption.
-- 🟢 FASE 5 — Movements.
-- 🟢 FASE 6 — Rules implementation.
-- 🟢 FASE 7 — Migration tooling.
-- 🟡 FASE 8 — Regression validation.
-- 🔴 Reset + migration: blocked.
-
-> ⚠️ **AHORA SÍ: RESET + MIGRACIÓN** is not authorized yet.
-
-The repository is intentionally preserving the current Firebase data until the migration procedure and regression suite are ready.
-
-## 🧭 October 2026 migration tooling
-
-Owner-only migration controls are available under **Centro → Catálogo**.
-
-The workflow is intentionally non-destructive:
-
-1. Analyze the legacy `products` collection.
-2. Show missing catalog/inventory target records.
-3. Copy only missing target records.
-4. Verify target coverage.
-5. Leave legacy products untouched.
-
-The migration tool is idempotent and does not authorize the destructive reset. FASE 9 remains blocked until FASE 8 regression passes.
+- 🟢 FASE 1 — Shared catalog
+- 🟢 FASE 2 — Data-model audit
+- 🟢 FASE 3 — Inventory foundation
+- 🟢 FASE 4 — Runtime adoption
+- 🟢 FASE 5 — Movements
+- 🟢 FASE 6 — Rules
+- 🟢 FASE 7 — Migration tooling
+- 🟢 FASE 8 — Regression
+- 🟢 FASE 9 — Reset + migration
+- 🟢 FASE 10 — Cleanup
 
 ### Firebase Rules deployment
 
@@ -382,9 +314,7 @@ Deploy manually:
 firebase deploy --only firestore:rules
 ```
 
-After deployment, validate owner/editor/member access, verified-email enforcement, inventory writes, movement writes, and denied non-member access before marking regression complete.
-
-
+After deployment, validate owner/editor/member access, verified-email enforcement, inventory writes, movement writes, and denied non-member access.
 
 ## 🧭 FASE 10 — cleanup completed
 
