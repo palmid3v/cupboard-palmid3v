@@ -201,26 +201,32 @@ export default function App() {
   };
 
   useEffect(() => {
-    const unsubscribe = subscribeToProducts(
-      (data, metadata) => {
-        setProducts(data);
-        setIsLoadingProducts(false);
+    let unsubscribe = () => {};
 
-        if (!navigator.onLine || metadata.fromCache) {
-          setConnectionStatus("offline");
-          return;
-        }
+    const startListener = () => {
+      unsubscribe();
 
-        setConnectionStatus("connected");
-      },
-      (error) => {
-        console.error("Error escuchando el inventario:", error);
-        setIsLoadingProducts(false);
-        setConnectionStatus(
-          navigator.onLine ? "error" : "offline",
-        );
-      },
-    );
+      unsubscribe = subscribeToProducts(
+        (data, metadata) => {
+          setProducts(data);
+          setIsLoadingProducts(false);
+
+          if (!navigator.onLine || metadata.fromCache) {
+            setConnectionStatus("offline");
+            return;
+          }
+
+          setConnectionStatus("connected");
+        },
+        (error) => {
+          console.error("Error escuchando el inventario:", error);
+          setIsLoadingProducts(false);
+          setConnectionStatus(
+            navigator.onLine ? "error" : "offline",
+          );
+        },
+      );
+    };
 
     const handleOffline = () => {
       setConnectionStatus("offline");
@@ -228,7 +234,10 @@ export default function App() {
 
     const handleOnline = () => {
       setConnectionStatus("connecting");
+      startListener();
     };
+
+    startListener();
 
     window.addEventListener("offline", handleOffline);
     window.addEventListener("online", handleOnline);
