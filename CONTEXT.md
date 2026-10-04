@@ -104,13 +104,15 @@ The current UI is dark-only. There is no active light/system theme selector in t
 
 ## “Inventario conectado” status
 
-The sidebar/header connected indicators are currently visual status labels.
+The sidebar/header indicator is backed by the active Firestore inventory listener, browser online/offline events, and Firestore snapshot metadata.
 
-They are **not** backed by a live Firebase connection listener or health check.
+States:
+- 🟢 connected — server-backed inventory snapshot;
+- 🟡 offline — browser offline or cached data;
+- 🔴 error — listener/access failure;
+- 🟡 connecting — startup or reconnection in progress.
 
-Actual Firestore availability is discovered when a Firestore operation succeeds or fails.
-
-Do not describe the green indicator as real-time connectivity monitoring.
+The owner can also explicitly enable or disable the Firestore network connection for the current browser from Centro → Equipo. This is a client-local control, not a global Firebase switch.
 
 ## Current boundaries
 
