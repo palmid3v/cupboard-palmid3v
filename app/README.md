@@ -129,3 +129,8 @@ After meaningful code changes:
 The green **Inventario conectado** indicator is backed by Firestore snapshot metadata and browser online/offline events.
 
 Product image uploads are intentionally out of scope until Firebase Storage is enabled.
+
+
+## Access model
+
+New accounts join an existing household through an owner-generated invitation. The household owner is the general administrator and new invitations create members only.
