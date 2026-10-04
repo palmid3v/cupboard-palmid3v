@@ -283,3 +283,69 @@ The destructive reset will happen only after the migration path and regression t
 > **⚠️ AHORA SÍ: RESET + MIGRACIÓN**
 
 At that point the existing product data will be preserved as canonical catalog data and migrated into the new household inventory model before old structures are removed.
+
+## 🧭 October 2026 — approved inventory architecture
+
+Cupboard is now transitioning from the mixed household product model to a separated catalog/inventory model.
+
+### Current
+
+```text
+productCatalog/{barcode}
+        +
+households/{householdId}/products/{barcode}  ← legacy live dataset
+```
+
+### Target
+
+```text
+productCatalog/{barcode}
+        │
+        ▼
+households/{householdId}/inventory/{barcode}
+        │
+        ▼
+households/{householdId}/movements/{movementId}
+```
+
+### New service foundation
+
+The repository now contains:
+
+```text
+app/src/services/inventory.js
+```
+
+with:
+
+```js
+getInventoryProduct(barcode)
+getAllInventory()
+subscribeToInventory(onData, onError)
+saveInventoryProduct(barcode, data)
+updateInventoryPortions(barcode, newPortions)
+```
+
+The service is intentionally not wired as the runtime source of truth yet. Existing household products remain the live working dataset while FASE 4–8 are completed.
+
+### Step-by-step guide
+
+The operational roadmap is now stored at the repository root:
+
+```text
+STEP-BY-STEP-CUPBOARD-PALMID3V-LAST-UPDATED.md
+```
+
+Use that document as the checklist for the architecture migration.
+
+### Current phase status
+
+- 🟢 FASE 1 — Catalog: approved.
+- 🟢 FASE 2 — Audit: approved.
+- 🟢 FASE 3 — Inventory foundation: approved.
+- 🟡 FASE 4 — Runtime adoption: next.
+- 🔴 Reset + migration: blocked.
+
+> ⚠️ **AHORA SÍ: RESET + MIGRACIÓN** is not authorized yet.
+
+The repository is intentionally preserving the current Firebase data until the migration procedure and regression suite are ready.
