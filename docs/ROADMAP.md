@@ -64,8 +64,11 @@
 - 🟡 Establish backup/data-recovery expectations.
 
 ### Connectivity
-- 🟡 If product requirements justify it, replace the static “Inventario conectado” treatment with an explicit online/offline/Firestore availability state.
-- 🟡 Decide whether offline-first behavior is needed before implementing connectivity UX.
+- ✅ Real online/offline/Firestore availability state in the UI.
+- ✅ Firestore persistent local cache for previously used inventory data.
+- ✅ Inventory listener with cache/server metadata.
+- 🟡 Expand offline-first UX, including clearer pending-sync feedback and edge-case recovery.
+- 🟡 Review conflict-handling expectations as the product becomes multi-user or multi-device.
 
 ## Product opportunities
 
@@ -111,7 +114,7 @@ Better PWA experience
    ↓
 Cleaner architecture
    ↓
-Optional connectivity/offline strategy
+Stronger offline-first experience
    ↓
 Household sharing, if needed
    ↓
