@@ -93,9 +93,12 @@ ZXing may emit non-fatal callback errors while searching. Do not turn every call
 
 ## Connectivity status
 
-The current green **Inventario conectado** treatment is presentation only.
+The **Inventario conectado** treatment is backed by browser online/offline events and Firestore snapshot metadata.
 
-Do not document it as live connectivity unless an explicit connectivity source of truth has been implemented.
+When changing this area:
+- preserve the distinction between server-backed and cache-backed state;
+- keep the owner connect/disconnect control scoped to the current browser;
+- do not describe it as a backend health-check service.
 
 ## Documentation rule
 
