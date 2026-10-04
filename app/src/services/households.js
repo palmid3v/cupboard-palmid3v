@@ -1,17 +1,12 @@
 import {
-  arrayUnion,
   collection,
   doc,
   getDoc,
   getDocs,
-  limit,
-  query,
   serverTimestamp,
   setDoc,
   updateDoc,
-  where,
   writeBatch,
-  deleteDoc,
 } from "firebase/firestore";
 
 import { db } from "../firebase";
