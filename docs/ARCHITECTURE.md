@@ -32,7 +32,7 @@ There is currently no separate backend API layer.
 
 React owns the UI and interaction state.
 
-Most application state and orchestration remain in `src/App.jsx`. This is acceptable for the MVP and is the main architectural refactoring opportunity.
+Most inventory orchestration remains in `src/App.jsx`, while focused UI such as the product detail experience now lives in `src/components/ProductDetail.jsx`.
 
 Tailwind CSS 4 provides component styling. Global variables and browser-level styles live in `src/index.css`.
 
@@ -187,7 +187,7 @@ Before broader deployment, review environment configuration and Firebase securit
 
 ### Firestore security
 
-Authentication and household-scoped authorization are now implemented. Firestore Security Rules enforce membership and role-aware access.
+Authentication and household-scoped authorization are now implemented. Firebase email verification is required before Firestore access. Firestore Security Rules enforce verified identity, membership, and role-aware access.
 
 Firebase Storage is intentionally not part of the current runtime because image uploads are deferred until a billing-enabled plan is acceptable.
 
@@ -216,3 +216,12 @@ The household owner is the general administrator. New registrations require an i
 ## Owner connection controls
 
 WorkspacePanel exposes owner-only controls for generating invitation codes and enabling or disabling the Firestore network connection for the current browser. This is a client-local control, not a global Firebase shutdown. Cached data remains available while the network is disabled.
+
+
+## Email verification boundary
+
+`src/services/auth.js` owns verification-email delivery and refreshing the current Firebase user. `AuthGate.jsx` blocks household onboarding until `emailVerified` is true, then resumes the pending invite or existing household flow. Firestore Rules independently require `request.auth.token.email_verified == true`, so the security boundary does not depend on the React UI.
+
+## Product detail boundary
+
+`src/components/ProductDetail.jsx` owns the product detail presentation, stock status, expiry state, metadata, image treatment, and quantity micro-interactions. `App.jsx` remains responsible for product state and persistence callbacks. This keeps the visual experience replaceable without moving Firestore logic into the component.
