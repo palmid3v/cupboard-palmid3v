@@ -23,7 +23,7 @@ Household inventory and movements are therefore reset, while the shared product 
 
 ## Why an Admin SDK script
 
-Firebase Admin SDK server libraries have privileged access that is not evaluated against Firestore Security Rules. Firebase documents the Admin SDK as the appropriate server-side mechanism for administrative database tasks and user management. urlFirebase Admin SDK documentationhttps://firebase.google.com/docs/admin/setup
+Firebase Admin SDK server libraries have privileged access that is not evaluated against Firestore Security Rules. Firebase documents the Admin SDK as the appropriate server-side mechanism for administrative database tasks and user management. See the official Firebase Admin SDK setup documentation: https://firebase.google.com/docs/admin/setup
 
 The reset must not be implemented as a normal browser feature.
 
@@ -33,7 +33,7 @@ The reset must not be implemented as a normal browser feature.
 - Firebase project: `cupboard-app-ce528`.
 - A Firebase Admin SDK service-account JSON file stored outside the repository.
 
-Firebase's setup documentation explains how to create/download the service-account credentials. urlFirebase Admin SDK setuphttps://firebase.google.com/docs/admin/setup
+Firebase's setup documentation explains how to create/download the service-account credentials. See: https://firebase.google.com/docs/admin/setup
 
 **Never commit the service-account JSON. Never paste its contents into chat.**
 
@@ -116,7 +116,7 @@ householdInvites/* remaining: 0
 RESET COMPLETE — PRODUCT CATALOG WAS NOT TARGETED.
 ```
 
-Firebase Authentication users are also deleted through the Admin SDK. Firebase documents both listing users in batches and bulk user deletion through the Admin SDK. urlFirebase Authentication Admin user managementhttps://firebase.google.com/docs/auth/admin/manage-users
+Firebase Authentication users are also deleted through the Admin SDK. Firebase documents both listing users in batches and bulk user deletion through the Admin SDK. See: https://firebase.google.com/docs/auth/admin/manage-users
 
 ## Step 7 — Start Cupboard again
 
