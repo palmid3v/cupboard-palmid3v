@@ -48,17 +48,17 @@ function AuthScreen({ mode, setMode, onSuccess }) {
         }
 
         const credential = await signUp(email, password, displayName);
-        const household = inviteCode.trim()
-          ? await joinHouseholdByCode(credential.user, inviteCode)
-          : await ensureHouseholdForUser(credential.user);
 
-        onSuccess(household);
+        if (inviteCode.trim()) {
+          const household = await joinHouseholdByCode(credential.user, inviteCode);
+          onSuccess(household);
+        }
+
         return;
       }
 
-      const credential = await signIn(email, password);
-      const household = await ensureHouseholdForUser(credential.user);
-      onSuccess(household);
+      await signIn(email, password);
+      return;
     } catch (err) {
       console.error(err);
 
