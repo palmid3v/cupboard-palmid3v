@@ -4,9 +4,9 @@ import { createCatalogProductIfMissing, getCatalogProduct } from "./catalog";
 import {
   getAllInventory,
   getInventoryProduct,
-  saveInventoryProduct,
+  saveInventoryProductWithMovement,
   subscribeToInventory,
-  updateInventoryPortions,
+  updateInventoryPortionsWithMovement,
 } from "./inventory";
 
 function normalizeProduct(id, catalog = {}, inventory = {}) {
@@ -89,7 +89,7 @@ export async function findProductByBarcode(barcode) {
   };
 }
 
-export async function saveProduct(barcode, data = {}) {
+export async function saveProduct(barcode, data = {}, movement = null) {
   const normalizedBarcode = String(barcode || "").trim();
 
   if (!normalizedBarcode) {
@@ -98,12 +98,16 @@ export async function saveProduct(barcode, data = {}) {
 
   await createCatalogProductIfMissing(normalizedBarcode, data);
 
-  await saveInventoryProduct(normalizedBarcode, {
-    portions: data.portions,
-    expiryDate: data.expiryDate,
-    minStock: data.minStock,
-    notes: data.notes,
-  });
+  await saveInventoryProductWithMovement(
+    normalizedBarcode,
+    {
+      portions: data.portions,
+      expiryDate: data.expiryDate,
+      minStock: data.minStock,
+      notes: data.notes,
+    },
+    movement,
+  );
 }
 
 export async function getAllProducts() {
@@ -123,6 +127,6 @@ export function subscribeToProducts(onData, onError) {
   );
 }
 
-export async function updatePortions(barcode, newPortions) {
-  return updateInventoryPortions(barcode, newPortions);
+export async function updatePortions(barcode, newPortions, movement = null) {
+  return updateInventoryPortionsWithMovement(barcode, newPortions, movement);
 }
