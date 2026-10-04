@@ -81,11 +81,6 @@ service cloud.firestore {
         allow delete: if owner(householdId);
       }
 
-      match /products/{productId} {
-        allow read: if member(householdId);
-        allow create, update, delete: if editor(householdId);
-      }
-
       // Final household inventory boundary.
       // Product identity remains in productCatalog/{barcode}.
       match /inventory/{barcode} {
