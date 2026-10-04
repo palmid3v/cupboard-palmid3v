@@ -9,6 +9,7 @@ import {
   serverTimestamp,
   setDoc,
   updateDoc,
+  writeBatch,
 } from "firebase/firestore";
 
 import { db } from "../firebase";
@@ -129,4 +130,102 @@ export async function updateInventoryPortions(barcode, newPortions) {
     portions: Math.max(0, Number(newPortions) || 0),
     updatedAt: serverTimestamp(),
   });
+}
+
+
+function movementRef() {
+  return doc(collection(db, "households", requireHouseholdId(), "movements"));
+}
+
+function movementData({ productId, type, quantity, reason = "", userId = null }) {
+  return {
+    productId,
+    type,
+    quantity: Number(quantity) || 0,
+    reason,
+    userId,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  };
+}
+
+/**
+ * Saves household inventory and its initial movement in one Firestore batch.
+ */
+export async function saveInventoryProductWithMovement(
+  barcode,
+  data = {},
+  movement = null,
+) {
+  const normalizedBarcode = String(barcode || "").trim();
+
+  if (!normalizedBarcode) {
+    throw new Error("BARCODE_REQUIRED");
+  }
+
+  const ref = inventoryRef(normalizedBarcode);
+  const snapshot = await getDoc(ref);
+
+  const inventoryData = {
+    portions: Math.max(0, Number(data.portions) || 0),
+    expiryDate: data.expiryDate || null,
+    minStock: Math.max(0, Number(data.minStock) || 5),
+    notes: data.notes?.trim() ?? "",
+  };
+
+  const batch = writeBatch(db);
+
+  if (snapshot.exists()) {
+    batch.update(ref, {
+      ...inventoryData,
+      updatedAt: serverTimestamp(),
+    });
+  } else {
+    batch.set(ref, {
+      ...inventoryData,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
+  }
+
+  if (movement && Number(movement.quantity) > 0) {
+    batch.set(
+      movementRef(),
+      movementData({
+        productId: normalizedBarcode,
+        ...movement,
+      }),
+    );
+  }
+
+  await batch.commit();
+}
+
+/**
+ * Updates household stock and its movement record atomically.
+ */
+export async function updateInventoryPortionsWithMovement(
+  barcode,
+  newPortions,
+  movement = null,
+) {
+  const ref = inventoryRef(barcode);
+  const batch = writeBatch(db);
+
+  batch.update(ref, {
+    portions: Math.max(0, Number(newPortions) || 0),
+    updatedAt: serverTimestamp(),
+  });
+
+  if (movement && Number(movement.quantity) > 0) {
+    batch.set(
+      movementRef(),
+      movementData({
+        productId: String(barcode).trim(),
+        ...movement,
+      }),
+    );
+  }
+
+  await batch.commit();
 }
