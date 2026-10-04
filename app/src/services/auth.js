@@ -3,6 +3,8 @@ import {
   createUserWithEmailAndPassword,
   getAuth,
   onAuthStateChanged,
+  reload,
+  sendEmailVerification,
   sendPasswordResetEmail,
   setPersistence,
   signInWithEmailAndPassword,
@@ -34,6 +36,8 @@ export async function signUp(email, password, displayName) {
     });
   }
 
+  await sendEmailVerification(credential.user);
+
   return credential;
 }
 
@@ -47,4 +51,16 @@ export async function resetPassword(email) {
 
 export async function logout() {
   return signOut(auth);
+}
+
+
+export async function resendVerificationEmail(user = auth.currentUser) {
+  if (!user) throw new Error("AUTH_REQUIRED");
+  return sendEmailVerification(user);
+}
+
+export async function refreshCurrentUser() {
+  if (!auth.currentUser) return null;
+  await reload(auth.currentUser);
+  return auth.currentUser;
 }
