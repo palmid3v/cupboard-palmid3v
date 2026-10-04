@@ -47,9 +47,11 @@ function AuthScreen({ mode, setMode, onSuccess }) {
           throw new Error("PASSWORD_SHORT");
         }
 
-        if (inviteCode.trim()) {
-          window.localStorage.setItem("cupboard.pendingInvite", inviteCode.trim().toUpperCase());
+        if (!inviteCode.trim()) {
+          throw new Error("INVITE_REQUIRED");
         }
+
+        window.localStorage.setItem("cupboard.pendingInvite", inviteCode.trim().toUpperCase());
 
         await signUp(email, password, displayName);
         return;
@@ -115,7 +117,7 @@ function AuthScreen({ mode, setMode, onSuccess }) {
           </h1>
           <p className="mt-2 text-sm leading-6 text-[var(--cupboard-text-muted)]">
             {mode === "signup"
-              ? "Crea la cuenta del administrador para comenzar."
+              ? "Únete a una alacena usando el código que te compartió su administrador."
               : "Inicia sesión para conectar tu alacena y ver el inventario compartido."}
           </p>
         </div>
@@ -204,7 +206,7 @@ function AuthScreen({ mode, setMode, onSuccess }) {
               className="text-xs font-bold text-[var(--cupboard-primary)] transition hover:text-[var(--cupboard-primary-hover)]"
             >
               {mode === "signin"
-                ? "Crear una cuenta de administrador"
+                ? "Tengo un código de invitación"
                 : "Ya tengo una cuenta"}
             </button>
           </div>
@@ -277,8 +279,8 @@ export default function AuthGate({ children }) {
       <main className="flex min-h-screen items-center justify-center bg-[var(--cupboard-bg)] px-4 text-[var(--cupboard-text)]">
         <div className="w-full max-w-md rounded-[2rem] border border-[var(--cupboard-border)] bg-[var(--cupboard-surface)] p-8 text-center">
           <p className="text-3xl">🔴</p>
-          <h1 className="mt-4 text-xl font-extrabold">No pudimos abrir la alacena</h1>
-          <p className="mt-2 text-sm text-[var(--cupboard-text-muted)]">{error || "Comprobando tu acceso…"}</p>
+          <h1 className="mt-4 text-xl font-extrabold">{error ? "No pudimos abrir la alacena" : "Conectando con Cupboard…"}</h1>
+          <p className="mt-2 text-sm text-[var(--cupboard-text-muted)]">{error || "Comprobando tu cuenta y conexión con la base de datos…"}</p>
           <button
             type="button"
             onClick={logout}
