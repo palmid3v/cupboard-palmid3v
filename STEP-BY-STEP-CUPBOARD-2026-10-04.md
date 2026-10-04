@@ -139,3 +139,29 @@ After successful migration and regression:
 ---
 
 **Cupboard · PALMI-D3V · October 2026**
+
+
+## FASE 9 — Reset + migration
+
+**Gate reached:**
+
+> ⚠️ **AHORA SÍ: RESET + MIGRACIÓN**
+
+FASE 9 is implemented as a guarded legacy-model retirement.
+
+Only `households/{householdId}/products/{barcode}` is deleted after successful migration verification.
+
+The operation preserves Firebase Authentication users, households, members, invitations, `productCatalog`, `inventory`, `movements`, shopping items, recipes, expiry rules, and settings.
+
+Guard sequence:
+1. Analyze migration.
+2. Copy missing catalog/inventory data.
+3. Verify complete coverage.
+4. Owner enters the exact gate phrase.
+5. Execute legacy retirement.
+6. Migration completeness is verified again immediately before deletion.
+7. Legacy product documents are deleted in batches of 400.
+
+## FASE 10 — Cleanup
+
+After successful retirement, remove migration-only UI/service code, review legacy rules, update documentation, and run lint/build.
