@@ -34,7 +34,10 @@ app/
     ├── components/
     │   └── BarcodeScanner.jsx
     ├── services/
-    │   └── products.js
+    │   ├── products.js
+    │   ├── auth.js
+    │   ├── households.js
+    │   └── features.js
     └── assets/
 ```
 
@@ -88,7 +91,7 @@ Prefer this boundary instead of scattering Firestore calls throughout the UI.
 
 Initializes Firebase Authentication and Firestore.
 
-Firebase Storage is intentionally not initialized because product image uploads are deferred. Product images currently use remote URLs.
+Firebase Storage is intentionally not initialized because product image uploads are deferred. Remote image URLs remain supported. Product images currently use remote URLs.
 
 ## Vite and PWA
 
