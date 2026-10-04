@@ -59,7 +59,7 @@ Product images are optional URLs supplied with the product.
 
 Cards keep a fixed visual image area and contain the supplied image inside a bounded product-photo frame so very different source images do not change the card layout.
 
-Cupboard does **not** currently download, normalize, remove backgrounds from, or automatically enrich product images.
+Cupboard can enrich products from an external barcode catalog and can process uploaded product photos locally by removing near-white backgrounds and cropping excess transparent space before uploading them to Firebase Storage.
 
 ### Theme
 The current application uses a **dark-only Cupboard visual theme**. The settings screen presents this as a fixed theme.
@@ -82,7 +82,7 @@ It exposes three runtime states:
 
 The app also listens to `navigator.onLine` so the UI can react immediately when the browser loses or regains network access. Firestore metadata (`fromCache`) is used to distinguish server-backed snapshots from cached data.
 
-The web client uses persistent Firestore local cache, so previously used inventory data can remain available offline and synchronize when connectivity returns. This is the foundation for Cupboard's offline-first direction; richer offline UX and conflict handling remain future work.
+The web client uses persistent Firestore local cache, so previously used inventory data can remain available offline and synchronize when connectivity returns. Authenticated users work inside a household-scoped inventory, with role-aware access and real online/offline/error states.
 
 ## 🧱 Architecture at a glance
 
@@ -205,19 +205,22 @@ Keep Firestore access behind this service boundary where practical.
 
 ## 🚧 Current boundaries
 
-The following are **not implemented**:
-- authentication;
-- multi-user households;
-- permissions;
-- offline-first inventory;
-- live connectivity monitoring;
-- expiry tracking;
-- movement/history tracking;
-- shopping lists;
-- recipes or meal planning;
-- analytics;
-- external product catalog enrichment;
-- automatic product image lookup/background removal.
+The original MVP boundaries have now been implemented as the next Cupboard foundation:
+
+- ✅ authentication with Firebase Authentication;
+- ✅ multi-user households with admin/editor roles and invitation codes;
+- ✅ Firestore Security Rules for household-scoped access;
+- ✅ offline-first Firestore persistence;
+- ✅ live connectivity monitoring with connected/offline/error states;
+- ✅ expiry dates and low-stock thresholds;
+- ✅ movement/history tracking;
+- ✅ shopping lists;
+- ✅ recipe storage;
+- ✅ basic inventory analytics;
+- ✅ external barcode catalog enrichment;
+- ✅ automatic product image lookup;
+- ✅ local near-white background removal and image cropping for uploaded product photos;
+- 🟡 production rollout still requires enabling Email/Password Authentication and deploying the committed Firebase Security Rules.
 
 ## Development principle
 
