@@ -76,27 +76,32 @@
 These are ideas, not current implementation commitments.
 
 ### Household collaboration
-- 🔵 authentication
-- 🔵 shared household
-- 🔵 family members
-- 🔵 permissions
+- ✅ authentication
+- ✅ shared household
+- ✅ family members
+- ✅ permissions
 
 ### Inventory intelligence
-- 🔵 expiry dates
-- 🔵 stock history
-- 🔵 quantity trends
-- 🔵 smarter low-stock rules
+- ✅ expiry dates
+- ✅ stock history
+- 🟡 quantity trends
+- 🟡 smarter low-stock rules
 
 ### Household workflows
-- 🔵 shopping list
-- 🔵 need-to-buy state
+- ✅ shopping list
+- 🟡 need-to-buy state
 - 🔵 recurring household items
 - 🔵 product locations
 
 ### Kitchen assistance
-- 🔵 recipes from available products
-- 🔵 meal planning
-- 🔵 ingredient usage
+- ✅ recipes from available products
+- 🟡 meal planning
+- 🟡 ingredient usage
+
+### Image storage
+
+- ⏸️ Firebase Storage uploads — deferred until a billing-enabled plan is acceptable.
+- ✅ Remote image URLs remain supported.
 
 ## Avoid feature creep
 
