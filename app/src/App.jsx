@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import BarcodeScanner from "./components/BarcodeScanner";
 import WorkspacePanel from "./components/WorkspacePanel";
+import ProductDetail from "./components/ProductDetail";
 import {
   getProduct,
   saveProduct,
@@ -718,106 +719,30 @@ setIsSaving(true);
             {view === "workspace" && !selectedProduct && <WorkspacePanel />}
 
             {selectedProduct && (
-              <section className="space-y-5">
-                <button type="button" onClick={() => setSelectedProduct(null)} className="inline-flex items-center gap-2 rounded-xl px-1 py-2 text-sm font-semibold text-[var(--cupboard-text-muted)] transition hover:text-[var(--cupboard-text)]">
-                  ← Inventario
-                </button>
-
-                <div className="overflow-hidden rounded-[2rem] border border-[var(--cupboard-border)] bg-[var(--cupboard-surface)] shadow-[var(--cupboard-shadow-md)]">
-                  <div className="grid lg:grid-cols-[0.85fr_1.15fr]">
-                    <div className="flex min-h-[300px] items-center justify-center bg-[radial-gradient(circle_at_center,var(--cupboard-surface-raised),var(--cupboard-surface-muted))] p-8 lg:min-h-[480px]">
-                      {selectedProduct.imageUrl ? (
-                        <img
-                          src={selectedProduct.imageUrl}
-                          alt={selectedProduct.name || "Producto"}
-                          onError={(event) => {
-                            event.currentTarget.style.display = "none";
-                            event.currentTarget.nextElementSibling?.classList.remove("hidden");
-                          }}
-                          className="max-h-[360px] w-full max-w-md rounded-3xl object-contain"
-                        />
-                      ) : null}
-                      <div
-                        className={[
-                          "h-44 w-44 items-center justify-center rounded-[2rem] bg-[var(--cupboard-surface)] text-7xl shadow-[var(--cupboard-shadow-md)]",
-                          selectedProduct.imageUrl ? "hidden" : "flex",
-                        ].join(" ")}
-                        aria-hidden="true"
-                      >
-                        📦
-                      </div>
-                    </div>
-
-                    <div className="p-6 sm:p-8 lg:p-10">
-                      <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--cupboard-primary)]">Producto</p>
-                      <h2 className="mt-2 text-3xl font-extrabold tracking-tight">{selectedProduct.name || "Producto sin nombre"}</h2>
-                      <p className="mt-2 max-w-xl text-sm leading-6 text-[var(--cupboard-text-muted)]">{selectedProduct.description || "Sin descripción"}</p>
-
-                      {(() => {
-                        const portions = Number(selectedProduct.portions) || 0;
-                        const statusLabel = portions === 0 ? "Agotado" : portions <= 5 ? "Stock bajo" : portions <= 10 ? "Atención" : "Disponible";
-                        const statusClass = portions === 0
-                          ? "bg-[var(--cupboard-surface-muted)] text-[var(--cupboard-text-muted)]"
-                          : portions <= 5
-                            ? "bg-[var(--cupboard-danger)]/10 text-[var(--cupboard-danger)]"
-                            : portions <= 10
-                              ? "bg-[var(--cupboard-warning)]/10 text-[var(--cupboard-warning)]"
-                              : "bg-[var(--cupboard-primary-soft)] text-[var(--cupboard-success)]";
-
-                        return (
-                          <div className="mt-8 rounded-3xl border border-[var(--cupboard-border)] bg-[var(--cupboard-surface-muted)] p-5">
-                            <div className="flex items-end justify-between gap-4">
-                              <div>
-                                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--cupboard-text-subtle)]">Disponibles</p>
-                                <p className="mt-1 text-6xl font-extrabold tracking-tight">{portions}</p>
-                                <p className="mt-1 text-xs text-[var(--cupboard-text-muted)]">porciones</p>
-                              </div>
-                              <span className={["inline-flex rounded-full px-3 py-1.5 text-[10px] font-bold uppercase tracking-wide", statusClass].join(" ")}>{statusLabel}</span>
-                            </div>
-
-                            <div className="mt-6 grid grid-cols-2 gap-2">
-                              <button type="button" onClick={() => handleConsume(selectedProduct)} disabled={portions <= 0 || updatingProductId === selectedProduct.id} className="rounded-2xl bg-[var(--cupboard-danger)]/10 px-4 py-3.5 text-sm font-bold text-[var(--cupboard-danger)] transition hover:bg-[var(--cupboard-danger)]/20 disabled:cursor-not-allowed disabled:opacity-30">− 1 consumir</button>
-                              <button type="button" onClick={() => handleAdd(selectedProduct)} disabled={updatingProductId === selectedProduct.id} className="rounded-2xl bg-[var(--cupboard-primary-soft)] px-4 py-3.5 text-sm font-bold text-[var(--cupboard-primary)] transition hover:bg-[var(--cupboard-primary)]/20">+ 1 agregar</button>
-                            </div>
-                          </div>
-                        );
-                      })()}
-
-                      <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                        <div className="rounded-2xl border border-[var(--cupboard-border)] bg-[var(--cupboard-surface-muted)] p-4">
-                          <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--cupboard-text-subtle)]">Peso</p>
-                          <p className="mt-1 text-lg font-bold">{selectedProduct.weight || 0} g</p>
-                        </div>
-                        <div className="rounded-2xl border border-[var(--cupboard-border)] bg-[var(--cupboard-surface-muted)] p-4">
-                          <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--cupboard-text-subtle)]">Barcode</p>
-                          <p className="mt-1 break-all font-mono text-sm font-semibold">{selectedProduct.id || "—"}</p>
-                        </div>
-                      </div>
-
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setBarcode(selectedProduct.id);
-                          setForm({
-                            name: selectedProduct.name || "",
-                            description: selectedProduct.description || "",
-                            weight: selectedProduct.weight || "",
-                            portions: selectedProduct.portions || "",
-                            imageUrl: selectedProduct.imageUrl || "",
-                          });
-                          setIsEditing(true);
-                          setIsManualEntry(false);
-                          setView("scanner");
-                          setSelectedProduct(null);
-                        }}
-                        className="mt-5 w-full rounded-2xl bg-[var(--cupboard-primary)] px-5 py-4 text-sm font-bold text-[#10140d] shadow-[0_10px_24px_rgb(120_168_91_/_0.12)] transition hover:-translate-y-0.5 hover:bg-[var(--cupboard-primary-hover)]"
-                      >
-                        Editar producto
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </section>
+              <ProductDetail
+                product={selectedProduct}
+                updatingProductId={updatingProductId}
+                onConsume={handleConsume}
+                onAdd={handleAdd}
+                onBack={() => setSelectedProduct(null)}
+                onEdit={(product) => {
+                  setBarcode(product.id || "");
+                  setForm({
+                    name: product.name || "",
+                    description: product.description || "",
+                    weight: product.weight || "",
+                    portions: product.portions ?? "",
+                    imageUrl: product.imageUrl || "",
+                    category: product.category || "",
+                    expiryDate: product.expiryDate || "",
+                    minStock: product.minStock ?? 5,
+                  });
+                  setIsEditing(true);
+                  setIsManualEntry(false);
+                  setView("scanner");
+                  setSelectedProduct(null);
+                }}
+              />
             )}
 
             {view === "inventory" && !selectedProduct && (
