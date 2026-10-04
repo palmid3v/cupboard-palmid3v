@@ -114,3 +114,25 @@ Treat the repository as something another developer should be able to inherit.
 Favor clear names, small boundaries, explicit behavior, updated docs, and no hidden assumptions.
 
 The goal is not only working code. It is a project that is easy for the next person to continue.
+
+## 🧭 Data-model changes — October 2026
+
+Cupboard now uses an explicit migration strategy for inventory data.
+
+When changing inventory persistence:
+
+1. Treat `productCatalog/{barcode}` as global product identity.
+2. Treat `households/{householdId}/inventory/{barcode}` as household stock state.
+3. Keep `movements` household-scoped.
+4. Do not delete or rewrite the legacy `households/{householdId}/products` collection during normal feature development.
+5. Update `DATA_MODEL.md`, `ARCHITECTURE.md`, `SECURITY.md`, and `ROADMAP.md` when the persistence boundary changes.
+6. Run `npm run lint` and `npm run build`.
+7. Perform manual regression before considering the change ready for migration.
+
+### Migration rule
+
+Never treat the existence of `inventory.js` as permission to reset Firebase.
+
+The destructive operation is a separate, explicit milestone guarded by:
+
+> ⚠️ **AHORA SÍ: RESET + MIGRACIÓN**
