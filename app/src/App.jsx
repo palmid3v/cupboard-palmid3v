@@ -116,9 +116,7 @@ export default function App() {
   const [search, setSearch] = useState("");
   const [inventoryFilter, setInventoryFilter] = useState("all");
   const [inventorySort, setInventorySort] = useState("name");
-  const [scanKey, setScanKey] = useState(0);
-  const [theme, setTheme] = useState(getInitialTheme);
-  const [isManualEntry, setIsManualEntry] = useState(false);
+  const [scanKey, setScanKey] = useState(0);  const [isManualEntry, setIsManualEntry] = useState(false);
 
   const loadProducts = async () => {
     setIsLoadingProducts(true);
@@ -576,29 +574,6 @@ setIsSaving(true);
             </div>
 
             <div className="flex w-fit items-center gap-1 rounded-xl border border-[var(--cupboard-border)] bg-[var(--cupboard-surface)] p-1">
-              <ThemeButton
-                value="light"
-                current={theme}
-                onClick={setTheme}
-              >
-                ☀️
-              </ThemeButton>
-
-              <ThemeButton
-                value="dark"
-                current={theme}
-                onClick={setTheme}
-              >
-                🌙
-              </ThemeButton>
-
-              <ThemeButton
-                value="system"
-                current={theme}
-                onClick={setTheme}
-              >
-                ⚙️
-              </ThemeButton>
             </div>
           </header>
 {/* PRODUCT DETAIL */}
