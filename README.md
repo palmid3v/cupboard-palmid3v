@@ -237,3 +237,16 @@ Prefer small, explicit changes that improve the household inventory experience o
 ---
 
 **PALMI-D3V · Cupboard · README synchronized with the October 2026 implementation**
+
+
+## 🔐 Access model and administration
+
+Cupboard now uses invitation-only household access. The household owner is the **Administrador general / Propietario** and is the only person allowed to generate new access codes. New invited accounts enter as `member`; they cannot generate invitations or promote themselves. Registration without an invitation code is rejected.
+
+The owner can manage this from **Centro → Equipo**, including the local Firestore connection controls.
+
+### 🟢 Firestore connection control
+
+The owner can see whether this browser is connected, connecting, offline/cache-backed, or in an error state. The owner can explicitly connect or disconnect this browser's Firestore network access. This does **not** shut down Firebase for other users. Firestore supports persistent local cache and explicit network enable/disable controls. citeturn7search0
+
+The main inventory indicator uses browser network state plus Firestore snapshot metadata to distinguish server-backed data from cached data. citeturn8search0
