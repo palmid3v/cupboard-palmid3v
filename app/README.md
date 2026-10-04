@@ -1,36 +1,76 @@
-# 🗄️ Cupboard — App Context
+# Cupboard App
 
-## 🎯 Purpose
-Inventory management focused on fast product registration, barcode scanning, stock visibility, and portion tracking.
+This directory contains the runnable React/Vite application.
 
-## ✨ Current features
-- 📦 Inventory
-- 🔎 Search/filter/sort
-- 📷 Barcode scanning
-- ⌨️ Manual barcode entry
-- ➕ Add portions / ➖ consume portions
-- 🧾 Product detail
-- 🖼️ Product image URL
-- ⚠️ Low-stock filtering
-- 🌓 Light/dark/system themes
-- 🔥 Firestore persistence
-- 📱 PWA configuration
+For project context, start with [../README.md](../README.md).
 
-## 📷 Scanner
-The dependency set includes `@zxing/browser` and `html5-qrcode`. The scanner supports existing-product lookup and new-product registration flow.
+## Responsibilities
+- inventory presentation
+- product registration
+- barcode scanning
+- product lookup
+- portion changes
+- search/filter/sort
+- theme selection
+- responsive navigation
+- PWA configuration
 
-## 🔥 Data layer
-Firestore collection: `products`. Barcode is used as the document ID.
+## Source structure
 
-Main service operations: `getProduct`, `saveProduct`, `getAllProducts`, `updatePortions`.
+```text
+app/
+├── package.json
+├── vite.config.js
+├── public/
+└── src/
+    ├── App.jsx
+    ├── App.css
+    ├── index.css
+    ├── main.jsx
+    ├── firebase.js
+    ├── components/
+    │   └── BarcodeScanner.jsx
+    ├── services/
+    │   └── products.js
+    └── assets/
+```
 
-## 🧱 Stack
-React 19 · Vite 8 · Tailwind CSS 4 · Firebase 12 · Firestore · vite-plugin-pwa.
+## Main files
 
-## 📱 PWA boundary
-Standalone PWA behavior is configured, but the manifest icon set still needs finalization.
+### src/App.jsx
+The current application shell and most UI state live here. It coordinates views, inventory loading, search/filter/sort, scanner flow, product form state, portion updates, and theme preferences.
 
-## ▶️ Commands
+This file is currently large and is a future refactoring point. Refactor incrementally while preserving existing flows.
+
+### src/components/BarcodeScanner.jsx
+Owns camera/scanner behavior, successful-scan handling, focus configuration, and camera error/retry states.
+
+### src/services/products.js
+The Firestore data-access boundary.
+
+Current operations:
+```js
+getProduct(barcode)
+saveProduct(barcode, data)
+getAllProducts()
+updatePortions(barcode, newPortions)
+```
+
+Prefer this service boundary instead of scattering Firestore calls throughout UI code.
+
+### src/firebase.js
+Initializes Firebase and exports the Firestore database instance. Firebase Authentication is not currently implemented.
+
+## Vite and PWA
+
+vite.config.js configures React, basic SSL, Tailwind CSS, and vite-plugin-pwa.
+
+Basic SSL supports local development scenarios where browser camera APIs require a secure context.
+
+The PWA currently uses standalone display and auto-update registration. The manifest icon list is still empty.
+
+## Commands
+
 ```bash
 npm install
 npm run dev
@@ -39,5 +79,12 @@ npm run build
 npm run preview
 ```
 
-## 📌 Status
-Active local-first inventory application; authentication, multi-user inventory, expiry workflows, movement history, shopping workflows, and advanced analytics are outside the current core scope.
+## Working rules
+
+Before changing behavior, read the relevant documentation in ../docs.
+
+For data changes, read DATA_MODEL.md. For UI changes, read DESIGN_PRINCIPLES.md. For user flows, read USER_FLOWS.md.
+
+Run lint and build after meaningful changes.
+
+Update documentation when behavior changes.
