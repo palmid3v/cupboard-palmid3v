@@ -20,6 +20,7 @@
 - ✅ Low-stock visibility
 
 ### Registration
+- ✅ Email verification before household access
 - ✅ Camera barcode scanning
 - ✅ Manual barcode entry
 - ✅ Existing-product lookup
@@ -33,8 +34,8 @@
 - ✅ Sticky desktop navigation/status area
 - ✅ Mobile bottom navigation
 - ✅ Custom dark sort dropdown
+- ✅ Animated product detail experience with stock, expiry, metadata, and product-image treatment
 - 🟡 Finalize product-image presentation across more real-world image sources
-- 🟡 Further visual refinement as real product images expose edge cases
 
 ### Platform
 - ✅ React/Vite application
@@ -58,6 +59,7 @@
 - 🟡 Introduce hooks only where they make state ownership clearer.
 
 ### Data safety
+- ✅ Require verified Firebase email identity in Firestore Rules
 - 🟡 Review Firebase configuration strategy.
 - 🟡 Document and review Firestore security rules.
 - 🟡 Define deployment configuration.
@@ -149,3 +151,8 @@ Build trust in the basic inventory experience before adding complexity.
 - 🔵 Multi-device/global presence monitoring
 
 The current connection control is intentionally client-local. It does not turn Firebase on or off for every user.
+
+
+## Current implementation checkpoint — October 2026
+
+The project is intentionally **not being reset**. Existing household products remain available as a working test dataset while authentication, security, expiry behavior, and product-detail UX are being hardened. A future clean reset will be an explicit operational step and is not part of this implementation.
