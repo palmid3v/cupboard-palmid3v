@@ -130,3 +130,18 @@ Keep shared identity reusable, household state private to the household, and mov
 ## Migration history
 
 The October 2026 architecture work separated the former mixed product representation into the catalog/inventory model above. The migration is complete and the former household product collection is no longer an application data boundary.
+
+## Save semantics
+
+The product save operation composes two responsibilities:
+
+1. ensure `productCatalog/{barcode}` exists;
+2. create/update `households/{householdId}/inventory/{barcode}`.
+
+When the workflow includes an initial movement, the inventory write and movement record are committed in the same Firestore batch.
+
+A catalog-only recognition therefore does not mean the product is already in the current household. It means the shared identity exists and can be reused.
+
+## Known scale consideration
+
+The current product facade hydrates catalog metadata per inventory item. This is acceptable at MVP scale but is an identified N+1-read optimization target for FASE 15.
