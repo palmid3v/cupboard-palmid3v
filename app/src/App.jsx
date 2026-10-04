@@ -1745,37 +1745,24 @@ aria-describedby={
                 </p>
 
                 <h2 className="mt-1 text-xl font-bold">
-                  Tema de Cupboard
+                  Cupboard Dark
                 </h2>
 
-                <p className="mt-2 text-sm text-[var(--cupboard-text-muted)]">
-                  Elige cómo quieres que se vea la aplicación.
+                <p className="mt-2 text-sm leading-6 text-[var(--cupboard-text-muted)]">
+                  Un tema oscuro fijo inspirado en una alacena real: madera,
+                  hojas, alimentos y superficies cálidas.
                 </p>
 
-                <div className="mt-5 flex w-fit flex-wrap gap-2 rounded-xl border border-[var(--cupboard-border)] bg-[var(--cupboard-surface-muted)] p-1">
-                  <ThemeButton
-                    value="light"
-                    current={theme}
-                    onClick={setTheme}
-                  >
-                    ☀️ Light
-                  </ThemeButton>
-
-                  <ThemeButton
-                    value="dark"
-                    current={theme}
-                    onClick={setTheme}
-                  >
-                    🌙 Dark
-                  </ThemeButton>
-
-                  <ThemeButton
-                    value="system"
-                    current={theme}
-                    onClick={setTheme}
-                  >
-                    ⚙️ System
-                  </ThemeButton>
+                <div className="mt-5 flex items-center gap-3 rounded-2xl border border-[var(--cupboard-border)] bg-[var(--cupboard-surface-muted)] p-4">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--cupboard-primary-soft)]">
+                    🌙
+                  </span>
+                  <div>
+                    <p className="text-sm font-semibold">Tema fijo</p>
+                    <p className="text-xs text-[var(--cupboard-text-muted)]">
+                      Cupboard no cambia a light ni sigue el sistema.
+                    </p>
+                  </div>
                 </div>
               </div>
 
