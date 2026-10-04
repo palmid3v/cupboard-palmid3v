@@ -260,3 +260,26 @@ The main inventory indicator uses browser network state plus Firestore snapshot 
 ## 📧 Email verification
 
 Cupboard now sends a Firebase verification email when an account is created and blocks household access until the address is verified. The verification screen supports resend and an explicit **Ya verifiqué mi correo** check. The pending invitation remains in local storage until verification completes, so the invite flow can resume without asking the user to enter the code again.
+
+
+## 🏷️ Shared barcode catalog
+
+Cupboard now distinguishes between **product identity** and **household inventory**.
+
+- `productCatalog/{barcode}` stores reusable product metadata.
+- `households/{householdId}/products/{barcode}` stores the current household's stock and household-specific fields.
+- Scanning first checks the current household, then the shared catalog, then treats the barcode as a new product.
+- A known catalog product can be added to a household without re-entering its identity information.
+- The owner can seed the current inventory into the shared catalog from **Centro → Catálogo → Preparar catálogo**.
+
+The current household product collection is intentionally preserved during this development phase. The final migration to the dedicated household `inventory` model will happen only after the explicit reset + migration gate is reached.
+
+### ⚠️ Reset gate
+
+No reset is currently authorized.
+
+The destructive reset will happen only after the migration path and regression tests are ready and the project explicitly reaches:
+
+> **⚠️ AHORA SÍ: RESET + MIGRACIÓN**
+
+At that point the existing product data will be preserved as canonical catalog data and migrated into the new household inventory model before old structures are removed.
