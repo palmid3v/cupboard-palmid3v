@@ -156,3 +156,32 @@ The current connection control is intentionally client-local. It does not turn F
 ## Current implementation checkpoint — October 2026
 
 The project is intentionally **not being reset**. Existing household products remain available as a working test dataset while authentication, security, expiry behavior, and product-detail UX are being hardened. A future clean reset will be an explicit operational step and is not part of this implementation.
+
+
+## Shared catalog checkpoint — October 2026
+
+- ✅ Shared `productCatalog/{barcode}` service.
+- ✅ Barcode recognition checks household inventory before shared catalog.
+- ✅ Known catalog products can be added to a household without re-entering identity metadata.
+- ✅ Existing household products can be seeded into the shared catalog from **Centro → Catálogo**.
+- ✅ Catalog security rules require verified email and protect canonical metadata writes.
+- 🟡 Migrate the current household `products` collection into the final household `inventory` model.
+- 🟡 Define the explicit reset + migration operation.
+- 🟡 Validate catalog recognition with a second household/member before reset.
+
+### Reset + migration gate
+
+**Not reached yet.**
+
+The reset must wait until:
+
+1. The current products have been successfully represented in `productCatalog`.
+2. Barcode recognition has been tested with an existing product and a brand-new product.
+3. The new household inventory model is implemented and tested.
+4. Authentication, invitations, expiry, movements, and permissions pass the regression flow.
+5. A migration procedure is prepared and reviewed.
+6. The user explicitly receives the warning:
+
+> ⚠️ **AHORA SÍ: RESET + MIGRACIÓN**
+
+Only after that warning should any destructive Firebase operation be performed.
