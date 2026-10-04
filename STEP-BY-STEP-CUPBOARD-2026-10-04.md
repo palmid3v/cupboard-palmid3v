@@ -21,10 +21,12 @@ households/{householdId}/movements/{movementId}
 - 🟢 FASE 3 — Inventory foundation
 - 🟢 FASE 4 — Runtime adoption
 - 🟢 FASE 5 — Movements
-- 🟡 FASE 6 — Firebase Rules deployment + validation
-- ⏳ FASE 7 — Migration tooling
-- ⏳ FASE 8 — Regression
+- 🟢 FASE 6 — Firebase Rules implementation + deployment checklist
+- 🟢 FASE 7 — Non-destructive migration tooling
+- 🟡 FASE 8 — Regression validation
 - 🔴 FASE 9 — Reset + migration
+
+**Blocked until FASE 8 regression passes.**
 - ⏳ FASE 10 — Cleanup
 
 ## FASE 4 — Runtime adoption
@@ -76,17 +78,22 @@ Rules:
 - non-members are denied;
 - verified-email requirement remains enforced.
 
-Before claiming runtime validation complete, deploy and test the committed rules.
+Deploy the committed rules manually, then execute the regression matrix in FASE 8. Repository implementation is complete; live Firebase validation remains an operational checkpoint.
 
 ## FASE 7 — Migration tooling
 
-Prepare a non-destructive migration procedure:
+Implemented in `app/src/services/migration.js` and exposed to the owner under **Centro → Catálogo**.
 
-1. Read legacy household products.
-2. Ensure each barcode exists in `productCatalog`.
-3. Write household stock fields into `inventory`.
-4. Verify counts and representative records.
-5. Keep legacy data untouched until regression passes.
+Workflow:
+
+1. **Analizar migración** reads legacy household products and compares target catalog/inventory coverage.
+2. **Copiar datos faltantes** creates only missing catalog and inventory records.
+3. Existing target records are never overwritten.
+4. Legacy `households/{householdId}/products` records are never modified or deleted.
+5. **Verification** confirms catalog and inventory coverage after the copy.
+6. The operation is idempotent and can be safely rerun.
+
+Batch writes are chunked below Firestore's 500-write batch limit. citeturn0search5turn0search0
 
 No destructive operation belongs in this phase.
 
