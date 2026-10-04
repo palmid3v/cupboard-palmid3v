@@ -10,7 +10,6 @@ import {
   subscribeToProducts,
   updatePortions,
 } from "./services/products";
-import { addMovement } from "./services/features";
 import { auth } from "./services/auth";
 import { connectFirestore, disconnectFirestore } from "./firebase";
 
@@ -329,15 +328,7 @@ export default function App() {
     );
 
     try {
-      await updatePortions(item.id, newPortions);
-
-      await addMovement({
-        productId: item.id,
-        type: newPortions < previousPortions ? "consume" : "add",
-        quantity: Math.abs(newPortions - previousPortions),
-        reason: newPortions < previousPortions ? "Consumo desde inventario" : "Entrada desde inventario",
-        userId: auth.currentUser?.uid || null,
-      });
+      await updatePortions(item.id, newPortions, {\n        type: newPortions < previousPortions ? "consume" : "add",\n        quantity: Math.abs(newPortions - previousPortions),\n        reason: newPortions < previousPortions ? "Consumo desde inventario" : "Entrada desde inventario",\n        userId: auth.currentUser?.uid || null,\n      });
 
       setInventoryActionSuccess({
         productId: item.id,
