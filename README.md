@@ -179,11 +179,13 @@ The development configuration includes local SSL support, which is useful becaus
 
 ## 🔥 Firestore data layer
 
-The current collection is:
+The active product collection is household-scoped:
 
 ```text
-products/{barcode}
+households/{householdId}/products/{barcode}
 ```
+
+Authentication and membership are stored under users/{uid} and households/{householdId}/members/{uid}.
 
 Service boundary:
 
