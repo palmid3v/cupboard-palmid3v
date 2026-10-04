@@ -57,12 +57,15 @@ service cloud.firestore {
     match /households/{householdId} {
       allow get, list: if member(householdId);
       allow create: if false;
-      allow update, delete: if owner(householdId);
+      allow update: if owner(householdId)
+        && request.resource.data.ownerUid == resource.data.ownerUid;
+      allow delete: if owner(householdId);
 
       match /members/{memberId} {
         allow read: if member(householdId);
         allow create: if owner(householdId) || invitedMember(householdId);
-        allow update, delete: if owner(householdId);
+        allow update, delete: if owner(householdId)
+          && request.resource.data.role != 'admin';
       }
 
       match /products/{productId} {
