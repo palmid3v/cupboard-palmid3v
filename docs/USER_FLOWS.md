@@ -155,3 +155,16 @@ The user should always know:
 5. how to recover from an error.
 
 Users should never need to understand Firestore, database IDs, or implementation details.
+
+
+## Authentication and invitation
+
+Owner: sign in, resolve the existing owner profile, load the household, then open Cupboard.
+
+Invited member: receive an owner-generated code, register with the code, join the household as member, then open Cupboard. Registration without an invitation is rejected.
+
+## Owner connection controls
+
+Centro → Equipo shows the current Firestore client state and provides Conectar base de datos / Desconectar controls. The control applies to the current browser only and does not shut down Firebase for other users.
+
+During startup, account and household resolution is shown as Conectando con Cupboard…; a permanent error is shown only when resolution actually fails.
