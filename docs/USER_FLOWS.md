@@ -12,79 +12,58 @@ Show inventory summary
 Show searchable/filterable product list
 ```
 
-Inventory is the primary home of the application.
+## 2. Search and filter
 
-## 2. Search inventory
-
-The search term is matched against product name and barcode/document ID.
-
-The result is then combined with the active filter and sort order.
-
-## 3. Filter inventory
+Search matches product name or barcode/document ID.
 
 Current filters:
+- All;
+- Low stock → portions <= 5;
+- Available → portions > 0.
 
-- All
-- Low stock
-- Available
+The result is combined with the active sort.
 
-Low stock means portions <= 5.
+## 3. Sort inventory
 
-Available means portions > 0.
+Current options:
+- Nombre A-Z;
+- Más recientes;
+- Menor stock;
+- Mayor stock.
 
-## 4. Sort inventory
+Recent sorting uses `updatedAt` when available.
 
-Current options include:
+The sort control is a custom dark dropdown rather than the browser's native select menu.
 
-- name
-- low stock
-- high stock
-- recent
-
-Recent uses updatedAt when available.
-
-## 5. Open a product
-
-Selecting a product opens its detail state and exposes inventory actions.
-
-## 6. Consume a portion
+## 4. Add or consume a portion
 
 ```text
 Product
   ↓
-Tap consume
+Tap +1 or -1
   ↓
-Current portions - 1
+Calculate next quantity
   ↓
-Prevent negative value
+Update React state immediately
   ↓
-Update Firestore
+Persist with updatePortions()
   ↓
-Refresh inventory
+Success → keep new value
+Failure → rollback + show error
 ```
 
-If the update fails, an error state is shown.
+Negative quantities are prevented.
 
-## 7. Add a portion
+The action does not reload the complete inventory.
 
-```text
-Product
-  ↓
-Tap add
-  ↓
-Current portions + 1
-  ↓
-Update Firestore
-  ↓
-Refresh inventory
-```
-
-## 8. Register by barcode
+## 5. Register by barcode
 
 ```text
 Open Scanner
     ↓
-Camera starts
+Prepare camera
+    ↓
+Request camera access
     ↓
 Point camera at barcode
     ↓
@@ -97,32 +76,38 @@ Found      New
 Show data   Empty form
 ```
 
-The scanner handles one successful scan during a scanner session.
+The scanner accepts one successful result during a session.
 
-## 9. Manual barcode registration
+### Scanner recovery
 
-The user can enter a barcode without using the camera.
+If camera startup fails, the scanner can show permission, missing-camera, camera-busy, or generic startup guidance.
 
-If the barcode already exists, the current flow prevents creating a duplicate manual registration and directs the user toward the existing product/inventory flow.
+The user can retry without reloading the page.
 
-## 10. Product form
+ZXing callback errors while searching for a barcode are not treated as repeated user-facing failures.
 
-Current fields:
+## 6. Manual barcode registration
 
-- Name
-- Description
-- Weight
-- Portions
-- Image URL
+The user can enter a barcode without the camera.
 
-Validation includes:
+If the barcode already exists, the current manual flow prevents creating a duplicate registration.
 
-- barcode required
-- name required
-- portions must be >= 0
-- weight, when provided, must be >= 0
+## 7. Product form and save
 
-## 11. Save product
+Fields:
+- Name;
+- Description;
+- Weight;
+- Portions;
+- Image URL.
+
+Validation:
+- barcode required;
+- name required;
+- portions >= 0;
+- weight, when provided, >= 0.
+
+Save flow:
 
 ```text
 Validate
@@ -136,30 +121,31 @@ Reload inventory
 Return to inventory
 ```
 
-## 12. Camera error
+## 8. Product images
 
-When camera access fails, the scanner shows an error state, explains that browser permissions may need review, and provides a retry action.
+When an image URL exists, inventory cards reserve a consistent image area and contain the image inside a bounded frame using `object-contain`.
 
-Scanner failures should not crash the application.
+If the remote image fails, the card falls back to a package placeholder.
 
-## 13. Theme preference
+The source image itself is not modified.
 
-```text
-Open Settings
-   ↓
-Choose Light / Dark / System
-   ↓
-Store preference in localStorage
-   ↓
-Apply theme
-```
+## 9. Theme
 
-System mode follows the browser/OS color preference.
+The current UI is dark-only.
 
-## UX rule for flows
+There is no active light/dark/system selector.
+
+## 10. “Inventario conectado”
+
+The connected indicator is currently visual only.
+
+It does not prove that Firestore is reachable at that exact moment.
+
+Actual availability is determined by Firestore operations when they execute.
+
+## UX rule
 
 The user should always know:
-
 1. where they are;
 2. what happened;
 3. what they can do next;
