@@ -12,6 +12,7 @@ import {
 } from "firebase/firestore";
 
 import { db } from "../firebase";
+import { createCatalogProductIfMissing, getCatalogProduct } from "./catalog";
 import { getActiveHouseholdId } from "./households";
 
 function requireHouseholdId() {
@@ -50,6 +51,31 @@ function normalizeProduct(id, data = {}) {
 }
 
 // 🔍 Get product
+export async function findProductByBarcode(barcode) {
+  const householdProduct = await getProduct(barcode);
+
+  if (householdProduct) {
+    return {
+      source: "inventory",
+      product: householdProduct,
+    };
+  }
+
+  const catalogProduct = await getCatalogProduct(barcode);
+
+  if (catalogProduct) {
+    return {
+      source: "catalog",
+      product: catalogProduct,
+    };
+  }
+
+  return {
+    source: "new",
+    product: null,
+  };
+}
+
 export async function getProduct(barcode) {
   const snap = await getDoc(productRef(barcode));
 
@@ -63,6 +89,8 @@ export async function getProduct(barcode) {
 // 💾 Save product
 export async function saveProduct(barcode, data) {
   const ref = productRef(barcode);
+
+  await createCatalogProductIfMissing(barcode, data);
   const snap = await getDoc(ref);
 
   const productData = {
