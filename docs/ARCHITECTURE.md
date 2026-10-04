@@ -23,12 +23,11 @@ React UI
        ├── products.js       ← runtime product facade
        ├── catalog.js        ← shared identity
        ├── inventory.js      ← household stock
-       ├── migration.js      ← non-destructive migration tooling
        └── features.js
                     └── Firebase
                            ├── Authentication
                            └── Firestore
-                                └── households/{householdId}/products/{barcode}
+                                └── households/{householdId}/inventory/{barcode}
 ```
 
 There is currently no separate backend API layer.
@@ -69,7 +68,6 @@ Firestore access is concentrated behind explicit service boundaries:
 - `src/services/catalog.js` — shared product identity;
 - `src/services/inventory.js` — household inventory and movement-aware writes;
 - `src/services/products.js` — UI compatibility facade;
-- `src/services/migration.js` — owner-only, non-destructive legacy migration.
 
 Current UI-facing API:
 
