@@ -86,9 +86,9 @@ Prefer this boundary instead of scattering Firestore calls throughout the UI.
 
 ### `src/firebase.js`
 
-Initializes Firebase and exports the Firestore database instance.
+Initializes Firebase Authentication and Firestore.
 
-Firebase Authentication is not currently implemented.
+Firebase Storage is intentionally not initialized because product image uploads are deferred. Product images currently use remote URLs.
 
 ## Vite and PWA
 
@@ -126,4 +126,6 @@ After meaningful code changes:
 
 ## Important implementation rule
 
-Do not infer that the green **Inventario conectado** indicator means Firebase is currently reachable. It is presently a visual status treatment, not a connectivity monitor.
+The green **Inventario conectado** indicator is backed by Firestore snapshot metadata and browser online/offline events.
+
+Product image uploads are intentionally out of scope until Firebase Storage is enabled.
