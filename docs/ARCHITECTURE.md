@@ -2,9 +2,7 @@
 
 ## Overview
 
-Cupboard is currently a small React application with a direct Firestore data layer.
-
-The architecture intentionally stays lightweight.
+Cupboard is a small React application with a direct Firestore data layer.
 
 ```text
 Browser
@@ -12,45 +10,58 @@ Browser
   ▼
 React UI
   │
-  ├── Inventory
-  ├── Scanner
-  ├── Product form
-  └── Settings
-  │
-  ▼
-App.jsx
-  │
-  ▼
-services/products.js
-  │
-  ▼
-Firebase Firestore
-  │
-  ▼
-products collection
+  └── App.jsx
+       ├── Inventory
+       ├── Scanner flow
+       ├── Product registration
+       └── Settings
+             │
+             ├── BarcodeScanner.jsx
+             │      └── @zxing/browser
+             │
+             └── services/products.js
+                    └── Firebase Firestore
+                           └── products/{barcode}
 ```
 
-## Frontend
+There is currently no separate backend API layer.
 
-React owns the UI and local interaction state.
+## Frontend boundary
 
-The current application shell is concentrated in src/App.jsx. This is acceptable for the MVP, although it is a future refactoring point.
+React owns the UI and interaction state.
 
-Tailwind CSS 4 provides styling. Global CSS variables and base styles live in src/index.css.
+Most application state and orchestration remain in `src/App.jsx`. This is acceptable for the MVP and is the main architectural refactoring opportunity.
+
+Tailwind CSS 4 provides component styling. Global variables and browser-level styles live in `src/index.css`.
 
 ## Scanner boundary
 
-Barcode scanning is isolated in src/components/BarcodeScanner.jsx.
+Barcode scanning is isolated in `src/components/BarcodeScanner.jsx`.
 
-The scanner communicates with the parent through the onScan(code) callback.
+Responsibilities:
+- request/start the camera;
+- stop camera tracks;
+- avoid overlapping scanner sessions;
+- handle one successful scan per session;
+- retry after camera errors;
+- attempt continuous focus when supported;
+- present camera-specific error states.
 
-This keeps camera-specific behavior out of the product data service.
+The scanner communicates with the parent through:
+
+```js
+onScan(code)
+```
+
+Camera-specific behavior should remain out of the product data service.
 
 ## Data boundary
 
-Firestore access is concentrated in src/services/products.js.
+Firestore access is concentrated in:
 
-Current service API:
+`src/services/products.js`
+
+Current API:
 
 ```js
 getProduct(barcode)
@@ -59,99 +70,124 @@ getAllProducts()
 updatePortions(barcode, newPortions)
 ```
 
-Prefer this boundary instead of placing Firestore calls directly throughout the UI.
+Keep Firestore calls behind this boundary where practical.
 
 ## Firebase
 
-Firebase is initialized in src/firebase.js and exports a Firestore instance.
+`src/firebase.js` initializes Firebase and exports the Firestore instance.
 
 Authentication is not currently part of the application.
 
+### Connectivity status clarification
+
+The UI contains a green **Inventario conectado / Conectado / ACTIVO** treatment.
+
+This is currently presentation only.
+
+There is no:
+- Firebase realtime connection listener;
+- `navigator.onLine` state integration;
+- Firestore health-check request;
+- offline cache state exposed to the UI.
+
+Therefore the indicator must not be treated as a connectivity guarantee.
+
 ## PWA
 
-PWA behavior is configured in vite.config.js using vite-plugin-pwa.
+PWA behavior is configured in `vite.config.js` using `vite-plugin-pwa`.
 
-Current configuration includes auto-update registration, standalone display, manifest metadata, and theme/background colors.
+Current configuration includes standalone display, auto-update registration, manifest metadata, and theme/background colors.
 
-The icon list is currently empty.
+The final manifest icon set is still pending.
 
 ## Local state
 
 Runtime interaction state is managed with React state.
 
-Theme preference is stored in localStorage under cupboard-theme.
-
 Firestore is the persistent source for products.
 
-## Scanning data flow
+The current UI is dark-only.
 
-```text
-User opens Scanner
-       ↓
-BarcodeScanner starts camera
-       ↓
-ZXing detects code
-       ↓
-onScan(code)
-       ↓
-App.handleScan()
-       ↓
-getProduct(code)
-       ↓
-Firestore
-       ↓
-Existing product OR registration form
-```
+## Inventory portion flow
 
-## Portion data flow
+The current flow is optimistic:
 
 ```text
 User taps + / -
        ↓
-App handler
+Calculate next quantity
        ↓
-updatePortions()
+Update React product state immediately
        ↓
-Firestore update
+Call updatePortions()
        ↓
-reload inventory
-       ↓
-UI reflects new value
+     success ─────────────→ keep new value
+       │
+       └── failure ───────→ restore previous value + show error
 ```
 
-## Architectural strengths
+The UI does not reload the entire inventory for each +1/-1 action.
 
-- simple dependency graph
-- clear scanner boundary
-- clear Firestore service boundary
-- small data model
-- easy local development
-- no unnecessary backend layer for the current scope
+## Scanner data flow
+
+```text
+Open Scanner
+      ↓
+BarcodeScanner starts camera
+      ↓
+ZXing detects code
+      ↓
+onScan(code)
+      ↓
+App.handleScan()
+      ↓
+getProduct(code)
+      ↓
+Firestore
+      ↓
+Existing product OR new-product form
+```
+
+## Product save flow
+
+```text
+Validate form
+      ↓
+saveProduct()
+      ↓
+Firestore create/update
+      ↓
+Reload inventory
+      ↓
+Return to inventory
+```
+
+Unlike +1/-1, saving a product intentionally reloads inventory because a new/edited product needs to be incorporated into the inventory collection.
 
 ## Current debt
 
 ### Large App component
 
-App.jsx contains a significant amount of UI and state management.
+`App.jsx` contains substantial UI and state management.
 
 Future decomposition can include inventory components, product form, settings, navigation, product detail, and focused hooks.
 
-Refactor incrementally.
+Refactor incrementally rather than rewriting the application architecture.
 
 ### Firebase configuration
 
-Firebase configuration currently lives directly in src/firebase.js.
+Firebase configuration currently lives directly in `src/firebase.js`.
 
-Before production deployment patterns are expanded, review environment configuration and Firebase security rules.
+Before broader deployment, review environment configuration and Firebase security rules.
 
 ### Firestore security
 
-The current project does not document an authorization model.
+There is no authentication/authorization model in the current application.
 
 Before multi-user functionality, define identity, ownership, household membership, read/write permissions, and security rules.
 
 ## Architectural rule
 
-**Keep the current system understandable.**
+> **Keep the current system understandable.**
 
 Do not add a backend, state-management library, database layer, or service architecture simply because larger applications commonly use one.
