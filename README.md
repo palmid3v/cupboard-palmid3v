@@ -73,19 +73,16 @@ PWA icon finalization remains pending because the manifest icon list is not yet 
 
 ## 🔌 What “Inventario conectado” means
 
-The green **Inventario conectado / ACTIVO** indicator is currently a **UI status indicator**, not a live Firestore connectivity monitor.
+The **Inventario conectado** treatment is now a real Firestore/inventory availability indicator.
 
-It does **not** currently:
-- listen for Firebase connection state;
-- run a health check;
-- use `navigator.onLine`;
-- prove that Firestore is reachable at that exact moment.
+It exposes three runtime states:
+- 🟢 **Inventario conectado** — Firestore available.
+- 🟡 **Sin conexión** — showing locally available data from the Firestore cache.
+- 🔴 **No se pudo conectar** — Firestore could not be reached; review the connection.
 
-The actual data connection happens when the application calls the Firestore service functions in `app/src/services/products.js`.
+The app also listens to `navigator.onLine` so the UI can react immediately when the browser loses or regains network access. Firestore metadata (`fromCache`) is used to distinguish server-backed snapshots from cached data.
 
-This distinction is intentional: **do not treat the current green indicator as a real-time connectivity guarantee.**
-
-A future connectivity state can be implemented separately if the product needs offline/online visibility.
+The web client uses persistent Firestore local cache, so previously used inventory data can remain available offline and synchronize when connectivity returns. This is the foundation for Cupboard's offline-first direction; richer offline UX and conflict handling remain future work.
 
 ## 🧱 Architecture at a glance
 
