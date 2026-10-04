@@ -236,3 +236,18 @@ The project must not move to destructive migration until FASES 6–8 are complet
 > ⚠️ **AHORA SÍ: RESET + MIGRACIÓN**
 
 remains disabled until the full checklist passes.
+
+## Current migration checkpoint — October 2026
+
+- 🟢 FASE 1 — Shared catalog
+- 🟢 FASE 2 — Data-model audit
+- 🟢 FASE 3 — Inventory foundation
+- 🟢 FASE 4 — Runtime adoption
+- 🟢 FASE 5 — Movements
+- 🟢 FASE 6 — Rules
+- 🟢 FASE 7 — Migration tooling
+- 🟢 FASE 8 — Regression
+- 🟢 FASE 9 — Guarded legacy retirement
+- 🟡 FASE 10 — Cleanup
+
+FASE 9 retires only `households/{householdId}/products/{barcode}`. It does not reset Firebase globally. The exact gate phrase and a complete migration verification are required immediately before deletion.
