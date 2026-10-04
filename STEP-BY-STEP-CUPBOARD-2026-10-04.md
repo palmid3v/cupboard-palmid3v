@@ -1,8 +1,8 @@
 # STEP-BY-STEP-CUPBOARD-2026-10-04
 
-Operational implementation checklist for the October 2026 inventory architecture migration.
+Operational checklist for the October 2026 Cupboard architecture migration and cleanup.
 
-## Architecture target
+## Final architecture
 
 ```text
 productCatalog/{barcode}
@@ -21,147 +21,49 @@ households/{householdId}/movements/{movementId}
 - 🟢 FASE 3 — Inventory foundation
 - 🟢 FASE 4 — Runtime adoption
 - 🟢 FASE 5 — Movements
-- 🟢 FASE 6 — Firebase Rules implementation + deployment checklist
-- 🟢 FASE 7 — Non-destructive migration tooling
+- 🟢 FASE 6 — Firebase Rules
+- 🟢 FASE 7 — Migration tooling
 - 🟢 FASE 8 — Regression validation
-- 🟡 FASE 9 — Reset + migration (gate reached; execution protected)
+- 🟢 FASE 9 — Reset + migration
+- 🟢 FASE 10 — Cleanup
 
-**Blocked until FASE 8 regression passes.**
-- ⏳ FASE 10 — Cleanup
+## Runtime
 
-## FASE 4 — Runtime adoption
-
-Implemented in `app/src/services/products.js` through `app/src/services/inventory.js`.
-
-The existing UI-facing product API is retained as a compatibility facade, but its persistence boundary is now:
+The application now reads and writes:
 
 - shared identity → `productCatalog/{barcode}`;
-- household stock → `households/{householdId}/inventory/{barcode}`.
+- household stock → `households/{householdId}/inventory/{barcode}`;
+- inventory history → `households/{householdId}/movements/{movementId}`.
 
-Runtime coverage:
+The old mixed household product collection is no longer a runtime source of truth or Rules boundary.
 
-1. Scanner lookup checks household inventory first.
-2. If absent, scanner checks shared catalog.
-3. Catalog recognition pre-fills product identity and starts household stock at zero.
-4. Inventory dashboard reads the dedicated inventory collection.
-5. Search, filters and sorting operate on the inventory-backed product view.
-6. Product detail combines catalog identity with household inventory state.
-7. Portion changes write to dedicated inventory.
-8. Product registration writes catalog identity when missing and household inventory state.
-9. The legacy `households/{householdId}/products` collection is no longer the runtime source of truth.
+## FASE 10 — Cleanup completed
 
-## FASE 5 — Movements
+1. Removed migration controls from **Centro → Catálogo**.
+2. Removed the migration service.
+3. Removed the retired household product Rules boundary.
+4. Kept catalog preparation because it is still a valid owner workflow for current inventory.
+5. Kept the product service facade because it is the UI persistence boundary.
+6. Updated documentation to describe only the current runtime model.
+7. Kept the explicit Firebase Rules deployment operation.
 
-Movements remain household-scoped:
+## Final validation checklist
 
-`households/{householdId}/movements/{movementId}`
-
-Implemented movement behavior:
-
-- registering a new/catalog product with initial portions creates an `add` movement;
-- increasing portions creates an `add` movement;
-- decreasing portions creates a `consume` movement;
-- movement quantity is the absolute inventory delta;
-- movement reason identifies the workflow;
-- movement records include the authenticated user ID when available.
-
-## FASE 6 — Rules
-
-The repository now contains the required inventory rule boundary:
-
-`households/{householdId}/inventory/{barcode}`
-
-Rules:
-
-- verified household members can read;
-- admins/editors can create, update and delete;
-- non-members are denied;
-- verified-email requirement remains enforced.
-
-Deploy the committed rules manually, then execute the regression matrix in FASE 8. Repository implementation is complete; live Firebase validation remains an operational checkpoint.
-
-## FASE 7 — Migration tooling
-
-Implemented in `app/src/services/migration.js` and exposed to the owner under **Centro → Catálogo**.
-
-Workflow:
-
-1. **Analizar migración** reads legacy household products and compares target catalog/inventory coverage.
-2. **Copiar datos faltantes** creates only missing catalog and inventory records.
-3. Existing target records are never overwritten.
-4. Legacy `households/{householdId}/products` records are never modified or deleted.
-5. **Verification** confirms catalog and inventory coverage after the copy.
-6. The operation is idempotent and can be safely rerun.
-
-Batch writes are chunked below Firestore's 500-write batch limit. citeturn0search5turn0search0
-
-No destructive operation is performed by the browser migration tool.
-
-## FASE 8 — Regression
-
-Required flows:
-
-- owner login + verified email;
-- invite member + verified email;
-- inventory list;
-- scanner existing inventory;
-- scanner shared catalog;
-- scanner new product;
-- manual registration;
-- add portion;
-- consume portion;
-- movement history;
-- offline/cache behavior;
-- permissions across owner/editor/member roles.
-
-## FASE 9 — Reset + migration
-
-This phase is blocked.
-
-Do not delete, reset or clear Firebase data yet.
-
-Only when FASES 6–8 are complete and the migration has been reviewed, show the explicit gate:
-
-> ⚠️ **AHORA SÍ: RESET + MIGRACIÓN**
-
-Only after that warning is destructive migration authorized.
-
-## FASE 10 — Cleanup
-
-After successful migration and regression:
-
-- remove legacy runtime compatibility;
-- remove obsolete `products` reads/writes;
-- remove migration-only helpers;
-- update documentation;
-- verify no production path depends on the legacy collection.
+- [ ] Owner login + verified email.
+- [ ] Invitation + verified member.
+- [ ] Inventory list.
+- [ ] Existing inventory barcode scan.
+- [ ] Shared catalog barcode recognition.
+- [ ] New product registration.
+- [ ] Add portion.
+- [ ] Consume portion.
+- [ ] Movement history.
+- [ ] Offline/cache behavior.
+- [ ] Owner/editor/member permissions.
+- [ ] Firebase Rules deployment.
+- [ ] `npm run lint`.
+- [ ] `npm run build`.
 
 ---
 
 **Cupboard · PALMI-D3V · October 2026**
-
-
-## FASE 9 — Reset + migration
-
-**Gate reached:**
-
-> ⚠️ **AHORA SÍ: RESET + MIGRACIÓN**
-
-FASE 9 is implemented as a guarded legacy-model retirement.
-
-Only `households/{householdId}/products/{barcode}` is deleted after successful migration verification.
-
-The operation preserves Firebase Authentication users, households, members, invitations, `productCatalog`, `inventory`, `movements`, shopping items, recipes, expiry rules, and settings.
-
-Guard sequence:
-1. Analyze migration.
-2. Copy missing catalog/inventory data.
-3. Verify complete coverage.
-4. Owner enters the exact gate phrase.
-5. Execute legacy retirement.
-6. Migration completeness is verified again immediately before deletion.
-7. Legacy product documents are deleted in batches of 400.
-
-## FASE 10 — Cleanup
-
-After successful retirement, remove migration-only UI/service code, review legacy rules, update documentation, and run lint/build.
