@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import {
   joinHouseholdByCode,
   ensureHouseholdForUser,
-  getUserProfile,
 } from "../services/households";
 import {
   logout,
@@ -28,7 +27,7 @@ function AuthField({ label, ...props }) {
   );
 }
 
-function AuthScreen({ mode, setMode, onSuccess }) {
+function AuthScreen({ mode, setMode }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
@@ -414,7 +413,6 @@ export default function AuthGate({ children }) {
       <AuthScreen
         mode={authMode}
         setMode={setAuthMode}
-        onSuccess={setHousehold}
       />
     );
   }
