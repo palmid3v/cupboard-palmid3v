@@ -191,7 +191,7 @@ households/{householdId}/inventory/{barcode}
 households/{householdId}/movements/{movementId}
 ```
 
-The legacy `households/{householdId}/products/{barcode}` collection remains only as migration input.
+The retired mixed household product model is no longer part of the runtime.
 
 Authentication and membership are stored under users/{uid} and households/{householdId}/members/{uid}. Firestore access requires a verified Firebase Authentication email.
 
@@ -271,12 +271,12 @@ Cupboard now sends a Firebase verification email when an account is created and 
 Cupboard now distinguishes between **product identity** and **household inventory**.
 
 - `productCatalog/{barcode}` stores reusable product metadata.
-- `households/{householdId}/products/{barcode}` stores the current household's stock and household-specific fields.
+- `households/{householdId}/inventory/{barcode}` stores household-specific stock and state.
 - Scanning first checks the current household, then the shared catalog, then treats the barcode as a new product.
 - A known catalog product can be added to a household without re-entering its identity information.
 - The owner can seed the current inventory into the shared catalog from **Centro → Catálogo → Preparar catálogo**.
 
-The current household product collection is intentionally preserved during this development phase. The final migration to the dedicated household `inventory` model will happen only after the explicit reset + migration gate is reached.
+The dedicated household `inventory` model is now the runtime source of truth.
 
 ### ⚠️ Reset gate
 
@@ -386,18 +386,8 @@ After deployment, validate owner/editor/member access, verified-email enforcemen
 
 
 
-## 🧭 FASE 9 — guarded migration
+## 🧭 FASE 10 — cleanup completed
 
-> **⚠️ AHORA SÍ: RESET + MIGRACIÓN**
+FASE 10 removed the migration-only UI and service, retired the obsolete household product Rules boundary, and synchronized the documentation with the final runtime model.
 
-FASE 9 retires only the obsolete `households/{householdId}/products/{barcode}` collection after migration verification.
-
-Canonical data remains in `productCatalog/{barcode}`, `households/{householdId}/inventory/{barcode}`, and `households/{householdId}/movements/{movementId}`.
-
-The application does not reset Firebase globally. The owner must explicitly enter the gate phrase before legacy product documents can be deleted.
-
-### Phase status
-
-- 🟢 FASE 8 — Regression
-- 🟢 FASE 9 — Guarded legacy retirement
-- 🟡 FASE 10 — Cleanup
+The remaining work is normal product maintenance: scanner/browser coverage, PWA verification, offline-sync polish, architecture extraction, and future household workflows.
