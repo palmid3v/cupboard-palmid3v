@@ -222,6 +222,7 @@ function AuthScreen({ mode, setMode, onSuccess }) {
 
 export default function AuthGate({ children }) {
   const [user, setUser] = useState(undefined);
+  const [authMode, setAuthMode] = useState("signin");
   const [household, setHousehold] = useState(null);
   const [error, setError] = useState("");
 
@@ -256,7 +257,13 @@ export default function AuthGate({ children }) {
   }
 
   if (!user) {
-    return <AuthScreen mode="signin" setMode={() => {}} onSuccess={setHousehold} />;
+    return (
+      <AuthScreen
+        mode={authMode}
+        setMode={setAuthMode}
+        onSuccess={setHousehold}
+      />
+    );
   }
 
   if (error || !household) {
