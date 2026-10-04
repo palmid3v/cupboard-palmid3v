@@ -64,58 +64,6 @@ async function migrateLegacyProducts(householdId) {
   return true;
 }
 
-export async function createHouseholdForUser(user) {
-  const householdId = crypto.randomUUID();
-  const householdRef = doc(db, "households", householdId);
-  const userRef = doc(db, "users", user.uid);
-
-  const household = {
-    name: "Mi alacena",
-    ownerUid: user.uid,
-    members: {
-      [user.uid]: "admin",
-    },
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
-  };
-
-  await setDoc(householdRef, household);
-  await setDoc(doc(db, "households", householdId, "members", user.uid), {
-    uid: user.uid,
-    role: "admin",
-    email: user.email || "",
-    displayName: user.displayName || user.email?.split("@")[0] || "Admin",
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
-  });
-  await setDoc(userRef, {
-    displayName: user.displayName || user.email?.split("@")[0] || "Admin",
-    email: user.email || "",
-    householdId,
-    role: "admin",
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
-  });
-
-  setActiveHouseholdId(householdId);
-
-  try {
-    await migrateLegacyProducts(householdId);
-    await updateDoc(householdRef, {
-      legacyInventoryMigratedAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
-    });
-  } catch (error) {
-    console.warn("Legacy inventory migration skipped:", error);
-  }
-
-  return {
-    id: householdId,
-    ...household,
-    role: "admin",
-  };
-}
-
 export async function getHousehold(householdId) {
   const snapshot = await getDoc(doc(db, "households", householdId));
   return snapshot.exists()
