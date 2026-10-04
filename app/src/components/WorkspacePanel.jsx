@@ -9,6 +9,11 @@ import {
 import { createInvite, getActiveHouseholdId, getHousehold, getUserProfile } from "../services/households";
 import { getAllProducts, saveProduct } from "../services/products";
 import { seedCatalogFromProducts } from "../services/catalog";
+import {
+  migrateLegacyProductsToInventory,
+  previewLegacyInventoryMigration,
+  verifyLegacyInventoryMigration,
+} from "../services/migration";
 import { auth, logout } from "../services/auth";
 import { connectFirestore, disconnectFirestore } from "../firebase";
 
@@ -82,6 +87,9 @@ export default function WorkspacePanel() {
   const [connectionBusy, setConnectionBusy] = useState(false);
   const [catalogSyncBusy, setCatalogSyncBusy] = useState(false);
   const [catalogSyncResult, setCatalogSyncResult] = useState(null);
+  const [migrationBusy, setMigrationBusy] = useState(false);
+  const [migrationPreview, setMigrationPreview] = useState(null);
+  const [migrationResult, setMigrationResult] = useState(null);
 
   const householdId = getActiveHouseholdId();
   const isOwner = household?.ownerUid === auth.currentUser?.uid;
@@ -275,6 +283,51 @@ export default function WorkspacePanel() {
     }
   };
 
+  const inspectLegacyMigration = async () => {
+    if (!isOwner || migrationBusy) return;
+
+    setMigrationBusy(true);
+    setMigrationResult(null);
+    setError("");
+
+    try {
+      setMigrationPreview(await previewLegacyInventoryMigration());
+    } catch (err) {
+      console.error(err);
+      setError(
+        "No pudimos analizar los productos heredados. Revisa la conexión e inténtalo nuevamente.",
+      );
+    } finally {
+      setMigrationBusy(false);
+    }
+  };
+
+  const runLegacyMigration = async () => {
+    if (!isOwner || migrationBusy || !migrationPreview?.ready) return;
+
+    setMigrationBusy(true);
+    setMigrationResult(null);
+    setError("");
+
+    try {
+      const result = await migrateLegacyProductsToInventory();
+      const verification = await verifyLegacyInventoryMigration();
+
+      setMigrationResult({
+        ...result,
+        verification,
+      });
+      setMigrationPreview(await previewLegacyInventoryMigration());
+    } catch (err) {
+      console.error(err);
+      setError(
+        "No pudimos completar la migración no destructiva. No se eliminó ningún producto heredado.",
+      );
+    } finally {
+      setMigrationBusy(false);
+    }
+  };
+
   const createHouseholdInvite = async () => {
     if (!householdId || !isOwner) return;
     setBusy(true);
@@ -456,6 +509,60 @@ export default function WorkspacePanel() {
               {catalogSyncResult && (
                 <p className="mt-3 text-xs font-semibold text-[var(--cupboard-success)]">
                   ✓ {catalogSyncResult.message} ({catalogSyncResult.count} productos revisados).
+                </p>
+              )}
+            </div>
+          )}
+
+          {isOwner && (
+            <div className="mt-5 rounded-2xl border border-[var(--cupboard-info)]/20 bg-[var(--cupboard-info)]/5 p-4">
+              <p className="text-sm font-extrabold">Migración preparada · FASE 7</p>
+              <p className="mt-1 text-xs leading-5 text-[var(--cupboard-text-muted)]">
+                Analiza y copia los datos que faltan desde <code>products</code> hacia <code>productCatalog</code> e <code>inventory</code>. Esta herramienta no borra ni modifica los productos heredados.
+              </p>
+
+              <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+                <button
+                  type="button"
+                  onClick={inspectLegacyMigration}
+                  disabled={migrationBusy}
+                  className="rounded-xl border border-[var(--cupboard-border)] px-4 py-2.5 text-xs font-bold disabled:opacity-50"
+                >
+                  {migrationBusy ? "Analizando..." : "Analizar migración"}
+                </button>
+
+                {migrationPreview?.ready && (
+                  <button
+                    type="button"
+                    onClick={runLegacyMigration}
+                    disabled={migrationBusy || (migrationPreview.catalogMissing === 0 && migrationPreview.inventoryMissing === 0)}
+                    className="rounded-xl bg-[var(--cupboard-primary)] px-4 py-2.5 text-xs font-extrabold text-[#10140d] disabled:opacity-50"
+                  >
+                    {migrationBusy ? "Migrando..." : "Copiar datos faltantes"}
+                  </button>
+                )}
+              </div>
+
+              {migrationPreview && (
+                <div className="mt-4 grid gap-2 sm:grid-cols-3">
+                  <div className="rounded-xl bg-[var(--cupboard-bg)] p-3">
+                    <p className="text-[10px] uppercase tracking-[0.12em] text-[var(--cupboard-text-subtle)]">Heredados</p>
+                    <p className="mt-1 text-2xl font-extrabold">{migrationPreview.total}</p>
+                  </div>
+                  <div className="rounded-xl bg-[var(--cupboard-bg)] p-3">
+                    <p className="text-[10px] uppercase tracking-[0.12em] text-[var(--cupboard-text-subtle)]">Catálogo faltante</p>
+                    <p className="mt-1 text-2xl font-extrabold">{migrationPreview.catalogMissing}</p>
+                  </div>
+                  <div className="rounded-xl bg-[var(--cupboard-bg)] p-3">
+                    <p className="text-[10px] uppercase tracking-[0.12em] text-[var(--cupboard-text-subtle)]">Inventario faltante</p>
+                    <p className="mt-1 text-2xl font-extrabold">{migrationPreview.inventoryMissing}</p>
+                  </div>
+                </div>
+              )}
+
+              {migrationResult && (
+                <p className="mt-3 text-xs font-semibold text-[var(--cupboard-success)]">
+                  ✓ Migración no destructiva completada: {migrationResult.migrated.catalog} fichas de catálogo y {migrationResult.migrated.inventory} registros de inventario. Verificación: {migrationResult.verification.complete ? "completa" : "pendiente"}.
                 </p>
               )}
             </div>
