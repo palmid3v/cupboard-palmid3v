@@ -62,5 +62,6 @@ export async function resendVerificationEmail(user = auth.currentUser) {
 export async function refreshCurrentUser() {
   if (!auth.currentUser) return null;
   await reload(auth.currentUser);
+  await auth.currentUser.getIdToken(true);
   return auth.currentUser;
 }
