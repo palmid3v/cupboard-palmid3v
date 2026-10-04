@@ -75,7 +75,7 @@ function StatusBadge({ tone, children }) {
   };
 
   return (
-    <span className={[\"inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em]\", styles[tone] || styles.neutral].join(" ")}>
+    <span className={["inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em]", styles[tone] || styles.neutral].join(" ")}>
       <span className="h-1.5 w-1.5 rounded-full bg-current" aria-hidden="true" />
       {children}
     </span>
