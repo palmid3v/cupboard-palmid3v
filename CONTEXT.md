@@ -149,3 +149,12 @@ npm run preview
 ## Status
 
 Cupboard is an active functional MVP. The current priority is polish, reliability, scanner stability, visual consistency, and maintainable documentation.
+
+
+## Access model
+
+Cupboard now treats the household owner as the Administrador general / Propietario. Only the owner can generate invitation codes. New accounts require an invitation and enter as member. Firestore Rules protect role and household ownership fields.
+
+## Connection model
+
+The owner can control the Firestore network connection for the current browser from Centro → Equipo. Connected, connecting, offline/cache, and error states are surfaced in the UI. This is a client-local connection control, not a global Firebase shutdown.
