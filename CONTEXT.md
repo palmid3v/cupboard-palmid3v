@@ -170,3 +170,40 @@ The owner can control the Firestore network connection for the current browser f
 - Firestore Rules independently require `request.auth.token.email_verified == true` and bind profile/member email to the verified Firebase email.
 - Product detail has been extracted into `app/src/components/ProductDetail.jsx` with animated stock feedback, expiry state, product image treatment, category, weight, barcode, and minimum-stock metadata.
 - Existing Firebase users, households, invites, and products are intentionally preserved. No reset has been performed or approved as an operational step yet.
+
+## October 2026 architecture checkpoint
+
+### Approved phases
+
+- 🟢 FASE 1 — Shared product catalog
+- 🟢 FASE 2 — Data-model audit
+- 🟢 FASE 3 — Inventory service foundation
+- 🟡 FASE 4 — Runtime adoption
+
+### Target data model
+
+```text
+productCatalog/{barcode}
+households/{householdId}/inventory/{barcode}
+households/{householdId}/movements/{movementId}
+```
+
+### New service
+
+`app/src/services/inventory.js` defines the final household inventory boundary with:
+
+- `getInventoryProduct`
+- `getAllInventory`
+- `subscribeToInventory`
+- `saveInventoryProduct`
+- `updateInventoryPortions`
+
+The current application still uses the legacy household `products` collection as its live source. This is intentional until the next runtime-adoption and migration phases are complete.
+
+### Safety gate
+
+No reset or destructive migration is approved. The explicit gate remains:
+
+> ⚠️ **AHORA SÍ: RESET + MIGRACIÓN**
+
+Only after runtime adoption, movements, Rules, migration preparation, and regression validation pass.
