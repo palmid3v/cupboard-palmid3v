@@ -861,7 +861,7 @@ setIsSaving(true);
               </section>
 
               <section>
-  <div className="mb-5">
+  <div className="sticky top-[5.5rem] z-30 -mx-1 mb-5 border-b border-[var(--cupboard-border)] bg-[var(--cupboard-bg)]/95 px-1 pb-4 pt-2 backdrop-blur lg:static lg:border-0 lg:bg-transparent lg:px-0 lg:pb-0 lg:pt-0 lg:backdrop-blur-none">
     <p className="text-sm font-semibold text-[var(--cupboard-primary)]">
       Inventario
     </p>
@@ -1232,7 +1232,7 @@ setIsSaving(true);
           {/* SCANNER */}
           {view === "scanner" && (
             <section className="space-y-6">
-              <section className="overflow-hidden rounded-3xl border border-[var(--cupboard-border)] bg-[var(--cupboard-surface)] shadow-[var(--cupboard-shadow-md)]">
+              <section className="overflow-hidden rounded-3xl border border-[var(--cupboard-accent)]/20 bg-[var(--cupboard-surface)] shadow-[var(--cupboard-shadow-md)]">
                 <div className="border-b border-[var(--cupboard-border)] px-5 py-5 sm:px-6">
                   <p className="text-sm font-semibold text-[var(--cupboard-primary)]">
                     Scanner
