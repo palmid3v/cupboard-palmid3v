@@ -2,69 +2,74 @@
 
 ## Status legend
 
-- ✅ Current — implemented
-- 🟡 Pending — known improvement or incomplete area
-- 🔵 Future — product idea, not committed implementation
+- ✅ Current — implemented in the application.
+- 🟡 Pending — known improvement or incomplete work.
+- 🔵 Future — product idea, not committed implementation.
 
 ## Current foundation
 
 ### Inventory
-- ✅ Product inventory
-- ✅ Search
-- ✅ Filters
-- ✅ Sorting
-- ✅ Low-stock visibility
+- ✅ Product inventory from Firestore
+- ✅ Search by name/barcode
+- ✅ All / low-stock / available filters
+- ✅ Name / recent / low-stock / high-stock sorting
 - ✅ Inventory summary
-- ✅ Product details
-- ✅ Add/consume portions
+- ✅ Product detail view
+- ✅ Optimistic +1 / -1 portion updates
+- ✅ Rollback when a portion write fails
+- ✅ Low-stock visibility
 
 ### Registration
-- ✅ Barcode scanning
+- ✅ Camera barcode scanning
 - ✅ Manual barcode entry
 - ✅ Existing-product lookup
 - ✅ New-product registration
 - ✅ Product validation
 - ✅ Optional image URL
+- ✅ Camera permission/error/retry states
 
-### Preferences
-- ✅ Light theme
-- ✅ Dark theme
-- ✅ System theme
-- ✅ Local preference persistence
+### UI/UX
+- ✅ Responsive desktop/mobile layout
+- ✅ Sticky desktop navigation/status area
+- ✅ Mobile bottom navigation
+- ✅ Custom dark sort dropdown
+- 🟡 Finalize product-image presentation across more real-world image sources
+- 🟡 Further visual refinement as real product images expose edge cases
 
 ### Platform
 - ✅ React/Vite application
 - ✅ Firestore persistence
-- ✅ Responsive layout
 - ✅ PWA configuration
 - 🟡 Final PWA icon set
+- 🟡 Full install/update verification on target devices
 
-## Near-term improvements
+## Near-term technical work
 
-### Finish the PWA package
-- 🟡 proper install icons
-- 🟡 verify manifest metadata
-- 🟡 test install/update behavior
-- 🟡 verify standalone navigation
+### Scanner reliability
+- 🟡 Test camera startup/retry across supported browsers and mobile devices.
+- 🟡 Test permission-denied → permission-granted recovery.
+- 🟡 Test repeated scanner sessions after successful scans.
+- 🟡 Decide whether scanner dependency cleanup is needed; `html5-qrcode` is present but `@zxing/browser` is the active scanner implementation.
 
-### Improve application structure
-- 🟡 extract inventory UI into focused components
-- 🟡 extract product form
-- 🟡 extract settings
-- 🟡 extract reusable navigation
-- 🟡 introduce hooks only where they improve clarity
+### Architecture
+- 🟡 Extract focused inventory components from `App.jsx`.
+- 🟡 Extract product form and product detail UI.
+- 🟡 Extract settings/navigation where it improves maintainability.
+- 🟡 Introduce hooks only where they make state ownership clearer.
 
-The goal is not abstraction for its own sake.
+### Data safety
+- 🟡 Review Firebase configuration strategy.
+- 🟡 Document and review Firestore security rules.
+- 🟡 Define deployment configuration.
+- 🟡 Establish backup/data-recovery expectations.
 
-### Strengthen data safety
-- 🟡 document Firestore security expectations
-- 🟡 review Firebase configuration strategy
-- 🟡 define deployment configuration
-- 🟡 establish backup/data-recovery expectations
+### Connectivity
+- 🟡 If product requirements justify it, replace the static “Inventario conectado” treatment with an explicit online/offline/Firestore availability state.
+- 🟡 Decide whether offline-first behavior is needed before implementing connectivity UX.
 
 ## Product opportunities
 
-These are deliberately separated from implementation commitments.
+These are ideas, not current implementation commitments.
 
 ### Household collaboration
 - 🔵 authentication
@@ -89,18 +94,9 @@ These are deliberately separated from implementation commitments.
 - 🔵 meal planning
 - 🔵 ingredient usage
 
-Only add these when they strengthen the home-organization experience.
-
 ## Avoid feature creep
 
-Cupboard does not need to become:
-
-- a warehouse management system
-- a procurement platform
-- an ERP
-- an analytics-heavy business dashboard
-- a social network
-- an AI feature collection
+Cupboard does not need to become a warehouse management system, procurement platform, ERP, analytics-heavy dashboard, social network, or AI feature collection.
 
 AI can be useful later only when it solves a concrete household problem.
 
@@ -114,6 +110,8 @@ Polish + reliability
 Better PWA experience
    ↓
 Cleaner architecture
+   ↓
+Optional connectivity/offline strategy
    ↓
 Household sharing, if needed
    ↓
