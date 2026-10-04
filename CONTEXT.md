@@ -112,22 +112,24 @@ Actual Firestore availability is discovered when a Firestore operation succeeds 
 
 Do not describe the green indicator as real-time connectivity monitoring.
 
-## Known boundaries
+## Current boundaries
 
-Not implemented:
+Implemented foundation:
 - authentication;
 - multi-user households;
 - authorization/permissions;
-- offline-first persistence;
+- offline-first Firestore persistence;
 - live connectivity monitoring;
 - expiry;
-- history;
+- movement/history;
 - shopping lists;
 - recipes;
-- meal planning;
-- analytics;
-- external product databases;
-- automatic image enrichment.
+- basic analytics;
+- external product catalog enrichment;
+- image URLs.
+
+Deferred:
+- Firebase Storage uploads and local image processing until a billing-enabled Firebase plan is acceptable.
 
 ## Documentation rule
 
