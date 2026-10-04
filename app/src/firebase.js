@@ -1,5 +1,6 @@
 // src/firebase.js
 import { initializeApp } from "firebase/app";
+import { getAuth } from "firebase/auth";
 import {
   initializeFirestore,
   persistentLocalCache,
@@ -16,7 +17,7 @@ const firebaseConfig = {
   measurementId: "G-JG7W1BDNXS",
 };
 
-const app = initializeApp(firebaseConfig);
+export const app = initializeApp(firebaseConfig);
 
 let db;
 
@@ -33,5 +34,7 @@ try {
   );
   db = initializeFirestore(app);
 }
+
+export const auth = getAuth(app);
 
 export { db };
