@@ -37,7 +37,8 @@ service cloud.firestore {
         && request.resource.data.role == 'member'
         && request.resource.data.inviteCode is string
         && exists(/databases/$(database)/documents/householdInvites/$(request.resource.data.inviteCode))
-        && get(/databases/$(database)/documents/householdInvites/$(request.resource.data.inviteCode)).data.householdId == householdId;
+        && get(/databases/$(database)/documents/householdInvites/$(request.resource.data.inviteCode)).data.householdId == householdId
+        && get(/databases/$(database)/documents/householdInvites/$(request.resource.data.inviteCode)).data.expiresAt > request.time;
     }
 
     match /users/{userId} {
