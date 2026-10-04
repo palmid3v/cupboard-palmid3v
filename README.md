@@ -320,6 +320,14 @@ The catalog/inventory migration has completed. The former mixed household produc
 - 🟢 FASE 8 — Regression
 - 🟢 FASE 9 — Reset + migration
 - 🟢 FASE 10 — Cleanup
+- 🟢 FASE 11 — Scanner startup reliability foundation
+- 🟢 FASE 12 — Save-flow correctness foundation
+- 🟡 FASE 13 — Role-aware inventory UX
+- 🟡 FASE 14 — Save states and error taxonomy
+- 🟡 FASE 15 — Performance
+- 🟡 FASE 16 — Offline/PWA hardening
+- 🟡 FASE 17 — Automated regression coverage
+- 🟡 FASE 18 — Incremental architecture extraction
 
 ### Firebase Rules deployment
 
@@ -348,4 +356,4 @@ Relevant commits:
 - `c31341e5e02cbae651c9807c4d606fe9910ba98e` — surface interrupted camera errors
 - `437fedabbfd648b23a5f2f4db9aa7bedfb3eafdb` — avoid false product save errors
 
-The next documented phases are FASE 13–18 in `docs/ROADMAP.md` and the operational step-by-step file.
+The next phases are FASE 13–18 in `docs/ROADMAP.md` and `STEP-BY-STEP-CUPBOARD-2026-10-04.md`.
