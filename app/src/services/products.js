@@ -1,56 +1,69 @@
 // src/services/products.js
 
-import {
-  collection,
-  doc,
-  getDoc,
-  getDocs,
-  onSnapshot,
-  serverTimestamp,
-  setDoc,
-  updateDoc,
-} from "firebase/firestore";
-
-import { db } from "../firebase";
 import { createCatalogProductIfMissing, getCatalogProduct } from "./catalog";
-import { getActiveHouseholdId } from "./households";
+import {
+  getAllInventory,
+  getInventoryProduct,
+  saveInventoryProduct,
+  subscribeToInventory,
+  updateInventoryPortions,
+} from "./inventory";
 
-function requireHouseholdId() {
-  const householdId = getActiveHouseholdId();
-
-  if (!householdId) {
-    throw new Error("HOUSEHOLD_REQUIRED");
-  }
-
-  return householdId;
-}
-
-function productsCollection() {
-  return collection(db, "households", requireHouseholdId(), "products");
-}
-
-function productRef(barcode) {
-  return doc(productsCollection(), barcode);
-}
-
-// 🧩 Normalize product data
-function normalizeProduct(id, data = {}) {
+function normalizeProduct(id, catalog = {}, inventory = {}) {
   return {
     id,
-    name: data.name ?? "",
-    description: data.description ?? "",
-    weight: Number(data.weight) || 0,
-    portions: Number(data.portions) || 0,
-    imageUrl: data.imageUrl ?? "",
-    category: data.category ?? "",
-    expiryDate: data.expiryDate ?? null,
-    minStock: Number(data.minStock) || 5,
-    createdAt: data.createdAt ?? null,
-    updatedAt: data.updatedAt ?? null,
+    name: catalog.name ?? "",
+    description: catalog.description ?? "",
+    weight: Number(catalog.weight) || 0,
+    portions: Number(inventory.portions) || 0,
+    imageUrl: catalog.imageUrl ?? "",
+    category: catalog.category ?? "",
+    expiryDate: inventory.expiryDate ?? null,
+    minStock: Math.max(0, Number(inventory.minStock) || 5),
+    notes: inventory.notes ?? "",
+    createdAt: inventory.createdAt ?? null,
+    updatedAt: inventory.updatedAt ?? null,
   };
 }
 
-// 🔍 Get product
+async function hydrateInventory(inventory) {
+  const products = await Promise.all(
+    inventory.map(async (item) => {
+      const catalog = await getCatalogProduct(item.id);
+
+      if (!catalog) {
+        return normalizeProduct(item.id, {}, item);
+      }
+
+      return normalizeProduct(item.id, catalog, item);
+    }),
+  );
+
+  return products;
+}
+
+/**
+ * Runtime product facade.
+ *
+ * The UI can keep its existing product-oriented API while persistence is now
+ * split between the shared catalog and household inventory collections.
+ */
+export async function getProduct(barcode) {
+  const normalizedBarcode = String(barcode || "").trim();
+
+  if (!normalizedBarcode) return null;
+
+  const inventory = await getInventoryProduct(normalizedBarcode);
+
+  if (!inventory) {
+    return null;
+  }
+
+  const catalog = await getCatalogProduct(normalizedBarcode);
+
+  return normalizeProduct(normalizedBarcode, catalog || {}, inventory);
+}
+
 export async function findProductByBarcode(barcode) {
   const householdProduct = await getProduct(barcode);
 
@@ -76,83 +89,40 @@ export async function findProductByBarcode(barcode) {
   };
 }
 
-export async function getProduct(barcode) {
-  const snap = await getDoc(productRef(barcode));
+export async function saveProduct(barcode, data = {}) {
+  const normalizedBarcode = String(barcode || "").trim();
 
-  if (!snap.exists()) {
-    return null;
+  if (!normalizedBarcode) {
+    throw new Error("BARCODE_REQUIRED");
   }
 
-  return normalizeProduct(snap.id, snap.data());
-}
+  await createCatalogProductIfMissing(normalizedBarcode, data);
 
-// 💾 Save product
-export async function saveProduct(barcode, data) {
-  const ref = productRef(barcode);
-
-  await createCatalogProductIfMissing(barcode, data);
-  const snap = await getDoc(ref);
-
-  const productData = {
-    name: data.name?.trim() ?? "",
-    description: data.description?.trim() ?? "",
-    weight: Number(data.weight) || 0,
-    portions: Number(data.portions) || 0,
-    imageUrl: data.imageUrl?.trim() ?? "",
-    category: data.category?.trim() ?? "",
-    expiryDate: data.expiryDate || null,
-    minStock: Math.max(0, Number(data.minStock) || 5),
-  };
-
-  if (snap.exists()) {
-    await updateDoc(ref, {
-      ...productData,
-      updatedAt: serverTimestamp(),
-    });
-    return;
-  }
-
-  await setDoc(ref, {
-    ...productData,
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
+  await saveInventoryProduct(normalizedBarcode, {
+    portions: data.portions,
+    expiryDate: data.expiryDate,
+    minStock: data.minStock,
+    notes: data.notes,
   });
 }
 
-// 📦 Get all products
 export async function getAllProducts() {
-  const querySnapshot = await getDocs(productsCollection());
+  const inventory = await getAllInventory();
 
-  return querySnapshot.docs.map((productDoc) =>
-    normalizeProduct(productDoc.id, productDoc.data()),
-  );
+  return hydrateInventory(inventory);
 }
 
-// 🔄 Subscribe to inventory changes and connection metadata
 export function subscribeToProducts(onData, onError) {
-  return onSnapshot(
-    productsCollection(),
-    { includeMetadataChanges: true },
-    (snapshot) => {
-      const data = snapshot.docs.map((productDoc) =>
-        normalizeProduct(productDoc.id, productDoc.data()),
-      );
-
-      onData(data, {
-        fromCache: snapshot.metadata.fromCache,
-        hasPendingWrites: snapshot.metadata.hasPendingWrites,
-      });
+  return subscribeToInventory(
+    (inventory, metadata) => {
+      hydrateInventory(inventory)
+        .then((products) => onData(products, metadata))
+        .catch(onError);
     },
     onError,
   );
 }
 
-// ➕➖ Update portions
 export async function updatePortions(barcode, newPortions) {
-  const ref = productRef(barcode);
-
-  await updateDoc(ref, {
-    portions: Math.max(0, Number(newPortions) || 0),
-    updatedAt: serverTimestamp(),
-  });
+  return updateInventoryPortions(barcode, newPortions);
 }
