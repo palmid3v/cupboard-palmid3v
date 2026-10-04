@@ -1,8 +1,8 @@
 import {
   doc,
   getDoc,
-  runTransaction,
   serverTimestamp,
+  setDoc,
 } from "firebase/firestore";
 
 import { db } from "../firebase";
@@ -45,15 +45,10 @@ export async function createCatalogProductIfMissing(barcode, data) {
   }
 
   const ref = catalogRef(normalizedBarcode);
+  const snapshot = await getDoc(ref);
 
-  await runTransaction(db, async (transaction) => {
-    const snapshot = await transaction.get(ref);
-
-    if (snapshot.exists()) {
-      return;
-    }
-
-    transaction.set(ref, {
+  if (!snapshot.exists()) {
+    await setDoc(ref, {
       name: data.name?.trim() ?? "",
       description: data.description?.trim() ?? "",
       brand: data.brand?.trim() ?? "",
@@ -64,7 +59,7 @@ export async function createCatalogProductIfMissing(barcode, data) {
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     });
-  });
+  }
 
   return getCatalogProduct(normalizedBarcode);
 }
