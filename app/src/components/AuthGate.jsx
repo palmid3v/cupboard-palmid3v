@@ -72,6 +72,8 @@ function AuthScreen({ mode, setMode, onSuccess }) {
         INVITE_NOT_FOUND: "El código de invitación no existe.",
         INVITE_EXPIRED: "El código de invitación ya expiró.",
         HOUSEHOLD_NOT_FOUND: "La alacena compartida ya no está disponible.",
+        "permission-denied": "Firebase rechazó el acceso a esta alacena. Verifica el código de invitación y las reglas publicadas.",
+        "auth/network-request-failed": "No pudimos comunicarnos con Firebase. Revisa tu conexión e inténtalo nuevamente.",
       };
 
       setError(messages[err.code] || messages[err.message] || "No pudimos abrir Cupboard. Inténtalo nuevamente.");
@@ -252,7 +254,14 @@ export default function AuthGate({ children }) {
         setHousehold(nextHousehold);
       } catch (err) {
         console.error(err);
-        setError(err.message === "HOUSEHOLD_INVITE_REQUIRED" ? "Esta cuenta no tiene una alacena asignada. Necesitas un código de invitación." : "No pudimos conectar tu cuenta con la alacena. Inténtalo nuevamente.");
+        const householdMessages = {
+          HOUSEHOLD_INVITE_REQUIRED: "Esta cuenta no tiene una alacena asignada. Necesitas un código de invitación.",
+          HOUSEHOLD_NOT_FOUND: "La alacena compartida ya no está disponible.",
+          INVITE_NOT_FOUND: "El código de invitación no existe.",
+          INVITE_EXPIRED: "El código de invitación ya expiró.",
+          "permission-denied": "Firebase rechazó el acceso. Revisa que las reglas publicadas estén actualizadas.",
+        };
+        setError(householdMessages[err.message] || householdMessages[err.code] || "No pudimos conectar tu cuenta con la alacena. Inténtalo nuevamente.");
       }
     });
   }, []);
