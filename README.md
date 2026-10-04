@@ -2,71 +2,114 @@
 
 Cupboard is a home-first inventory app for keeping products in a kitchen or household organized without turning the experience into a complicated management system.
 
-> Product direction: hommie · familiar · calm · organized · practical
-
-## What Cupboard is
-
-Cupboard helps people know what they have, find it quickly, and keep quantities up to date.
-
-Current capabilities include:
-- 📦 inventory visibility
-- 📷 barcode scanning
-- ⌨️ manual barcode entry
-- 📝 product registration
-- 🔎 search, filtering, and sorting
-- ➕ adding portions
-- ➖ consuming portions
-- 🧾 product details
-- 🖼️ optional product image URLs
-- ⚠️ low-stock visibility
-- 🌓 light, dark, and system themes
-- 📱 PWA configuration
+> Product direction: **hommie · familiar · calm · organized · practical**
 
 ## Current status
 
-**Active functional MVP / active development.**
+**Functional MVP · active development**
 
-The current implementation has a React/Vite frontend, Firestore persistence, barcode scanning, responsive inventory workflows, theme preferences, and PWA configuration.
+The repository currently contains a React/Vite application with Firestore persistence, browser barcode scanning, manual barcode registration, responsive inventory workflows, optimistic portion updates, a custom dark UI, and PWA configuration.
 
-Some product areas remain outside the current scope. See [ROADMAP.md](docs/ROADMAP.md).
+The source of truth for behavior is the code in `app/src/`. Documentation is synchronized with the implemented behavior and separates **current**, **pending**, and **future** work.
 
-## 🧭 Product philosophy
-
-Cupboard should feel friendly, calm, fast, organized, and appropriate for a home or family.
-
-It is not intended to feel like warehouse-management software.
-
-See [PRODUCT.md](docs/PRODUCT.md) and [DESIGN_PRINCIPLES.md](docs/DESIGN_PRINCIPLES.md).
-
-## ✨ Current functionality
+## What Cupboard does today
 
 ### Inventory
-- Load products from Firestore
-- Search by product name or barcode
-- Filter all / low stock / available stock
-- Sort by name, stock level, or recent update
-- Show inventory summaries
-- Open product details
-- Add or consume one portion
+- 📦 Loads products from Firestore.
+- 🔎 Searches by product name or barcode.
+- 🏷️ Filters **Todos / Stock bajo / Disponibles**.
+- ↕️ Sorts by **Nombre A-Z / Más recientes / Menor stock / Mayor stock**.
+- 📊 Shows inventory summaries.
+- 🧾 Opens product details.
+- ➕ Adds one portion.
+- ➖ Consumes one portion.
+- ⚡ Updates the visible quantity optimistically without reloading the whole inventory.
+- ↩️ Rolls the UI back if the Firestore update fails.
 
 ### Product registration
-Products can be registered through camera barcode scanning or manual barcode entry.
+Products can be registered through:
+- 📷 camera barcode scanning;
+- ⌨️ manual barcode entry.
 
-Current fields:
+Current product fields:
 - name
 - description
 - weight in grams
 - portions
 - optional image URL
 
-### Barcode scanner
-The scanner uses @zxing/browser and browser camera access. It prevents duplicate handling during one scan session and attempts continuous focus when supported.
+A barcode is the Firestore document identity.
 
-### Themes
-Light, dark, and system themes are supported. The selected preference is stored locally in the browser.
+### Barcode scanner
+The scanner uses `@zxing/browser` and browser camera access.
+
+Current scanner behavior includes:
+- one successful scan per scanner session;
+- camera stream cleanup;
+- safe restart/retry behavior;
+- protection against overlapping scanner sessions;
+- continuous focus when supported by the device;
+- dedicated permission, missing-camera, and camera-busy messaging;
+- a visual scanning frame and detected-code state.
+
+ZXing can emit non-fatal errors while it is looking for a barcode. Those callback errors are intentionally not shown as repeated user-facing failures.
+
+### Product images
+Product images are optional URLs supplied with the product.
+
+Cards keep a fixed visual image area and contain the supplied image inside a bounded product-photo frame so very different source images do not change the card layout.
+
+Cupboard does **not** currently download, normalize, remove backgrounds from, or automatically enrich product images.
+
+### Theme
+The current application uses a **dark-only Cupboard visual theme**. The settings screen presents this as a fixed theme.
+
+There is no implemented light/dark/system theme switch in the current UI.
 
 ### PWA
-vite-plugin-pwa is configured with standalone behavior and auto-update registration. The manifest icon list is currently empty, so PWA icon finalization remains pending.
+`vite-plugin-pwa` is configured for standalone behavior and auto-update registration.
+
+PWA icon finalization remains pending because the manifest icon list is not yet complete.
+
+## 🔌 What “Inventario conectado” means
+
+The green **Inventario conectado / ACTIVO** indicator is currently a **UI status indicator**, not a live Firestore connectivity monitor.
+
+It does **not** currently:
+- listen for Firebase connection state;
+- run a health check;
+- use `navigator.onLine`;
+- prove that Firestore is reachable at that exact moment.
+
+The actual data connection happens when the application calls the Firestore service functions in `app/src/services/products.js`.
+
+This distinction is intentional: **do not treat the current green indicator as a real-time connectivity guarantee.**
+
+A future connectivity state can be implemented separately if the product needs offline/online visibility.
+
+## 🧱 Architecture at a glance
+
+```text
+Browser
+  │
+  ▼
+React UI
+  │
+  └── App.jsx
+       ├── Inventory
+       ├── Scanner flow
+       ├── Product registration
+       └── Settings
+             │
+             ├── BarcodeScanner.jsx
+             │      └── @zxing/browser
+             │
+             └── services/products.js
+                    └── Firebase Firestore
+                           └── products/{barcode}
+```
+
+The application intentionally has no separate backend API layer.
 
 ## 🛠️ Technology
 
@@ -75,14 +118,12 @@ vite-plugin-pwa is configured with standalone behavior and auto-update registrat
 | React 19 | UI and application state |
 | Vite 8 | Development/build tooling |
 | Tailwind CSS 4 | Styling |
-| Firebase 12 | Backend SDK |
+| Firebase 12 | Firebase SDK |
 | Firestore | Product persistence |
 | @zxing/browser | Barcode scanning |
-| html5-qrcode | Scanner dependency currently present |
+| html5-qrcode | Present dependency; not the active scanner boundary |
 | vite-plugin-pwa | PWA generation |
 | ESLint 9 | Code quality |
-
-See [ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## 📁 Repository structure
 
@@ -95,55 +136,98 @@ cupboard-palmid3v/
 │   ├── ARCHITECTURE.md
 │   ├── DATA_MODEL.md
 │   ├── USER_FLOWS.md
+│   ├── DESIGN_PRINCIPLES.md
 │   ├── CONTRIBUTING.md
-│   ├── ROADMAP.md
-│   └── DESIGN_PRINCIPLES.md
+│   └── ROADMAP.md
 ├── app/
 │   ├── README.md
 │   ├── package.json
 │   ├── vite.config.js
 │   └── src/
+│       ├── App.jsx
+│       ├── firebase.js
+│       ├── index.css
+│       ├── components/
+│       │   └── BarcodeScanner.jsx
+│       └── services/
+│           └── products.js
 └── archive/
 ```
 
-## 🚀 Development
+## 🚀 Local development
+
+From the repository root:
 
 ```bash
 cd app
 npm install
 npm run dev
+```
+
+Quality checks:
+
+```bash
 npm run lint
 npm run build
 npm run preview
 ```
 
-## 🔥 Data
+The development configuration includes local SSL support, which is useful because browser camera APIs require a secure context.
 
-Firestore uses a products collection. The barcode is the document ID.
+## 🔥 Firestore data layer
 
-Main service operations:
-- getProduct(barcode)
-- saveProduct(barcode, data)
-- getAllProducts()
-- updatePortions(barcode, newPortions)
+The current collection is:
 
-See [DATA_MODEL.md](docs/DATA_MODEL.md).
+```text
+products/{barcode}
+```
 
-## 🧩 Documentation map
+Service boundary:
+
+```js
+getProduct(barcode)
+saveProduct(barcode, data)
+getAllProducts()
+updatePortions(barcode, newPortions)
+```
+
+Keep Firestore access behind this service boundary where practical.
+
+## 📚 Documentation map
 
 | Document | Purpose |
 | --- | --- |
-| [PRODUCT.md](docs/PRODUCT.md) | Product vision and scope |
-| [ARCHITECTURE.md](docs/ARCHITECTURE.md) | Technical architecture |
-| [DATA_MODEL.md](docs/DATA_MODEL.md) | Firestore model |
-| [USER_FLOWS.md](docs/USER_FLOWS.md) | Main user flows |
-| [DESIGN_PRINCIPLES.md](docs/DESIGN_PRINCIPLES.md) | Visual and UX direction |
-| [CONTRIBUTING.md](docs/CONTRIBUTING.md) | How to modify the project |
+| [PRODUCT.md](docs/PRODUCT.md) | Product purpose, audience, promise, and boundaries |
+| [ARCHITECTURE.md](docs/ARCHITECTURE.md) | Runtime architecture and technical boundaries |
+| [DATA_MODEL.md](docs/DATA_MODEL.md) | Firestore product model and persistence behavior |
+| [USER_FLOWS.md](docs/USER_FLOWS.md) | Implemented user journeys and interaction states |
+| [DESIGN_PRINCIPLES.md](docs/DESIGN_PRINCIPLES.md) | Visual, UX, responsive, and accessibility direction |
+| [CONTRIBUTING.md](docs/CONTRIBUTING.md) | How another developer should modify the project |
 | [ROADMAP.md](docs/ROADMAP.md) | Current, pending, and future work |
-| [CONTEXT.md](CONTEXT.md) | Consolidated project context |
+| [CONTEXT.md](CONTEXT.md) | Compact project context for handoff |
 
-## 📌 Current boundaries
+## 🚧 Current boundaries
 
-Authentication, multi-user households, expiry tracking, movement history, shopping workflows, recipes, meal planning, advanced analytics, and automatic product catalog enrichment are not current core features.
+The following are **not implemented**:
+- authentication;
+- multi-user households;
+- permissions;
+- offline-first inventory;
+- live connectivity monitoring;
+- expiry tracking;
+- movement/history tracking;
+- shopping lists;
+- recipes or meal planning;
+- analytics;
+- external product catalog enrichment;
+- automatic product image lookup/background removal.
 
-**PALMI-D3V · Cupboard · Documentation refreshed October 2026**
+## Development principle
+
+Cupboard should remain understandable.
+
+Prefer small, explicit changes that improve the household inventory experience over adding infrastructure or abstractions simply because larger applications commonly use them.
+
+---
+
+**PALMI-D3V · Cupboard · README synchronized with the October 2026 implementation**
