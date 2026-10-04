@@ -165,3 +165,70 @@ A known catalog product is never copied as a second global product. Its canonica
 ### Current catalog bootstrap
 
 The owner can use **Centro → Catálogo → Preparar catálogo** to create missing catalog entries from the current household products. This operation is non-destructive: it does not update, delete, or reset the existing household inventory.
+
+## 🧭 October 2026 target data model
+
+The approved target model separates canonical product identity from household inventory state.
+
+### Canonical product identity
+
+```text
+productCatalog/{barcode}
+```
+
+Stores reusable metadata:
+
+| Field | Responsibility |
+| --- | --- |
+| barcode | Stable product identity |
+| name | Canonical name |
+| description | Canonical description |
+| brand | Canonical brand |
+| weight | Reference weight |
+| imageUrl | Optional remote image |
+| category | Canonical category |
+| createdBy | First catalog creator |
+| createdAt | Catalog creation |
+| updatedAt | Catalog metadata update |
+
+### Household inventory
+
+```text
+households/{householdId}/inventory/{barcode}
+```
+
+The new inventory service currently defines:
+
+| Field | Responsibility |
+| --- | --- |
+| barcode | Reference to the product identity |
+| portions | Current household quantity |
+| expiryDate | Household-specific expiry |
+| minStock | Household-specific threshold |
+| notes | Household-specific notes |
+| createdAt | Inventory record creation |
+| updatedAt | Inventory state update |
+
+### Ownership rule
+
+A barcode may exist once in `productCatalog` and many times in household `inventory`.
+
+```text
+productCatalog/750123
+        │
+        ├── household A / inventory/750123 → 3 portions
+        ├── household B / inventory/750123 → 7 portions
+        └── household C / inventory/750123 → 0 portions
+```
+
+### Legacy bridge
+
+`households/{householdId}/products/{barcode}` remains temporarily supported as the existing working dataset. It must not be deleted until the migration gate is explicitly reached.
+
+### FASE 2 decision
+
+The audit confirmed that the current `products` document mixes canonical product identity and household state. The migration will split those responsibilities rather than copy the mixed document unchanged.
+
+### FASE 3 decision
+
+`app/src/services/inventory.js` is now the approved service boundary for the final household inventory model. Runtime adoption is intentionally deferred to the next phase so the existing dataset remains safe.
