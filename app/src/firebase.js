@@ -5,6 +5,8 @@ import {
   initializeFirestore,
   persistentLocalCache,
   persistentMultipleTabManager,
+  enableNetwork,
+  disableNetwork,
 } from "firebase/firestore";
 
 const firebaseConfig = {
@@ -38,3 +40,20 @@ try {
 export const auth = getAuth(app);
 
 export { db };
+
+
+export async function connectFirestore() {
+  await enableNetwork(db);
+  if (typeof window !== "undefined") {
+    window.localStorage.setItem("cupboard.firestoreNetwork", "online");
+    window.dispatchEvent(new CustomEvent("cupboard:firestore-network", { detail: "online" }));
+  }
+}
+
+export async function disconnectFirestore() {
+  await disableNetwork(db);
+  if (typeof window !== "undefined") {
+    window.localStorage.setItem("cupboard.firestoreNetwork", "offline");
+    window.dispatchEvent(new CustomEvent("cupboard:firestore-network", { detail: "offline" }));
+  }
+}
