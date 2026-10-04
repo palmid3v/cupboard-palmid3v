@@ -78,11 +78,16 @@ Test:
 - permission denied;
 - permission granted;
 - successful scan;
-- duplicate prevention;
+- one-scan deduplication;
 - retry after failure;
 - repeated scanner sessions;
 - camera cleanup;
-- mobile layout.
+- mobile layout;
+- slow-focus / poor-positioning behavior.
+
+The active scanner is `@zxing/browser`.
+
+When scanner startup changes, test at least one real mobile device. Desktop camera behavior is not equivalent to mobile Safari/Chrome.
 
 ZXing may emit non-fatal callback errors while searching. Do not turn every callback error into a user-facing failure.
 
@@ -136,3 +141,16 @@ Never treat the existence of `inventory.js` as permission to reset Firebase.
 The destructive operation is a separate, explicit milestone guarded by:
 
 > ⚠️ **AHORA SÍ: RESET + MIGRACIÓN**
+## Save-flow regression rule
+
+When changing product save behavior, explicitly test the distinction between:
+- primary Firestore write failure;
+- permission-denied;
+- temporary network/Auth availability;
+- successful write followed by realtime inventory update.
+
+Do not use an unnecessary second full inventory reload as the proof that a save succeeded.
+
+## Operational phase tracking
+
+Use `STEP-BY-STEP-CUPBOARD-2026-10-04.md` for the current phase sequence. New reliability work should advance the phase status there and in `docs/ROADMAP.md` so another developer can see what is implemented versus pending.
