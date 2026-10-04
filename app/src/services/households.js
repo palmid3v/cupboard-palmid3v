@@ -5,8 +5,6 @@ import {
   getDocs,
   serverTimestamp,
   setDoc,
-  updateDoc,
-  writeBatch,
 } from "firebase/firestore";
 
 import { db } from "../firebase";
@@ -26,42 +24,6 @@ export function getActiveHouseholdId() {
 export async function getUserProfile(uid) {
   const snapshot = await getDoc(doc(db, "users", uid));
   return snapshot.exists() ? { id: snapshot.id, ...snapshot.data() } : null;
-}
-
-async function migrateLegacyProducts(householdId) {
-  const legacy = await getDocs(collection(db, "products"));
-
-  if (legacy.empty) return false;
-
-  for (let index = 0; index < legacy.docs.length; index += 450) {
-    const batch = writeBatch(db);
-
-    legacy.docs.slice(index, index + 450).forEach((product) => {
-      batch.set(
-        doc(db, "households", householdId, "products", product.id),
-        {
-          ...product.data(),
-          migratedFromLegacy: true,
-          migratedAt: serverTimestamp(),
-        },
-        { merge: true },
-      );
-    });
-
-    await batch.commit();
-  }
-
-  for (let index = 0; index < legacy.docs.length; index += 450) {
-    const batch = writeBatch(db);
-
-    legacy.docs.slice(index, index + 450).forEach((product) => {
-      batch.delete(doc(db, "products", product.id));
-    });
-
-    await batch.commit();
-  }
-
-  return true;
 }
 
 export async function getHousehold(householdId) {
@@ -85,22 +47,6 @@ export async function ensureHouseholdForUser(user) {
   }
 
   setActiveHouseholdId(household.id);
-
-  if (!household.legacyInventoryMigratedAt && household.ownerUid === user.uid) {
-    try {
-      const migrated = await migrateLegacyProducts(household.id);
-
-      if (migrated) {
-        await updateDoc(doc(db, "households", household.id), {
-          legacyInventoryMigratedAt: serverTimestamp(),
-          updatedAt: serverTimestamp(),
-        });
-        household.legacyInventoryMigratedAt = true;
-      }
-    } catch (error) {
-      console.warn("Legacy inventory migration skipped:", error);
-    }
-  }
 
   return {
     ...household,
