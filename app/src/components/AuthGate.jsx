@@ -67,6 +67,8 @@ function AuthScreen({ mode, setMode, onSuccess }) {
         "auth/email-already-in-use": "Ese correo ya está registrado.",
         "auth/invalid-email": "Revisa el correo electrónico.",
         PASSWORD_SHORT: "La contraseña debe tener al menos 6 caracteres.",
+        INVITE_REQUIRED: "Necesitas un código de invitación para crear una cuenta.",
+        HOUSEHOLD_INVITE_REQUIRED: "Esta cuenta todavía no está conectada a una alacena. Usa una invitación para unirte.",
         INVITE_NOT_FOUND: "El código de invitación no existe.",
         INVITE_EXPIRED: "El código de invitación ya expiró.",
         HOUSEHOLD_NOT_FOUND: "La alacena compartida ya no está disponible.",
@@ -156,11 +158,12 @@ function AuthScreen({ mode, setMode, onSuccess }) {
 
             {mode === "signup" && (
               <AuthField
-                label="Código de invitación · opcional"
+                label="Código de invitación · obligatorio"
                 value={inviteCode}
                 onChange={(event) => setInviteCode(event.target.value)}
                 placeholder="ABC123"
                 autoComplete="off"
+                required
               />
             )}
           </div>
@@ -182,7 +185,7 @@ function AuthScreen({ mode, setMode, onSuccess }) {
             disabled={busy}
             className="mt-6 w-full rounded-2xl bg-[var(--cupboard-primary)] px-5 py-3.5 text-sm font-extrabold text-[#10140d] shadow-[0_12px_30px_rgb(120_168_91_/_0.15)] transition duration-300 hover:-translate-y-0.5 hover:bg-[var(--cupboard-primary-hover)] disabled:opacity-50"
           >
-            {busy ? "Abriendo..." : mode === "signup" ? "Crear alacena" : "Abrir Cupboard"}
+            {busy ? "Conectando..." : mode === "signup" ? "Unirme a Cupboard" : "Abrir Cupboard"}
           </button>
 
           {mode === "signin" && (
@@ -249,7 +252,7 @@ export default function AuthGate({ children }) {
         setHousehold(nextHousehold);
       } catch (err) {
         console.error(err);
-        setError("Tu cuenta existe, pero no pudimos abrir la alacena compartida.");
+        setError(err.message === "HOUSEHOLD_INVITE_REQUIRED" ? "Esta cuenta no tiene una alacena asignada. Necesitas un código de invitación." : "No pudimos conectar tu cuenta con la alacena. Inténtalo nuevamente.");
       }
     });
   }, []);
