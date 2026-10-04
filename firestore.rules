@@ -19,31 +19,50 @@ service cloud.firestore {
       return member(householdId) && (role(householdId) == 'admin' || role(householdId) == 'editor');
     }
 
-    function admin(householdId) {
-      return member(householdId) && role(householdId) == 'admin';
+    function owner(householdId) {
+      return signedIn()
+        && get(/databases/$(database)/documents/households/$(householdId)).data.ownerUid == request.auth.uid;
+    }
+
+    function invitedMember(householdId) {
+      return signedIn()
+        && request.auth.uid == request.resource.data.uid
+        && request.resource.data.role == 'member'
+        && request.resource.data.inviteCode is string
+        && exists(/databases/$(database)/documents/householdInvites/$(request.resource.data.inviteCode))
+        && get(/databases/$(database)/documents/householdInvites/$(request.resource.data.inviteCode)).data.householdId == householdId;
     }
 
     match /users/{userId} {
-      allow read, create, update: if signedIn() && request.auth.uid == userId;
+      allow read: if signedIn() && request.auth.uid == userId;
+
+      allow create: if signedIn()
+        && request.auth.uid == userId
+        && request.resource.data.role == 'member'
+        && request.resource.data.householdId is string
+        && request.resource.data.keys().hasAll(['householdId', 'role', 'email', 'displayName'])
+        && request.resource.data.keys().hasOnly(['householdId', 'role', 'email', 'displayName', 'createdAt', 'updatedAt'])
+        && exists(/databases/$(database)/documents/householdInvites/$(request.resource.data.inviteCode))
+        && get(/databases/$(database)/documents/householdInvites/$(request.resource.data.inviteCode)).data.householdId == request.resource.data.householdId;
+
+      allow update: if signedIn()
+        && request.auth.uid == userId
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName', 'email', 'updatedAt'])
+        && request.resource.data.householdId == resource.data.householdId
+        && request.resource.data.role == resource.data.role;
+
       allow delete: if false;
     }
 
     match /households/{householdId} {
       allow get, list: if member(householdId);
-      allow create: if signedIn()
-        && request.resource.data.ownerUid == request.auth.uid
-        && request.resource.data.members[request.auth.uid] == 'admin';
-      allow update: if admin(householdId);
-      allow delete: if admin(householdId);
+      allow create: if false;
+      allow update, delete: if owner(householdId);
 
       match /members/{memberId} {
         allow read: if member(householdId);
-        allow create: if admin(householdId)
-          || (signedIn()
-            && request.auth.uid == memberId
-            && exists(/databases/$(database)/documents/householdInvites/$(request.resource.data.inviteCode))
-            && get(/databases/$(database)/documents/householdInvites/$(request.resource.data.inviteCode)).data.householdId == householdId);
-        allow update, delete: if admin(householdId);
+        allow create: if owner(householdId) || invitedMember(householdId);
+        allow update, delete: if owner(householdId);
       }
 
       match /products/{productId} {
@@ -54,7 +73,7 @@ service cloud.firestore {
       match /movements/{movementId} {
         allow read: if member(householdId);
         allow create: if editor(householdId);
-        allow update, delete: if admin(householdId);
+        allow update, delete: if owner(householdId);
       }
 
       match /shoppingItems/{itemId} {
@@ -74,26 +93,24 @@ service cloud.firestore {
 
       match /settings/{settingId} {
         allow read: if member(householdId);
-        allow create, update, delete: if admin(householdId);
+        allow create, update, delete: if owner(householdId);
       }
     }
 
     match /householdInvites/{inviteCode} {
       allow read: if signedIn();
-      allow create: if signedIn()
-        && request.resource.data.householdId is string
-        && admin(request.resource.data.householdId);
-      allow delete: if signedIn()
-        && admin(resource.data.householdId);
+      allow create: if owner(request.resource.data.householdId)
+        && request.resource.data.role == 'member'
+        && request.resource.data.createdBy == request.auth.uid;
+      allow delete: if owner(resource.data.householdId);
       allow update: if false;
     }
 
-    // Legacy inventory is readable only while the first authenticated admin
-    // migrates the existing collection into a household-scoped collection.
+    // Legacy inventory is no longer writable by clients.
+    // Existing data should be migrated into households/{householdId}/products.
     match /products/{productId} {
-      allow read, update: if signedIn() && !('householdId' in resource.data);
-      allow create: if false;
-      allow delete: if false;
+      allow read: if signedIn();
+      allow write: if false;
     }
 
     match /{document=**} {
