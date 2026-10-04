@@ -258,3 +258,56 @@ Current household product?
 ```
 
 This is an incremental bridge toward the post-reset inventory model. The future reset will migrate household `products` into the final `inventory` representation without discarding the canonical product information.
+
+## 🧭 October 2026 architecture checkpoint
+
+Cupboard is now explicitly moving toward a three-boundary data model:
+
+```text
+productCatalog/{barcode}
+        │
+        │ product identity
+        ▼
+households/{householdId}/inventory/{barcode}
+        │
+        │ household stock
+        ▼
+households/{householdId}/movements/{movementId}
+        │
+        │ household history
+```
+
+### Shared catalog boundary
+
+`src/services/catalog.js` owns shared product identity lookup and creation.
+
+### New inventory boundary
+
+`src/services/inventory.js` now defines the final household inventory service boundary:
+
+```js
+getInventoryProduct(barcode)
+getAllInventory()
+subscribeToInventory(onData, onError)
+saveInventoryProduct(barcode, data)
+updateInventoryPortions(barcode, newPortions)
+```
+
+The service intentionally stores household-specific state only:
+
+- portions;
+- expiryDate;
+- minStock;
+- notes;
+- createdAt;
+- updatedAt.
+
+### Migration bridge
+
+`src/services/products.js` remains the compatibility boundary for the current live application. The legacy `households/{householdId}/products` collection is still preserved as the working dataset.
+
+The new inventory service is therefore **implemented but not yet the runtime source of truth**. Switching the UI to it is the next application phase.
+
+### Architectural rule
+
+> Product identity must be reusable across households. Stock must remain household-scoped. Movement history must remain household-scoped.
