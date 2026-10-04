@@ -103,3 +103,26 @@ Before merging a visual change:
 - Does it preserve accessible labels and states?
 - Does it handle unusual product images gracefully?
 - Is it solving a real user problem?
+
+## 13. Mobile camera guidance
+
+The scanner is a primary mobile workflow. When recognition takes time, the interface should help the user recover without guessing.
+
+Prefer:
+- clear camera-ready state;
+- short positioning guidance;
+- obvious retry after interruption;
+- feedback when a barcode was detected;
+- behavior that remains useful when autofocus is slow.
+
+Do not assume the browser can force identical autofocus behavior across devices.
+
+## 14. Permission-aware feedback
+
+Different household roles can see the same product information while having different write capabilities.
+
+The interface should explain permission limits before or during the save action when practical. The user should never need to understand Firestore Rules to understand why a write is unavailable.
+
+## 15. Reliability over decorative complexity
+
+When choosing between a richer animation and clearer action feedback, prefer the clearer feedback. The scan → recognize → save loop is more important than visual novelty.
