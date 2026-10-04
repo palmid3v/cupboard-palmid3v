@@ -190,13 +190,9 @@ export async function joinHouseholdByCode(user, code) {
     throw new Error("INVITE_EXPIRED");
   }
 
-  const householdRef = doc(db, "households", invite.householdId);
-  const householdSnapshot = await getDoc(householdRef);
-
-  if (!householdSnapshot.exists()) {
-    throw new Error("HOUSEHOLD_NOT_FOUND");
-  }
-
+  // An invited user is not a household member yet, so it cannot read
+  // households/{householdId} under the current Firestore rules.
+  // The invite itself is the authorization to perform the onboarding write.
   const role = "member";
 
   const batch = writeBatch(db);
@@ -228,12 +224,17 @@ export async function joinHouseholdByCode(user, code) {
 
   await batch.commit();
 
+  const household = await getHousehold(invite.householdId);
+
+  if (!household) {
+    throw new Error("HOUSEHOLD_NOT_FOUND");
+  }
+
   setActiveHouseholdId(invite.householdId);
 
   return {
-    id: householdSnapshot.id,
-    ...householdSnapshot.data(),
+    ...household,
     role,
-    isOwner: householdSnapshot.data().ownerUid === user.uid,
+    isOwner: household.ownerUid === user.uid,
   };
 }
