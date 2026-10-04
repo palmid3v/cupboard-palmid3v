@@ -169,6 +169,9 @@ export default function App() {
     weight: "",
     portions: "",
     imageUrl: "",
+    category: "",
+    expiryDate: "",
+    minStock: 5,
   });
 
   const [isEditing, setIsEditing] = useState(false);
@@ -364,6 +367,9 @@ export default function App() {
         weight: product.weight || "",
         portions: product.portions || "",
         imageUrl: product.imageUrl || "",
+        category: product.category || "",
+        expiryDate: product.expiryDate || "",
+        minStock: product.minStock ?? 5,
       });
     } else {
       setStatus("new");
@@ -374,6 +380,9 @@ export default function App() {
         weight: "",
         portions: "",
         imageUrl: "",
+        category: "",
+        expiryDate: "",
+        minStock: 5,
       });
     }
     } catch (error) {
@@ -462,7 +471,20 @@ setIsSaving(true);
       name,
       weight: weightValue ?? 0,
       portions: portionsValue,
+      category: form.category,
+      expiryDate: form.expiryDate,
+      minStock: form.minStock,
     });
+
+    if (status === "new" && portionsValue > 0) {
+      await addMovement({
+        productId: productCode,
+        type: "add",
+        quantity: portionsValue,
+        reason: "Registro de producto",
+        userId: auth.currentUser?.uid || null,
+      });
+    }
 
     setStatus("saved");
     setFormError("");
@@ -475,6 +497,9 @@ setIsSaving(true);
       weight: "",
       portions: "",
       imageUrl: "",
+      category: "",
+      expiryDate: "",
+      minStock: 5,
     });
 
     setIsEditing(false);
@@ -504,7 +529,7 @@ setIsSaving(true);
   ),
 
   lowStock: products.filter(
-    (item) => (Number(item.portions) || 0) <= 5,
+    (item) => (Number(item.portions) || 0) <= (Number(item.minStock) || 5),
   ).length,
 };
 
@@ -518,12 +543,13 @@ setIsSaving(true);
       item.id?.toLowerCase().includes(searchTerm);
 
     const portions = Number(item.portions) || 0;
+    const minStock = Number(item.minStock) || 5;
 
     const matchesFilter =
       inventoryFilter === "all"
         ? true
         : inventoryFilter === "low"
-          ? portions <= 5
+          ? portions <= minStock
           : portions > 0;
 
     return matchesSearch && matchesFilter;
