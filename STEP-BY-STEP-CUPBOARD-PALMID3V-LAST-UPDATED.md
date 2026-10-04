@@ -1,4 +1,4 @@
-# 🧭 STEP-BY-STEP — CUPBOARD-PALMID3V
+# 🧭 STEP-BY-STEP — CUPBOARD — 2026-10-04
 ## Roadmap detallada de implementación, validación y migración
 
 **LAST UPDATED:** 2026-10-04  
