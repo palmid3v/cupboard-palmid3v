@@ -328,7 +328,12 @@ export default function App() {
     );
 
     try {
-      await updatePortions(item.id, newPortions, {\n        type: newPortions < previousPortions ? "consume" : "add",\n        quantity: Math.abs(newPortions - previousPortions),\n        reason: newPortions < previousPortions ? "Consumo desde inventario" : "Entrada desde inventario",\n        userId: auth.currentUser?.uid || null,\n      });
+      await updatePortions(item.id, newPortions, {
+type: newPortions < previousPortions ? "consume" : "add",
+quantity: Math.abs(newPortions - previousPortions),
+reason: newPortions < previousPortions ? "Consumo desde inventario" : "Entrada desde inventario",
+userId: auth.currentUser?.uid || null,
+});
 
       setInventoryActionSuccess({
         productId: item.id,
