@@ -12,7 +12,7 @@ It is deliberately smaller and more human than a warehouse-management applicatio
 
 ## Current MVP promise
 
-Today Cupboard can register products, scan barcodes, enter barcodes manually, find existing products, show inventory, search/filter/sort, identify low stock, add/consume portions, update quantities optimistically, recover from failed quantity persistence, show product details, display optional product images, persist products in Firestore, and run as a configured PWA.
+Today Cupboard can authenticate verified users, connect invited users to households, register products by barcode/manual entry, recognize household or shared-catalog products, show inventory with search/filter/sort, identify low stock and expiry, add/consume portions optimistically, record movements, show product details, display remote product images, manage shopping items and simple recipes, expose basic analytics, persist to Firestore with local cache, and run as a configured PWA.
 
 ## Product loop
 
@@ -58,21 +58,40 @@ Cupboard should feel:
 
 ## Current boundaries
 
-Not implemented:
-- authentication;
-- household accounts;
-- shared permissions;
-- offline-first inventory;
-- live Firestore connectivity status;
-- expiry management;
-- shopping automation;
+The product is intentionally focused on household inventory.
+
+Implemented supporting workflows:
+- authentication and email verification;
+- invitation-only households;
+- owner/editor/member roles;
+- expiry tracking;
+- movements/history;
+- shopping list;
 - recipes;
-- meal planning;
-- analytics;
-- purchase history;
+- basic analytics;
+- external barcode lookup;
+- shared product catalog;
+- remote product images;
+- offline/cache foundation;
+- PWA configuration.
+
+Pending:
+- richer role-aware save guidance;
+- stronger scanner/device coverage;
+- finer-grained save/error states;
+- performance improvements for larger inventories;
+- deeper offline/PWA validation;
+- automated regression coverage.
+
+Deferred:
+- Firebase Storage uploads until a billing-enabled Firebase plan is acceptable.
+
+Not currently a core direction:
+- warehouse/ERP workflows;
 - supplier management;
-- automatic product catalog enrichment;
-- automatic product image/background processing.
+- enterprise procurement;
+- social features;
+- AI features without a concrete household problem.
 
 ## Product success
 
@@ -93,3 +112,13 @@ Before adding a feature, ask:
 > Does this help a household stay organized without making Cupboard feel like enterprise software?
 
 If not, it needs a strong reason to exist.
+
+## Reliability direction
+
+The next product work prioritizes the core loop:
+
+```text
+Scan → Recognize → Understand → Edit → Save → See result
+```
+
+The October 4 checkpoint showed that real mobile behavior should be treated as a first-class product validation surface, not only a later QA step.
