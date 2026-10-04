@@ -1,130 +1,199 @@
+
 # Cupboard — Roadmap
 
 ## Status legend
 
 - ✅ Current — implemented in the application.
 - 🟡 Pending — known improvement or incomplete work.
-- 🔵 Future — product idea, not committed implementation.
+- 🔵 Future — idea or direction not committed to implementation.
 
-## Current foundation
+# 1. Current product foundation
 
-### Inventory
+## Inventory
 - ✅ Household inventory from Firestore.
 - ✅ Search by name/barcode.
 - ✅ All / low-stock / available filters.
 - ✅ Name / recent / low-stock / high-stock sorting.
 - ✅ Inventory summary.
 - ✅ Product detail.
-- ✅ Optimistic +1 / -1 portion updates with rollback.
+- ✅ Optimistic +1 / -1 updates with rollback.
 - ✅ Low-stock visibility.
 - ✅ Household-scoped movement history.
+- ✅ Expiry tracking.
 
-### Registration
+## Registration
 - ✅ Email verification before household access.
+- ✅ Invitation-only onboarding.
 - ✅ Camera barcode scanning.
 - ✅ Manual barcode entry.
-- ✅ Existing-inventory lookup.
+- ✅ Household inventory lookup.
 - ✅ Shared catalog lookup.
 - ✅ New-product registration.
 - ✅ Product validation.
 - ✅ Optional remote image URL.
 - ✅ Camera permission/error/retry states.
+- ✅ Startup-race protection.
+- ✅ Real-device scanner validation baseline.
 
-### Collaboration
+## Collaboration
 - ✅ Firebase Authentication.
-- ✅ Invitation-only household membership.
-- ✅ Owner/admin and editor/member roles.
+- ✅ Owner/editor/member role model.
 - ✅ Owner-only invitation controls.
 - ✅ Household-scoped Firestore authorization.
 
-### UI/UX
-- ✅ Responsive desktop/mobile layout.
-- ✅ Sticky desktop navigation/status area.
-- ✅ Mobile bottom navigation.
-- ✅ Custom dark sorting control.
-- ✅ Animated product detail.
-- ✅ Product image framing.
-- 🟡 Finalize image presentation across more real-world image sources.
+## Workspace
+- ✅ Expiry tracking panel.
+- ✅ Movement history.
+- ✅ Shopping list.
+- ✅ Recipes.
+- ✅ Basic analytics.
+- ✅ External barcode/product lookup.
+- ✅ Shared catalog preparation.
+- ✅ Owner-only Firestore network controls.
 
-### Platform
+## UI/UX
+- ✅ Responsive desktop/mobile layout.
+- ✅ Mobile bottom navigation.
+- ✅ Dark-only visual system.
+- ✅ Product detail animation and feedback.
+- ✅ Fixed product image area.
+- ✅ Explicit scanner startup/error states.
+- ✅ False-success save-flow fix.
+- 🟡 More real-device scanner refinement.
+- 🟡 More granular save/error feedback.
+- 🟡 Role-aware write guidance.
+
+## Platform
 - ✅ React 19 + Vite 8.
 - ✅ Tailwind CSS 4.
-- ✅ Firestore persistence.
-- ✅ Persistent Firestore cache.
+- ✅ Firestore persistence + local cache.
 - ✅ PWA configuration.
 - 🟡 Final PWA icon set.
-- 🟡 Full install/update verification on target devices.
+- 🟡 Install/update verification on target devices.
+- 🟡 Broader offline/reconnect validation.
 
-## Architecture
+# 2. Architecture state
 
-The current production data model is:
+The current runtime data model is:
 
-```text
-productCatalog/{barcode}
-        │
-        ▼
-households/{householdId}/inventory/{barcode}
-        │
-        ▼
-households/{householdId}/movements/{movementId}
-```
+    productCatalog/{barcode}
+            │
+            ▼
+    households/{householdId}/inventory/{barcode}
+            │
+            ▼
+    households/{householdId}/movements/{movementId}
 
-Product identity is shared. Stock, expiry, notes, and movement history are household-scoped.
+Product identity is shared. Stock, expiry, notes and movement history are household-scoped.
 
-The old mixed household product model has been retired from the runtime and from the Firestore Rules boundary.
+The old mixed household product model is retired.
 
-## FASE 10 — Cleanup
+# 3. Completed architecture phases
 
-**🟢 APPROVED / BUILT**
+### ✅ FASE 1 — Shared product catalog
+### ✅ FASE 2 — Data-model audit
+### ✅ FASE 3 — Inventory foundation
+### ✅ FASE 4 — Runtime adoption
+### ✅ FASE 5 — Movements
+### ✅ FASE 6 — Firebase Rules
+### ✅ FASE 7 — Migration tooling
+### ✅ FASE 8 — Regression validation
+### ✅ FASE 9 — Reset + migration
+### ✅ FASE 10 — Cleanup
 
-Completed cleanup:
+# 4. New reliability/product phases
 
-- ✅ Removed migration-only UI from **Centro → Catálogo**.
-- ✅ Removed the migration service from the application.
-- ✅ Removed the retired household `products` Firestore Rules boundary.
-- ✅ Kept the shared catalog preparation workflow.
-- ✅ Kept runtime persistence on catalog + inventory.
-- ✅ Kept movements household-scoped.
-- ✅ Updated architecture, data-model, security, roadmap, context, and operational documentation.
-- ✅ Updated the project status so FASE 10 is no longer presented as pending.
+## 🟢 FASE 11 — Scanner startup reliability
+- ✅ Serialize overlapping camera starts.
+- ✅ Clean previous media streams.
+- ✅ Retry without page reload.
+- ✅ Surface interrupted startup errors.
+- ✅ Attempt supported continuous focus.
+- ✅ Validate successful real-device iPhone scan.
+- 🟡 Broader browser/device coverage.
+- 🟡 Better focus/positioning guidance.
 
-## Remaining technical work
+## 🟢 FASE 12 — Save-flow correctness
+- ✅ Remove false save failures caused by secondary reloads.
+- ✅ Keep the inventory listener as the post-save UI source.
+- ✅ Separate primary save errors from post-save UI state.
+- ✅ Add common permission/network/precondition messages.
+- 🟡 Make catalog success versus household inventory failure explicit.
 
-### Scanner reliability
-- 🟡 Test camera startup/retry across supported browsers and mobile devices.
-- 🟡 Test permission-denied → permission-granted recovery.
-- 🟡 Test repeated scanner sessions after successful scans.
-- 🟡 Decide whether `html5-qrcode` should be removed; `@zxing/browser` is the active scanner.
+## 🟡 FASE 13 — Role-aware inventory UX
+- Explain member/editor/admin write capabilities before save.
+- Avoid unauthorized members reaching a generic save failure.
+- Keep Firestore Rules as the final authorization boundary.
 
-### Architecture
-- 🟡 Extract focused inventory components from `App.jsx`.
-- 🟡 Extract product form/detail UI where it improves maintainability.
-- 🟡 Extract settings/navigation where it improves maintainability.
-- 🟡 Introduce hooks only where they make state ownership clearer.
+## 🟡 FASE 14 — Save states and error taxonomy
+- Split scanner, lookup, validation, permission, network and unknown errors.
+- Introduce explicit SAVING, SAVED, permission and network states.
+- Keep technical diagnostics in logs.
 
-### Connectivity
-- 🟡 Expand pending-sync feedback and edge-case recovery.
-- 🟡 Review conflict-handling expectations as multi-device use grows.
+## 🟡 FASE 15 — Performance
+- Reduce N+1 catalog reads during inventory hydration.
+- Reuse known catalog data where safe.
+- Measure mobile scan-to-result latency.
+- Avoid duplicate reads after successful writes.
 
-### Data safety
-- 🟡 Review Firebase configuration strategy.
-- 🟡 Establish backup/data-recovery expectations.
-- 🟡 Keep Firestore Rules deployment as an explicit release operation.
+## 🟡 FASE 16 — Offline/PWA hardening
+- Validate reconnect and pending-write behavior.
+- Test PWA install/update on target devices.
+- Finalize manifest icons.
+- Define realistic conflict expectations.
+- Test recovery from temporary Auth/Firestore unavailability.
 
-## Product opportunities
+## 🟡 FASE 17 — Automated regression coverage
+- Auth and email verification tests.
+- Household invitation tests.
+- Firestore Rules tests.
+- Catalog/inventory recognition tests.
+- Save/permission/network scenarios.
+- Movement persistence checks.
+- Scanner state checks where practical.
+
+## 🟡 FASE 18 — Incremental architecture extraction
+- Reduce App.jsx responsibility where ownership becomes clearer.
+- Extract inventory UI, scanner workflow, product form and focused hooks incrementally.
+- Avoid unnecessary abstraction.
+
+# 5. Product opportunities
 
 These remain ideas, not committed implementation:
 
-- 🟡 Quantity trends.
-- 🟡 Smarter low-stock rules.
-- 🟡 Need-to-buy state.
-- 🟡 Meal planning.
-- 🟡 Ingredient usage.
-- 🔵 Recurring household items.
-- 🔵 Product locations.
-- 🔵 Multi-device/global presence.
+- 🟡 smarter low-stock rules;
+- 🟡 need-to-buy state;
+- 🟡 quantity trends;
+- 🟡 ingredient usage;
+- 🔵 product locations;
+- 🔵 recurring household items;
+- 🔵 richer recipe/ingredient linking;
+- 🔵 multi-device/global presence.
 
 Firebase Storage uploads remain deferred until a billing-enabled Firebase plan is acceptable. Remote image URLs remain supported.
+
+# 6. Definition of done for the core loop
+
+Cupboard should treat this as the most important reliability target:
+
+    Scan
+      ↓
+    Recognize
+      ↓
+    Understand current state
+      ↓
+    Edit
+      ↓
+    Save
+      ↓
+    See result in inventory
+
+Before expanding product scope, this loop should be:
+- reliable on mobile;
+- explicit about permissions;
+- explicit about save errors;
+- responsive enough for common household inventories;
+- covered by repeatable regression tests.
 
 ## Avoid feature creep
 
@@ -134,4 +203,4 @@ Build trust in the core inventory experience before adding complexity.
 
 ---
 
-**PALMI-D3V · Cupboard · October 2026**
+**PALMI-D3V · Cupboard · October 4, 2026**
