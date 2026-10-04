@@ -2,35 +2,39 @@
 
 ## Identity
 - Product: Cupboard
-- Repository: palmid3v/cupboard-palmid3v
+- Repository: `palmid3v/cupboard-palmid3v`
 - Owner: PALMI-D3V
 - Type: Home-first inventory web application
 - Stage: Functional MVP / active development
 - Experience: Mobile-first with responsive desktop support
+- Current visual direction: dark-only, warm, calm, green-centered
 
 ## Product intent
 
-Cupboard helps a household keep track of products and portions with as little friction as possible.
+Cupboard helps a household know what it has, find products quickly, and keep portions current without feeling like warehouse-management software.
 
-The product should feel like a well-organized home helper, not an enterprise warehouse system.
+Core qualities:
 
-Core qualities: familiar, calm, practical, organized, quick, approachable.
+**familiar · calm · practical · organized · quick · approachable**
 
-## Current features
+## Implemented capabilities
+
 - Firestore-backed inventory
-- Search by name/barcode
-- All / low-stock / available-stock filters
-- Name / stock / recent sorting
-- Inventory summary
+- Product search by name/barcode
+- All / low-stock / available filters
+- Name / recent / low-stock / high-stock sorting
+- Inventory summaries
 - Product detail view
-- Add/consume portions
+- Optimistic add/consume portion actions
+- Error rollback for failed portion updates
 - Camera barcode scanning
 - Manual barcode entry
 - Existing-product lookup
 - New-product registration
-- Name, description, weight, portions, image URL
-- Light/dark/system themes
-- Local theme persistence
+- Product validation
+- Optional product image URL
+- Responsive desktop/mobile navigation
+- Dark-only visual theme
 - PWA configuration
 
 ## Stack
@@ -44,7 +48,7 @@ UI
 └── App.jsx
     ├── Inventory
     ├── Scanner
-    ├── Product form
+    ├── Product registration
     └── Settings
 
 Scanner
@@ -59,29 +63,75 @@ Data access
 
 ## Data identity
 
-Firestore collection: products. Barcode is the document ID.
+Firestore collection:
 
-Product fields are name, description, weight, portions, imageUrl, createdAt, and updatedAt.
+```text
+products/{barcode}
+```
+
+The barcode is the document ID.
+
+Product fields:
+- name
+- description
+- weight
+- portions
+- imageUrl
+- createdAt
+- updatedAt
 
 ## Important behavior
 
-saveProduct checks whether the barcode document exists. Existing documents are updated; new documents receive createdAt and updatedAt.
+### Portion updates
 
-updatePortions prevents negative quantities.
+The inventory UI changes the selected product locally first, then calls `updatePortions()`.
 
-The scanner prevents repeated handling of the same successful scan during one scanner session and attempts continuous focus when supported.
+On success, the optimistic value remains.
 
-Theme preference is stored under the localStorage key cupboard-theme.
+On failure, the previous value is restored and an error is shown.
+
+The action does **not** reload the entire inventory.
+
+### Scanner
+
+`BarcodeScanner.jsx` owns camera startup, cleanup, retry, successful-scan deduplication, and camera-specific error presentation.
+
+The parent receives successful scans through `onScan(code)`.
+
+### Theme
+
+The current UI is dark-only. There is no active light/system theme selector in the current implementation.
+
+## “Inventario conectado” status
+
+The sidebar/header connected indicators are currently visual status labels.
+
+They are **not** backed by a live Firebase connection listener or health check.
+
+Actual Firestore availability is discovered when a Firestore operation succeeds or fails.
+
+Do not describe the green indicator as real-time connectivity monitoring.
 
 ## Known boundaries
 
-Authentication, multi-user households, permissions, expiry, product history, shopping lists, recipes, meal planning, analytics, external product databases, and automatic image lookup are outside the current implementation.
+Not implemented:
+- authentication;
+- multi-user households;
+- authorization/permissions;
+- offline-first persistence;
+- live connectivity monitoring;
+- expiry;
+- history;
+- shopping lists;
+- recipes;
+- meal planning;
+- analytics;
+- external product databases;
+- automatic image enrichment.
 
 ## Documentation rule
 
-When documentation conflicts with implementation, inspect the code, verify the behavior, then update the documentation. Never document a planned feature as implemented.
-
-See docs/ for product, architecture, data, flows, contribution, roadmap, and design documentation.
+When documentation conflicts with implementation, inspect the code first and update the documentation. Never document a planned feature as implemented.
 
 ## Development
 
@@ -96,4 +146,4 @@ npm run preview
 
 ## Status
 
-Cupboard is an active functional MVP. The next stage is product refinement, reliability, and clarity rather than uncontrolled feature growth.
+Cupboard is an active functional MVP. The current priority is polish, reliability, scanner stability, visual consistency, and maintainable documentation.
