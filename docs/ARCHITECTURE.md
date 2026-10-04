@@ -78,19 +78,22 @@ Keep Firestore calls behind this boundary where practical.
 
 Authentication is not currently part of the application.
 
-### Connectivity status clarification
+### Connectivity status
 
-The UI contains a green **Inventario conectado / Conectado / ACTIVO** treatment.
+The UI exposes a real inventory connectivity state based on browser network events and Firestore snapshot metadata.
 
-This is currently presentation only.
+Current states:
+- 🟢 **Inventario conectado** — the active inventory listener has received server-backed data.
+- 🟡 **Sin conexión** — the browser is offline or Firestore is serving the inventory from local cache.
+- 🔴 **No se pudo conectar** — the inventory listener returned a connection/access error.
 
-There is no:
-- Firebase realtime connection listener;
-- `navigator.onLine` state integration;
-- Firestore health-check request;
-- offline cache state exposed to the UI.
+Implementation boundaries:
+- `src/firebase.js` enables persistent Firestore local cache.
+- `src/services/products.js` exposes `subscribeToProducts()` using `onSnapshot(..., { includeMetadataChanges: true })`.
+- `src/App.jsx` combines Firestore metadata with `navigator.onLine` and renders the state.
+- The listener is recreated when the browser reports that connectivity has returned.
 
-Therefore the indicator must not be treated as a connectivity guarantee.
+This is intentionally a lightweight connectivity layer, not a separate health-check service.
 
 ## PWA
 
