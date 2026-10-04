@@ -56,9 +56,15 @@ Scanner
     └── @zxing/browser
 
 Data access
-└── services/products.js
-    └── Firestore
-        └── products collection
+└── services/
+    ├── products.js
+    ├── catalog.js
+    ├── inventory.js
+    └── migration.js
+        └── Firestore
+            ├── productCatalog/{barcode}
+            ├── households/{householdId}/inventory/{barcode}
+            └── households/{householdId}/movements/{movementId}
 ```
 
 ## Data identity
@@ -178,7 +184,11 @@ The owner can control the Firestore network connection for the current browser f
 - 🟢 FASE 1 — Shared product catalog
 - 🟢 FASE 2 — Data-model audit
 - 🟢 FASE 3 — Inventory service foundation
-- 🟡 FASE 4 — Runtime adoption
+- 🟢 FASE 4 — Runtime adoption
+- 🟢 FASE 5 — Movements
+- 🟢 FASE 6 — Rules implementation
+- 🟢 FASE 7 — Non-destructive migration tooling
+- 🟡 FASE 8 — Regression validation
 
 ### Target data model
 
@@ -198,11 +208,11 @@ households/{householdId}/movements/{movementId}
 - `saveInventoryProduct`
 - `updateInventoryPortions`
 
-The current application still uses the legacy household `products` collection as its live source. This is intentional until the next runtime-adoption and migration phases are complete.
+The application now uses dedicated catalog/inventory collections at runtime. Legacy household `products` remains only as migration input until FASE 8 and the reset gate are complete.
 
 ### Safety gate
 
-No reset or destructive migration is approved. The explicit gate remains:
+No reset or destructive migration is approved. FASE 9 remains blocked. The explicit gate remains:
 
 > ⚠️ **AHORA SÍ: RESET + MIGRACIÓN**
 
