@@ -117,3 +117,50 @@ a {
   outline: 2px solid var(--cupboard-primary);
   outline-offset: 2px;
 }
+
+
+body {
+  overscroll-behavior-y: none;
+}
+
+html {
+  scrollbar-color: var(--cupboard-border) var(--cupboard-bg);
+  scrollbar-width: thin;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--cupboard-border) transparent;
+}
+
+button,
+input,
+select,
+textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+
+input::selection,
+textarea::selection {
+  background: var(--cupboard-primary);
+  color: #10140d;
+}
+
+@media (max-width: 1023px) {
+  body {
+    background:
+      radial-gradient(circle at 100% 0%, rgb(120 168 91 / 0.08), transparent 24rem),
+      var(--cupboard-bg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
