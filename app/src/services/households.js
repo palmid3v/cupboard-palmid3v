@@ -199,7 +199,11 @@ export async function joinHouseholdByCode(user, code) {
 
   const role = "member";
 
-  await setDoc(doc(db, "households", invite.householdId, "members", user.uid), {
+  const batch = writeBatch(db);
+  const memberRef = doc(db, "households", invite.householdId, "members", user.uid);
+  const userRef = doc(db, "users", user.uid);
+
+  batch.set(memberRef, {
     uid: user.uid,
     role,
     email: user.email || "",
@@ -209,17 +213,20 @@ export async function joinHouseholdByCode(user, code) {
     updatedAt: serverTimestamp(),
   });
 
-  await setDoc(
-    doc(db, "users", user.uid),
+  batch.set(
+    userRef,
     {
       displayName: user.displayName || user.email?.split("@")[0] || "Miembro",
       email: user.email || "",
       householdId: invite.householdId,
       role,
+      inviteCode: normalized,
       updatedAt: serverTimestamp(),
     },
     { merge: true },
   );
+
+  await batch.commit();
 
   setActiveHouseholdId(invite.householdId);
 
