@@ -194,11 +194,6 @@ export async function joinHouseholdByCode(user, code) {
 
   const role = invite.role || "member";
 
-  await updateDoc(householdRef, {
-    [`members.${user.uid}`]: role,
-    updatedAt: serverTimestamp(),
-  });
-
   await setDoc(doc(db, "households", invite.householdId, "members", user.uid), {
     uid: user.uid,
     role,
