@@ -10,7 +10,7 @@ import {
 
 import { db } from "../firebase";
 import { auth } from "./auth";
-import { getActiveHouseholdId } from "./households";
+import { getActiveHouseholdId, getHousehold } from "./households";
 import { getCatalogProduct } from "./catalog";
 
 const BATCH_LIMIT = 400;
@@ -20,6 +20,17 @@ function requireHouseholdId() {
 
   if (!householdId) {
     throw new Error("HOUSEHOLD_REQUIRED");
+  }
+
+  return householdId;
+}
+
+async function requireOwner() {
+  const householdId = requireHouseholdId();
+  const household = await getHousehold(householdId);
+
+  if (!household || household.ownerUid !== auth.currentUser?.uid) {
+    throw new Error("OWNER_REQUIRED");
   }
 
   return householdId;
@@ -82,6 +93,7 @@ async function buildMigrationPlan(legacyProducts) {
  * migration would create. It never writes or deletes data.
  */
 export async function previewLegacyInventoryMigration() {
+  await requireOwner();
   const legacyProducts = await readLegacyProducts();
   const plan = await buildMigrationPlan(legacyProducts);
 
