@@ -1,7 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
-import readline from "node:readline/promises";
 import { stdin as input, stdout as output } from "node:process";
 import { cert, getApps, initializeApp } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
@@ -24,21 +23,32 @@ function loadCredentials(credentialsPath) {
 
 async function promptHidden(question) {
   output.write(question);
+
   return await new Promise((resolve) => {
     let value = "";
+
+    const cleanup = () => {
+      process.stdin.removeListener("data", onData);
+      process.stdin.setRawMode(false);
+      process.stdin.pause();
+      output.write("\n");
+    };
 
     const onData = (chunk) => {
       const text = chunk.toString();
 
       if (text === "\u0003") {
-        process.stdin.setRawMode(false);
-        process.stdin.pause();
-        output.write("\n");
+        cleanup();
         process.exit(130);
       }
 
+      if (text === "\r" || text === "\n") {
+        cleanup();
+        resolve(value);
+        return;
+      }
+
       for (const char of text) {
-        if (char === "\r" || char === "\n") continue;
         if (char === "\u007f") {
           value = value.slice(0, -1);
         } else {
@@ -51,49 +61,6 @@ async function promptHidden(question) {
     process.stdin.resume();
     process.stdin.setEncoding("utf8");
     process.stdin.on("data", onData);
-
-    const finish = () => {
-      process.stdin.removeListener("data", onData);
-      process.stdin.setRawMode(false);
-      process.stdin.pause();
-      output.write("\n");
-      resolve(value);
-    };
-
-    const check = () => {
-      if (value.endsWith("\n")) {
-        value = value.slice(0, -1);
-        finish();
-      } else {
-        setTimeout(check, 50);
-      }
-    };
-
-    // Raw mode strips line endings, so detect Enter via the data callback.
-    const original = onData;
-    process.stdin.removeListener("data", original);
-    process.stdin.on("data", (chunk) => {
-      const text = chunk.toString();
-
-      if (text === "\u0003") {
-        process.stdin.setRawMode(false);
-        process.stdin.pause();
-        output.write("\n");
-        process.exit(130);
-      }
-
-      if (text.includes("\r") || text.includes("\n")) {
-        finish();
-        return;
-      }
-
-      for (const char of text) {
-        if (char === "\u007f") value = value.slice(0, -1);
-        else value += char;
-      }
-    });
-
-    void check;
   });
 }
 
@@ -127,10 +94,8 @@ async function main() {
     throw new Error("BOOTSTRAP_REQUIRES_EMPTY_USERS_AND_HOUSEHOLDS");
   }
 
-  const rl = readline.createInterface({ input, output });
-  const password = await rl.question("Password for the new owner: ");
-  const passwordConfirmation = await rl.question("Repeat password: ");
-  rl.close();
+  const password = await promptHidden("Password for the new owner: ");
+  const passwordConfirmation = await promptHidden("Repeat password: ");
 
   if (password.length < 6) {
     throw new Error("PASSWORD_TOO_SHORT");
