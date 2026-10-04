@@ -167,3 +167,35 @@ Security requirements for the final collection:
 - 🔴 Destructive migration is not authorized.
 
 The security rule for `inventory` must be deployed and regression-tested before any legacy data is removed.
+
+## October 2026 inventory security checkpoint
+
+### FASE 6 — implemented
+
+The committed Rules now enforce:
+
+- verified Firebase email for every authenticated Firestore boundary;
+- household membership before inventory reads;
+- admin/editor role for inventory create/update/delete;
+- exact inventory field allowlist and basic type/range validation;
+- exact movement field allowlist;
+- movement type limited to `add` or `consume`;
+- positive movement quantity;
+- authenticated user ID preserved when present;
+- movement timestamps required;
+- catalog creator ownership preserved on catalog updates;
+- no client-side deletion of shared catalog records.
+
+Deploy manually with:
+
+```powershell
+firebase deploy --only firestore:rules
+```
+
+Then validate owner/editor/member behavior before FASE 8 is marked complete.
+
+### FASE 7 — migration security
+
+Migration tooling is owner-only in the UI and intentionally non-destructive. It only creates missing catalog/inventory target documents. It does not delete or modify legacy `products` records.
+
+The migration writes are subject to the same Firestore Rules as normal catalog/inventory writes.
