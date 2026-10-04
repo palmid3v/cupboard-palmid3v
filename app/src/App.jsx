@@ -195,7 +195,10 @@ export default function App() {
   const sortMenuRef = useRef(null);
 
   useEffect(() => {
-    window.dispatchEvent(new CustomEvent("cupboard:connection-status", { detail: connectionStatus }));
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("cupboard.connectionStatus", connectionStatus);
+      window.dispatchEvent(new CustomEvent("cupboard:connection-status", { detail: connectionStatus }));
+    }
   }, [connectionStatus]);
 
   const loadProducts = async () => {
