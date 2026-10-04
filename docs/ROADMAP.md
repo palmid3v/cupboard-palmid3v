@@ -166,6 +166,8 @@ The project is intentionally **not being reset**. Existing household products re
 - ✅ Existing household products can be seeded into the shared catalog from **Centro → Catálogo**.
 - ✅ Catalog security rules require verified email and protect canonical metadata writes.
 - 🟡 Migrate the current household `products` collection into the final household `inventory` model.
+- 🟢 Runtime adoption now reads/writes the dedicated household `inventory` collection.
+- 🟢 Movements are recorded against inventory deltas.
 - 🟡 Define the explicit reset + migration operation.
 - 🟡 Validate catalog recognition with a second household/member before reset.
 
@@ -229,7 +231,7 @@ The next implementation phase will connect the new inventory service to:
 
 ### Migration gate
 
-The project must not move to destructive migration until FASES 4–8 are complete.
+The project must not move to destructive migration until FASES 6–8 are complete.
 
 > ⚠️ **AHORA SÍ: RESET + MIGRACIÓN**
 
