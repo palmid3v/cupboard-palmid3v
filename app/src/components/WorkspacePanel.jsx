@@ -8,6 +8,7 @@ import {
 } from "../services/features";
 import { createInvite, getActiveHouseholdId, getHousehold, getUserProfile } from "../services/households";
 import { getAllProducts, saveProduct } from "../services/products";
+import { seedCatalogFromProducts } from "../services/catalog";
 import { auth, logout } from "../services/auth";
 import { connectFirestore, disconnectFirestore } from "../firebase";
 
@@ -79,6 +80,8 @@ export default function WorkspacePanel() {
   const [catalogResult, setCatalogResult] = useState(null);
   const [connectionStatus, setConnectionStatus] = useState(getInitialConnectionStatus);
   const [connectionBusy, setConnectionBusy] = useState(false);
+  const [catalogSyncBusy, setCatalogSyncBusy] = useState(false);
+  const [catalogSyncResult, setCatalogSyncResult] = useState(null);
 
   const householdId = getActiveHouseholdId();
   const isOwner = household?.ownerUid === auth.currentUser?.uid;
@@ -249,6 +252,29 @@ export default function WorkspacePanel() {
     setCatalogResult(null);
   };
 
+  const syncCurrentInventoryToCatalog = async () => {
+    if (!isOwner || catalogSyncBusy) return;
+
+    setCatalogSyncBusy(true);
+    setCatalogSyncResult(null);
+    setError("");
+
+    try {
+      const seeded = await seedCatalogFromProducts(products);
+      setCatalogSyncResult({
+        count: seeded.length,
+        message: "Los productos actuales quedaron registrados en el catálogo compartido.",
+      });
+    } catch (err) {
+      console.error(err);
+      setError(
+        "No pudimos preparar el catálogo con los productos actuales. Revisa la conexión e inténtalo nuevamente.",
+      );
+    } finally {
+      setCatalogSyncBusy(false);
+    }
+  };
+
   const createHouseholdInvite = async () => {
     if (!householdId || !isOwner) return;
     setBusy(true);
@@ -403,8 +429,41 @@ export default function WorkspacePanel() {
       {tab === "catalog" && (
         <PanelCard>
           <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--cupboard-primary)]">Catálogo</p>
-          <h2 className="mt-2 text-2xl font-extrabold">Escanea una vez. Completa datos automáticamente.</h2>
-          <p className="mt-2 text-sm text-[var(--cupboard-text-muted)]">Busca por código de barras en el catálogo externo y reutiliza nombre, marca, categoría e imagen cuando estén disponibles.</p>
+          <h2 className="mt-2 text-2xl font-extrabold">Una ficha para cada producto.</h2>
+          <p className="mt-2 text-sm leading-6 text-[var(--cupboard-text-muted)]">
+            Cupboard separa la identidad del producto de la cantidad que tiene cada hogar. El barcode es la llave para reconocerlo y reutilizar sus datos.
+          </p>
+
+          {isOwner && (
+            <div className="mt-5 rounded-2xl border border-[var(--cupboard-primary)]/20 bg-[var(--cupboard-primary-soft)] p-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-sm font-extrabold">Preparar catálogo con tu inventario actual</p>
+                  <p className="mt-1 text-xs leading-5 text-[var(--cupboard-text-muted)]">
+                    Registra como fichas globales los {products.length} productos que ya tienes. No cambia ni elimina tu inventario.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={syncCurrentInventoryToCatalog}
+                  disabled={catalogSyncBusy || products.length === 0}
+                  className="shrink-0 rounded-xl bg-[var(--cupboard-primary)] px-4 py-2.5 text-xs font-extrabold text-[#10140d] disabled:opacity-50"
+                >
+                  {catalogSyncBusy ? "Preparando..." : "Preparar catálogo"}
+                </button>
+              </div>
+
+              {catalogSyncResult && (
+                <p className="mt-3 text-xs font-semibold text-[var(--cupboard-success)]">
+                  ✓ {catalogSyncResult.message} ({catalogSyncResult.count} productos revisados).
+                </p>
+              )}
+            </div>
+          )}
+
+          <div className="mt-6">
+            <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--cupboard-text-subtle)]">Catálogo externo</p>
+            <p className="mt-2 text-sm text-[var(--cupboard-text-muted)]">Busca por código de barras en el catálogo externo y reutiliza nombre, marca, categoría e imagen cuando estén disponibles.</p>
           <form onSubmit={lookupCatalog} className="mt-6 flex gap-2">
             <SmallInput value={catalogBarcode} onChange={(event) => setCatalogBarcode(event.target.value)} placeholder="Código de barras" inputMode="numeric" />
             <button disabled={busy} className="rounded-xl bg-[var(--cupboard-primary)] px-4 text-xs font-extrabold text-[#10140d] disabled:opacity-50">{busy ? "Buscando" : "Buscar"}</button>
