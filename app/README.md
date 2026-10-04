@@ -2,18 +2,21 @@
 
 This directory contains the runnable React/Vite application.
 
-For project context, start with [../README.md](../README.md).
+Start with [../README.md](../README.md) for the product and repository overview.
 
 ## Responsibilities
-- inventory presentation
-- product registration
-- barcode scanning
-- product lookup
-- portion changes
-- search/filter/sort
-- theme selection
-- responsive navigation
-- PWA configuration
+
+The app currently owns:
+- inventory presentation;
+- product registration;
+- barcode scanning;
+- product lookup;
+- portion changes;
+- search/filter/sort;
+- product detail state;
+- settings presentation;
+- responsive navigation;
+- PWA configuration.
 
 ## Source structure
 
@@ -37,18 +40,41 @@ app/
 
 ## Main files
 
-### src/App.jsx
-The current application shell and most UI state live here. It coordinates views, inventory loading, search/filter/sort, scanner flow, product form state, portion updates, and theme preferences.
+### `src/App.jsx`
 
-This file is currently large and is a future refactoring point. Refactor incrementally while preserving existing flows.
+The current application shell and most UI state live here.
 
-### src/components/BarcodeScanner.jsx
-Owns camera/scanner behavior, successful-scan handling, focus configuration, and camera error/retry states.
+It coordinates:
+- inventory loading;
+- search, filters, and sorting;
+- product detail state;
+- optimistic portion changes;
+- scanner flow;
+- product lookup and registration;
+- form validation;
+- settings presentation;
+- responsive navigation.
 
-### src/services/products.js
+The file is intentionally still a large MVP shell and is a future refactoring point.
+
+### `src/components/BarcodeScanner.jsx`
+
+Owns camera/scanner behavior:
+- camera startup;
+- stream cleanup;
+- successful-scan deduplication;
+- retry/restart;
+- camera error states;
+- continuous focus when supported.
+
+It communicates successful scans through `onScan(code)`.
+
+### `src/services/products.js`
+
 The Firestore data-access boundary.
 
 Current operations:
+
 ```js
 getProduct(barcode)
 saveProduct(barcode, data)
@@ -56,18 +82,21 @@ getAllProducts()
 updatePortions(barcode, newPortions)
 ```
 
-Prefer this service boundary instead of scattering Firestore calls throughout UI code.
+Prefer this boundary instead of scattering Firestore calls throughout the UI.
 
-### src/firebase.js
-Initializes Firebase and exports the Firestore database instance. Firebase Authentication is not currently implemented.
+### `src/firebase.js`
+
+Initializes Firebase and exports the Firestore database instance.
+
+Firebase Authentication is not currently implemented.
 
 ## Vite and PWA
 
-vite.config.js configures React, basic SSL, Tailwind CSS, and vite-plugin-pwa.
+`vite.config.js` configures React, local SSL, Tailwind CSS, and `vite-plugin-pwa`.
 
-Basic SSL supports local development scenarios where browser camera APIs require a secure context.
+Local SSL is useful for development scenarios where browser camera APIs require a secure context.
 
-The PWA currently uses standalone display and auto-update registration. The manifest icon list is still empty.
+The PWA uses standalone display and auto-update registration. The final icon set is still pending.
 
 ## Commands
 
@@ -81,10 +110,20 @@ npm run preview
 
 ## Working rules
 
-Before changing behavior, read the relevant documentation in ../docs.
+Before changing behavior, read the relevant document in `../docs/`.
 
-For data changes, read DATA_MODEL.md. For UI changes, read DESIGN_PRINCIPLES.md. For user flows, read USER_FLOWS.md.
+- Data behavior → `DATA_MODEL.md`
+- UI/UX → `DESIGN_PRINCIPLES.md`
+- User flow → `USER_FLOWS.md`
+- Architecture → `ARCHITECTURE.md`
+- Planned work → `ROADMAP.md`
 
-Run lint and build after meaningful changes.
+After meaningful code changes:
+1. run lint;
+2. run build;
+3. manually test the affected flow;
+4. update documentation if behavior changed.
 
-Update documentation when behavior changes.
+## Important implementation rule
+
+Do not infer that the green **Inventario conectado** indicator means Firebase is currently reachable. It is presently a visual status treatment, not a connectivity monitor.
