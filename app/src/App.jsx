@@ -504,25 +504,29 @@ if (isManualEntry) {
 setIsSaving(true);
 
   try {
-    await saveProduct(productCode, {
-      ...form,
-      name,
-      weight: weightValue ?? 0,
-      portions: portionsValue,
-      category: form.category,
-      expiryDate: form.expiryDate,
-      minStock: form.minStock,
-    });
-
-    if ((status === "new" || status === "catalog") && portionsValue > 0) {
-      await addMovement({
-        productId: productCode,
-        type: "add",
-        quantity: portionsValue,
-        reason: status === "catalog" ? "Agregado desde catálogo" : "Registro de producto",
-        userId: auth.currentUser?.uid || null,
-      });
-    }
+    await saveProduct(
+      productCode,
+      {
+        ...form,
+        name,
+        weight: weightValue ?? 0,
+        portions: portionsValue,
+        category: form.category,
+        expiryDate: form.expiryDate,
+        minStock: form.minStock,
+      },
+      (status === "new" || status === "catalog") && portionsValue > 0
+        ? {
+            type: "add",
+            quantity: portionsValue,
+            reason:
+              status === "catalog"
+                ? "Agregado desde catálogo"
+                : "Registro de producto",
+            userId: auth.currentUser?.uid || null,
+          }
+        : null,
+    );
 
     setStatus("saved");
     setFormError("");
