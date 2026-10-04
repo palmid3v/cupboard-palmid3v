@@ -144,6 +144,7 @@ cupboard-palmid3v/
 │   ├── USER_FLOWS.md
 │   ├── DESIGN_PRINCIPLES.md
 │   ├── CONTRIBUTING.md
+│   ├── SECURITY.md
 │   └── ROADMAP.md
 ├── app/
 │   ├── README.md
