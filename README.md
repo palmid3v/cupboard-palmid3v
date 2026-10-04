@@ -112,7 +112,7 @@ React UI
                     └── Firebase
                            ├── Authentication
                            └── Firestore
-                                └── households/{householdId}/products/{barcode}
+                                └── households/{householdId}/inventory/{barcode}
 ```
 
 The application intentionally has no separate backend API layer.
