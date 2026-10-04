@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import BarcodeScanner from "./components/BarcodeScanner";
+import WorkspacePanel from "./components/WorkspacePanel";
 import {
   getProduct,
   saveProduct,
@@ -7,6 +8,8 @@ import {
   subscribeToProducts,
   updatePortions,
 } from "./services/products";
+import { addMovement } from "./services/features";
+import { auth } from "./services/auth";
 
 function NavigationButton({
   icon,
@@ -292,6 +295,14 @@ export default function App() {
 
     try {
       await updatePortions(item.id, newPortions);
+
+      await addMovement({
+        productId: item.id,
+        type: newPortions < previousPortions ? "consume" : "add",
+        quantity: Math.abs(newPortions - previousPortions),
+        reason: newPortions < previousPortions ? "Consumo desde inventario" : "Entrada desde inventario",
+        userId: auth.currentUser?.uid || null,
+      });
 
       setInventoryActionSuccess({
         productId: item.id,
@@ -580,6 +591,7 @@ setIsSaving(true);
   const pageTitle = {
     inventory: "Tu inventario",
     scanner: "Scanner",
+    workspace: "Centro",
     settings: "Ajustes",
   };
 
@@ -588,6 +600,8 @@ setIsSaving(true);
       "Controla tus productos, cantidades y existencias desde un solo lugar.",
     scanner:
       "Escanea códigos de barras para buscar o registrar productos.",
+    workspace:
+      "Caducidad, historial, compras, recetas, analítica, catálogo y equipo.",
     settings:
       "Personaliza Cupboard según tus preferencias.",
   };
@@ -609,6 +623,7 @@ setIsSaving(true);
             <nav aria-label="Navegación principal" className="space-y-1">
               <NavigationButton icon="📦" label="Inventario" badge={products.length ? products.length + " productos" : undefined} active={view === "inventory"} onClick={() => setView("inventory")} />
               <NavigationButton icon="📷" label="Scanner" badge="Registrar producto" active={view === "scanner"} onClick={() => setView("scanner")} />
+              <NavigationButton icon="✨" label="Centro" badge="Funciones" active={view === "workspace"} onClick={() => setView("workspace")} />
               <NavigationButton icon="⚙️" label="Ajustes" badge="Preferencias" active={view === "settings"} onClick={() => setView("settings")} />
             </nav>
           </div>
@@ -643,6 +658,8 @@ setIsSaving(true);
             <div className="mb-5 sm:hidden">
               <ConnectionStatus status={connectionStatus} />
             </div>
+
+            {view === "workspace" && !selectedProduct && <WorkspacePanel />}
 
             {selectedProduct && (
               <section className="space-y-5">
@@ -1208,6 +1225,7 @@ setIsSaving(true);
         <div className="mx-auto flex max-w-md items-center gap-1">
           <MobileNavigationButton icon="📦" label="Inventario" active={view === "inventory"} onClick={() => setView("inventory")} />
           <MobileNavigationButton icon="📷" label="Scanner" active={view === "scanner"} onClick={() => setView("scanner")} />
+          <MobileNavigationButton icon="✨" label="Centro" active={view === "workspace"} onClick={() => setView("workspace")} />
           <MobileNavigationButton icon="⚙️" label="Ajustes" active={view === "settings"} onClick={() => setView("settings")} />
         </div>
       </nav>
