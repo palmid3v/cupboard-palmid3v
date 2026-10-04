@@ -69,12 +69,9 @@ Numeric fields are normalized to numbers and missing values receive safe default
 
 The application presents that URL inside bounded image containers.
 
-Cupboard does not currently:
-- upload image files;
-- proxy images;
-- remove backgrounds;
-- automatically discover product images;
-- guarantee that every external image URL remains available.
+Cupboard does not currently upload image files. Firebase Storage is deferred until a billing-enabled plan is acceptable.
+
+External image URLs are not guaranteed to remain available.
 
 ## Missing data defaults
 
