@@ -71,6 +71,14 @@ export async function createHouseholdForUser(user) {
   };
 
   await setDoc(householdRef, household);
+  await setDoc(doc(db, "households", householdId, "members", user.uid), {
+    uid: user.uid,
+    role: "admin",
+    email: user.email || "",
+    displayName: user.displayName || user.email?.split("@")[0] || "Admin",
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
   await setDoc(userRef, {
     displayName: user.displayName || user.email?.split("@")[0] || "Admin",
     email: user.email || "",
@@ -163,6 +171,15 @@ export async function joinHouseholdByCode(user, code) {
 
   await updateDoc(householdRef, {
     [`members.${user.uid}`]: role,
+    updatedAt: serverTimestamp(),
+  });
+
+  await setDoc(doc(db, "households", invite.householdId, "members", user.uid), {
+    uid: user.uid,
+    role,
+    email: user.email || "",
+    displayName: user.displayName || user.email?.split("@")[0] || "Miembro",
+    createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });
 
