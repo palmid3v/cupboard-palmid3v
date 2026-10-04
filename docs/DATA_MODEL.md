@@ -1,133 +1,29 @@
 # Cupboard — Data Model
 
-## Firestore collection
+## Current Firestore model
 
-```text
-products
-```
-
-Each product uses its barcode as the Firestore document ID:
-
-```text
-products/{barcode}
-```
-
-## Product document
-
-| Field | Type | Required | Meaning |
-| --- | --- | --- | --- |
-| document ID | string | yes | Product barcode |
-| name | string | yes for registration | Product name |
-| description | string | no | Optional description |
-| weight | number | no | Weight in grams |
-| portions | number | yes for registration | Current number of portions |
-| imageUrl | string | no | Optional product image URL |
-| createdAt | timestamp | generated | Creation time |
-| updatedAt | timestamp | generated | Last update time |
-
-## Save behavior
-
-`saveProduct(barcode, data)` checks whether the document exists.
-
-### Existing barcode
-
-Updates name, description, weight, portions, imageUrl, and updatedAt.
-
-### New barcode
-
-Creates the product fields plus createdAt and updatedAt.
-
-## Portion behavior
-
-`updatePortions(barcode, newPortions)` prevents negative quantities.
-
-The UI changes the quantity by exactly one portion per action.
-
-The current UI performs the local optimistic update first and then persists the resulting value.
-
-If persistence fails, the UI restores the previous value.
-
-## Normalization
-
-`services/products.js` normalizes Firestore data before returning it to the UI.
-
-The normalized product exposes:
-- id;
-- name;
-- description;
-- weight;
-- portions;
-- imageUrl;
-- createdAt;
-- updatedAt.
-
-Numeric fields are normalized to numbers and missing values receive safe defaults.
-
-## Images
-
-`imageUrl` is an optional remote URL supplied by the product data.
-
-The application presents that URL inside bounded image containers.
-
-Cupboard does not currently upload image files. Firebase Storage is deferred until a billing-enabled plan is acceptable.
-
-External image URLs are not guaranteed to remain available.
-
-## Missing data defaults
-
-- name → empty string
-- description → empty string
-- weight → 0
-- portions → 0
-- imageUrl → empty string
-- timestamps → null
-
-## Future model considerations
-
-If Cupboard becomes a shared household application, the model may eventually need user identity, household identity, ownership, product locations, units, expiration, movement history, or shopping state.
-
-Do not add these fields preemptively without a product requirement.
-
-## Data-model rule
-
-Keep the product document small until the product actually needs more information.
-
-
-## Household ownership
-
-The household owner is the general administrator. New users join through invitation codes and receive member access. Role and household ownership fields are protected by Firestore Rules.
-
-
-## Authentication state
-
-Firebase Authentication remains the identity source. Household Firestore access requires the Firebase ID token claim `email_verified == true`.
-
-## Product fields used by the current detail experience
-
-```text
-name
- description
-weight
-portions
-imageUrl
-category
-expiryDate
-minStock
-updatedAt
-```
-
-Existing products are intentionally preserved as the current development dataset. No database reset or product deletion is part of this implementation.
-
-
-## Shared product catalog
-
-The new global catalog is:
+Cupboard separates shared product identity from household state.
 
 ```text
 productCatalog/{barcode}
+        │
+        ├── canonical product identity
+        │
+        ▼
+households/{householdId}/inventory/{barcode}
+        │
+        ├── portions
+        ├── expiryDate
+        ├── minStock
+        └── notes
+        │
+        ▼
+households/{householdId}/movements/{movementId}
 ```
 
-It stores stable product identity metadata:
+## Shared product catalog
+
+`productCatalog/{barcode}`
 
 | Field | Meaning |
 | --- | --- |
@@ -136,99 +32,101 @@ It stores stable product identity metadata:
 | description | Product description |
 | brand | Brand when known |
 | weight | Reference weight in grams |
-| imageUrl | Optional product image |
+| imageUrl | Optional remote image |
 | category | Product category |
-| createdBy | User who first created the catalog entry |
-| createdAt | Catalog creation time |
+| createdBy | User who created the catalog entry |
+| createdAt | Creation timestamp |
 | updatedAt | Last catalog metadata update |
 
-It intentionally does **not** store household stock, portions, expiry date, or minimum stock.
+Catalog data does not contain household stock.
 
-The current household inventory remains:
+Verified signed-in users can read catalog metadata. Catalog creation/update is protected by Firestore Rules.
 
-```text
-households/{householdId}/products/{barcode}
-```
+## Household inventory
 
-This is intentionally temporary. Existing products are being preserved as the working dataset until the explicit reset + migration checkpoint.
+`households/{householdId}/inventory/{barcode}`
 
-### Recognition rule
-
-A barcode is treated as:
-
-1. **Existing inventory** when the household already has the barcode.
-2. **Known catalog product** when the global catalog has the barcode but the household does not.
-3. **New product** when neither location contains the barcode.
-
-A known catalog product is never copied as a second global product. Its canonical metadata is reused and only household-specific inventory fields are created for the new household.
-
-### Current catalog bootstrap
-
-The owner can use **Centro → Catálogo → Preparar catálogo** to create missing catalog entries from the current household products. This operation is non-destructive: it does not update, delete, or reset the existing household inventory.
-
-## 🧭 October 2026 target data model
-
-The approved target model separates canonical product identity from household inventory state.
-
-### Canonical product identity
-
-```text
-productCatalog/{barcode}
-```
-
-Stores reusable metadata:
-
-| Field | Responsibility |
+| Field | Meaning |
 | --- | --- |
-| barcode | Stable product identity |
-| name | Canonical name |
-| description | Canonical description |
-| brand | Canonical brand |
-| weight | Reference weight |
-| imageUrl | Optional remote image |
-| category | Canonical category |
-| createdBy | First catalog creator |
-| createdAt | Catalog creation |
-| updatedAt | Catalog metadata update |
-
-### Household inventory
-
-```text
-households/{householdId}/inventory/{barcode}
-```
-
-The new inventory service currently defines:
-
-| Field | Responsibility |
-| --- | --- |
-| barcode | Reference to the product identity |
+| document ID | Barcode |
 | portions | Current household quantity |
 | expiryDate | Household-specific expiry |
-| minStock | Household-specific threshold |
+| minStock | Household-specific low-stock threshold |
 | notes | Household-specific notes |
 | createdAt | Inventory record creation |
 | updatedAt | Inventory state update |
 
-### Ownership rule
+A barcode can exist once in the shared catalog and independently in multiple households.
 
-A barcode may exist once in `productCatalog` and many times in household `inventory`.
+## Movements
 
-```text
-productCatalog/750123
-        │
-        ├── household A / inventory/750123 → 3 portions
-        ├── household B / inventory/750123 → 7 portions
-        └── household C / inventory/750123 → 0 portions
+`households/{householdId}/movements/{movementId}`
+
+Movement records describe inventory deltas.
+
+| Field | Meaning |
+| --- | --- |
+| productId | Barcode affected |
+| type | `add` or `consume` |
+| quantity | Positive absolute delta |
+| reason | Workflow context |
+| userId | Authenticated actor when available |
+| createdAt | Movement creation |
+| updatedAt | Movement update |
+
+Inventory changes and their movement records are persisted atomically.
+
+## Authentication and membership
+
+`users/{uid}` stores the application profile.
+
+Household membership lives under:
+
+`households/{householdId}/members/{uid}`
+
+Invitations live under:
+
+`householdInvites/{inviteCode}`
+
+Verified Firebase Authentication email is required before household Firestore access.
+
+## Service boundaries
+
+The UI-facing compatibility API remains intentionally small:
+
+```js
+getProduct(barcode)
+saveProduct(barcode, data)
+getAllProducts()
+updatePortions(barcode, newPortions)
 ```
 
-### Legacy bridge
+Internally it composes:
 
-`households/{householdId}/products/{barcode}` remains temporarily supported as the existing working dataset. It must not be deleted until the migration gate is explicitly reached.
+- `catalog.js` for shared identity;
+- `inventory.js` for household state;
+- movement persistence for inventory deltas.
 
-### FASE 2 decision
+## Recognition rule
 
-The audit confirmed that the current `products` document mixes canonical product identity and household state. The migration will split those responsibilities rather than copy the mixed document unchanged.
+When scanning a barcode:
 
-### FASE 3 decision
+1. Existing household inventory wins.
+2. Otherwise the shared catalog is checked.
+3. Otherwise the barcode is treated as a new product.
 
-`app/src/services/inventory.js` is now the approved service boundary for the final household inventory model. Runtime adoption is complete. The legacy collection remains only for migration and rollback safety until FASE 8 and the explicit reset gate.
+A known catalog product can therefore be added to a household without duplicating canonical identity data.
+
+## Images
+
+`imageUrl` is a remote URL.
+
+Cupboard does not upload image files. Firebase Storage remains deferred until a billing-enabled plan is acceptable.
+
+## Data-model rule
+
+Keep shared identity reusable, household state private to the household, and movement history household-scoped. Avoid adding fields without a concrete product requirement.
+
+## Migration history
+
+The October 2026 architecture work separated the former mixed product representation into the catalog/inventory model above. The migration is complete and the former household product collection is no longer an application data boundary.
