@@ -118,7 +118,30 @@ RESET COMPLETE — PRODUCT CATALOG WAS NOT TARGETED.
 
 Firebase Authentication users are also deleted through the Admin SDK. Firebase documents both listing users in batches and bulk user deletion through the Admin SDK. See: https://firebase.google.com/docs/auth/admin/manage-users
 
-## Step 7 — Start Cupboard again
+## Step 7 — Create the new first owner
+
+Because the reset removes every existing account and household, the normal invitation flow has no existing administrator to generate an invitation.
+
+Use the administrative bootstrap command instead:
+
+```powershell
+npm run bootstrap:owner -- --credentials "C:\secure\cupboard-firebase-admin.json" --email "tu-correo@example.com" --name "Palmi"
+```
+
+The command asks for the new password without echoing it to the terminal.
+
+It creates:
+
+- one Firebase Authentication account;
+- one household;
+- one `users/{uid}` profile with role `admin`;
+- one household member record with role `admin`.
+
+It refuses to run if `users/*` or `households/*` are not empty.
+
+It does not modify `productCatalog/*`.
+
+## Step 8 — Start Cupboard again
 
 After the reset:
 
