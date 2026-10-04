@@ -6,6 +6,7 @@ import {
   getDocs,
   writeBatch,
   serverTimestamp,
+  deleteDoc,
 } from "firebase/firestore";
 
 import { db } from "../firebase";
@@ -221,3 +222,56 @@ export async function verifyLegacyInventoryMigration() {
  * accidental click cannot erase Firebase data.
  */
 export const RESET_MIGRATION_GATE = "⚠️ AHORA SÍ: RESET + MIGRACIÓN";
+
+function requireResetGate(gate) {
+  if (gate !== RESET_MIGRATION_GATE) {
+    throw new Error("RESET_GATE_REQUIRED");
+  }
+}
+
+async function deleteLegacyProducts() {
+  const householdId = await requireOwner();
+  const snapshot = await getDocs(
+    collection(db, "households", householdId, "products"),
+  );
+
+  for (let index = 0; index < snapshot.docs.length; index += BATCH_LIMIT) {
+    const chunk = snapshot.docs.slice(index, index + BATCH_LIMIT);
+    const batch = writeBatch(db);
+
+    chunk.forEach((productDoc) => {
+      batch.delete(productDoc.ref);
+    });
+
+    await batch.commit();
+  }
+
+  return snapshot.size;
+}
+
+/**
+ * Final destructive retirement of the legacy household products collection.
+ *
+ * This does NOT reset Firebase, users, households, catalog, inventory,
+ * movements, shopping data, recipes, settings, or invitations.
+ *
+ * It only removes legacy household products after a complete migration
+ * verification and an exact human-supplied reset gate.
+ */
+export async function retireLegacyProducts(gate) {
+  requireResetGate(gate);
+
+  const verification = await verifyLegacyInventoryMigration();
+
+  if (!verification.complete) {
+    throw new Error("MIGRATION_INCOMPLETE");
+  }
+
+  const deleted = await deleteLegacyProducts();
+
+  return {
+    deleted,
+    verification,
+    gate: RESET_MIGRATION_GATE,
+  };
+}
