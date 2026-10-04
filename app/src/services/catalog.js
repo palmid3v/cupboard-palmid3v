@@ -6,6 +6,7 @@ import {
 } from "firebase/firestore";
 
 import { db } from "../firebase";
+import { auth } from "./auth";
 
 function catalogRef(barcode) {
   return doc(db, "productCatalog", String(barcode).trim());
@@ -55,7 +56,7 @@ export async function createCatalogProductIfMissing(barcode, data) {
       weight: Number(data.weight) || 0,
       imageUrl: data.imageUrl?.trim() ?? "",
       category: data.category?.trim() ?? "",
-      createdBy: data.createdBy ?? null,
+      createdBy: data.createdBy ?? auth.currentUser?.uid ?? null,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     });
