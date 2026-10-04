@@ -59,7 +59,7 @@ Product images are optional URLs supplied with the product.
 
 Cards keep a fixed visual image area and contain the supplied image inside a bounded product-photo frame so very different source images do not change the card layout.
 
-Cupboard can enrich products from an external barcode catalog and can process uploaded product photos locally by removing near-white backgrounds and cropping excess transparent space before uploading them to Firebase Storage.
+Cupboard can enrich products from an external barcode catalog. Product images are currently handled through remote image URLs; local file uploads are deferred until Firebase Storage is enabled.
 
 ### Theme
 The current application uses a **dark-only Cupboard visual theme**. The settings screen presents this as a fixed theme.
@@ -101,9 +101,15 @@ React UI
              ├── BarcodeScanner.jsx
              │      └── @zxing/browser
              │
-             └── services/products.js
-                    └── Firebase Firestore
-                           └── products/{barcode}
+             └── services/
+       ├── products.js
+       ├── auth.js
+       ├── households.js
+       └── features.js
+                    └── Firebase
+                           ├── Authentication
+                           └── Firestore
+                                └── households/{householdId}/products/{barcode}
 ```
 
 The application intentionally has no separate backend API layer.
@@ -219,8 +225,8 @@ The original MVP boundaries have now been implemented as the next Cupboard found
 - ✅ basic inventory analytics;
 - ✅ external barcode catalog enrichment;
 - ✅ automatic product image lookup;
-- ✅ local near-white background removal and image cropping for uploaded product photos;
 - 🟡 production rollout still requires enabling Email/Password Authentication and deploying the committed Firebase Security Rules.
+- ⏸️ Firebase Storage uploads are intentionally deferred until a paid/billing-enabled Firebase plan is acceptable; image URLs remain supported.
 
 ## Development principle
 
