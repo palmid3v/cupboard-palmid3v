@@ -113,6 +113,45 @@ service cloud.firestore {
       }
     }
 
+    // Shared product catalog. It contains product identity metadata, not household stock.
+    match /productCatalog/{barcode} {
+      allow read: if signedIn();
+
+      allow create: if signedIn()
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.name is string
+        && request.resource.data.keys().hasAll(['name', 'createdBy', 'createdAt', 'updatedAt'])
+        && request.resource.data.keys().hasOnly([
+          'name',
+          'description',
+          'brand',
+          'weight',
+          'imageUrl',
+          'category',
+          'createdBy',
+          'createdAt',
+          'updatedAt'
+        ]);
+
+      allow update: if signedIn()
+        && (
+          resource.data.createdBy == request.auth.uid
+          || appOwner()
+        )
+        && request.resource.data.createdBy == resource.data.createdBy
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'name',
+          'description',
+          'brand',
+          'weight',
+          'imageUrl',
+          'category',
+          'updatedAt'
+        ]);
+
+      allow delete: if false;
+    }
+
     match /householdInvites/{inviteCode} {
       allow read: if signedIn();
       allow create: if owner(request.resource.data.householdId)
