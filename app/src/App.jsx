@@ -85,7 +85,10 @@ export default function App() {
   const [search, setSearch] = useState("");
   const [inventoryFilter, setInventoryFilter] = useState("all");
   const [inventorySort, setInventorySort] = useState("name");
-  const [scanKey, setScanKey] = useState(0);  const [isManualEntry, setIsManualEntry] = useState(false);
+  const [isSortOpen, setIsSortOpen] = useState(false);
+  const [scannerRestart, setScannerRestart] = useState(0);
+  const [isManualEntry, setIsManualEntry] = useState(false);
+  const sortMenuRef = useRef(null);
 
   const loadProducts = async () => {
     setIsLoadingProducts(true);
@@ -102,6 +105,17 @@ export default function App() {
     loadProducts();
   }, []);
 
+  useEffect(() => {
+    const handlePointerDown = (event) => {
+      if (!sortMenuRef.current?.contains(event.target)) {
+        setIsSortOpen(false);
+      }
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    return () => document.removeEventListener("pointerdown", handlePointerDown);
+  }, []);
+
   const openProduct = (item) => {
   setInventoryActionError(null);
   setInventoryActionSuccess(null);
@@ -109,20 +123,22 @@ export default function App() {
 };
 
 
-  const handleConsume = async (item) => {
-  if (!item.portions || item.portions <= 0) return;
-  if (updatingProductId === item.id) return;
+  const updateProductPortionsOptimistically = async (item, newPortions) => {
+    if (updatingProductId === item.id) return;
 
-  const newPortions = item.portions - 1;
+    const previousPortions = Number(item.portions) || 0;
 
-  setUpdatingProductId(item.id);
-  setInventoryActionError(null);
-  setInventoryActionSuccess("");
+    setUpdatingProductId(item.id);
+    setInventoryActionError(null);
+    setInventoryActionSuccess(null);
 
-  try {
-    await updatePortions(item.id, newPortions);
-
-    await loadProducts();
+    setProducts((current) =>
+      current.map((product) =>
+        product.id === item.id
+          ? { ...product, portions: newPortions }
+          : product,
+      ),
+    );
 
     setSelectedProduct((current) =>
       current?.id === item.id
@@ -130,59 +146,50 @@ export default function App() {
         : current,
     );
 
-    setInventoryActionSuccess({
-      productId: item.id,
-      message: `Porciones actualizadas: ${newPortions}`,
-    });
+    try {
+      await updatePortions(item.id, newPortions);
 
-  } catch (error) {
-  console.error("Error consumiendo porción:", error);
+      setInventoryActionSuccess({
+        productId: item.id,
+        message: `Porciones actualizadas: ${newPortions}`,
+      });
+    } catch (error) {
+      console.error("Error actualizando porciones:", error);
 
-  setInventoryActionError({
-    productId: item.id,
-    message: "No pudimos actualizar las porciones. Inténtalo nuevamente.",
-  });
-} finally {
-    setUpdatingProductId(null);
-  }
-};
+      setProducts((current) =>
+        current.map((product) =>
+          product.id === item.id
+            ? { ...product, portions: previousPortions }
+            : product,
+        ),
+      );
+
+      setSelectedProduct((current) =>
+        current?.id === item.id
+          ? { ...current, portions: previousPortions }
+          : current,
+      );
+
+      setInventoryActionError({
+        productId: item.id,
+        message: "No pudimos actualizar las porciones. Inténtalo nuevamente.",
+      });
+    } finally {
+      setUpdatingProductId(null);
+    }
+  };
+
+  const handleConsume = async (item) => {
+    const portions = Number(item.portions) || 0;
+    if (portions <= 0) return;
+
+    await updateProductPortionsOptimistically(item, portions - 1);
+  };
 
   const handleAdd = async (item) => {
-  if (updatingProductId === item.id) return;
-
-  const newPortions = (item.portions || 0) + 1;
-
-  setUpdatingProductId(item.id);
-  setInventoryActionError(null);
-  setInventoryActionSuccess("");
-
-  try {
-    await updatePortions(item.id, newPortions);
-
-    await loadProducts();
-
-    setSelectedProduct((current) =>
-      current?.id === item.id
-        ? { ...current, portions: newPortions }
-        : current,
-    );
-
-    setInventoryActionSuccess({
-      productId: item.id,
-      message: `Porciones actualizadas: ${newPortions}`,
-    });
-
-  } catch (error) {
-  console.error("Error agregando porción:", error);
-
-  setInventoryActionError({
-    productId: item.id,
-    message: "No pudimos actualizar las porciones. Inténtalo nuevamente.",
-  });
-} finally {
-    setUpdatingProductId(null);
-  }
-};
+    const portions = Number(item.portions) || 0;
+    await updateProductPortionsOptimistically(item, portions + 1);
+  };
 
   const handleScan = async (code) => {
   setBarcode(code);
@@ -317,7 +324,7 @@ setIsSaving(true);
 
     setIsEditing(false);
     setIsManualEntry(false);
-    setScanKey((previous) => previous + 1);
+    setScannerRestart((previous) => previous + 1);
 
     await loadProducts();
 
@@ -565,8 +572,8 @@ setIsSaving(true);
                             </div>
 
                             <div className="mt-6 grid grid-cols-2 gap-2">
-                              <button type="button" onClick={() => handleConsume(selectedProduct)} disabled={portions <= 0} className="rounded-2xl bg-[var(--cupboard-danger)]/10 px-4 py-3.5 text-sm font-bold text-[var(--cupboard-danger)] transition hover:bg-[var(--cupboard-danger)]/20 disabled:cursor-not-allowed disabled:opacity-30">− 1 consumir</button>
-                              <button type="button" onClick={() => handleAdd(selectedProduct)} className="rounded-2xl bg-[var(--cupboard-primary-soft)] px-4 py-3.5 text-sm font-bold text-[var(--cupboard-primary)] transition hover:bg-[var(--cupboard-primary)]/20">+ 1 agregar</button>
+                              <button type="button" onClick={() => handleConsume(selectedProduct)} disabled={portions <= 0 || updatingProductId === selectedProduct.id} className="rounded-2xl bg-[var(--cupboard-danger)]/10 px-4 py-3.5 text-sm font-bold text-[var(--cupboard-danger)] transition hover:bg-[var(--cupboard-danger)]/20 disabled:cursor-not-allowed disabled:opacity-30">− 1 consumir</button>
+                              <button type="button" onClick={() => handleAdd(selectedProduct)} disabled={updatingProductId === selectedProduct.id} className="rounded-2xl bg-[var(--cupboard-primary-soft)] px-4 py-3.5 text-sm font-bold text-[var(--cupboard-primary)] transition hover:bg-[var(--cupboard-primary)]/20">+ 1 agregar</button>
                             </div>
                           </div>
                         );
@@ -676,15 +683,73 @@ setIsSaving(true);
                         })}
                       </div>
 
-                      <label className="flex shrink-0 items-center gap-2 rounded-2xl border border-[var(--cupboard-border)] bg-[var(--cupboard-surface-muted)] px-3.5 py-3">
-                        <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--cupboard-text-subtle)]">Orden</span>
-                        <select id="inventory-sort" value={inventorySort} onChange={(event) => setInventorySort(event.target.value)} className="max-w-[145px] bg-transparent text-xs font-bold text-[var(--cupboard-text)] outline-none">
-                          <option value="name">Nombre A-Z</option>
-                          <option value="recent">Más recientes</option>
-                          <option value="low-stock">Menor stock</option>
-                          <option value="high-stock">Mayor stock</option>
-                        </select>
-                      </label>
+                      <div ref={sortMenuRef} className="relative shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => setIsSortOpen((open) => !open)}
+                          aria-haspopup="listbox"
+                          aria-expanded={isSortOpen}
+                          className="flex items-center gap-2 rounded-2xl border border-[var(--cupboard-border)] bg-[var(--cupboard-surface-muted)] px-3.5 py-3 text-left transition hover:border-[var(--cupboard-primary)]/40"
+                        >
+                          <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--cupboard-text-subtle)]">Orden</span>
+                          <span className="max-w-[120px] truncate text-xs font-bold text-[var(--cupboard-text)]">
+                            {{
+                              name: "Nombre A-Z",
+                              recent: "Más recientes",
+                              "low-stock": "Menor stock",
+                              "high-stock": "Mayor stock",
+                            }[inventorySort]}
+                          </span>
+                          <span
+                            className={[
+                              "text-[var(--cupboard-text-subtle)] transition-transform",
+                              isSortOpen ? "rotate-180" : "",
+                            ].join(" ")}
+                            aria-hidden="true"
+                          >
+                            ⌄
+                          </span>
+                        </button>
+
+                        {isSortOpen && (
+                          <div
+                            role="listbox"
+                            aria-label="Ordenar inventario"
+                            className="absolute right-0 top-[calc(100%+0.5rem)] z-50 min-w-[190px] overflow-hidden rounded-2xl border border-[var(--cupboard-border)] bg-[var(--cupboard-surface)] p-1.5 shadow-[0_18px_45px_rgb(0_0_0_/_0.38)]"
+                          >
+                            {[
+                              ["name", "Nombre A-Z"],
+                              ["recent", "Más recientes"],
+                              ["low-stock", "Menor stock"],
+                              ["high-stock", "Mayor stock"],
+                            ].map(([value, label]) => {
+                              const active = inventorySort === value;
+
+                              return (
+                                <button
+                                  key={value}
+                                  type="button"
+                                  role="option"
+                                  aria-selected={active}
+                                  onClick={() => {
+                                    setInventorySort(value);
+                                    setIsSortOpen(false);
+                                  }}
+                                  className={[
+                                    "flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-xs font-bold transition",
+                                    active
+                                      ? "bg-[var(--cupboard-primary-soft)] text-[var(--cupboard-primary)]"
+                                      : "text-[var(--cupboard-text-muted)] hover:bg-[var(--cupboard-surface-muted)] hover:text-[var(--cupboard-text)]",
+                                  ].join(" ")}
+                                >
+                                  <span>{label}</span>
+                                  {active && <span aria-hidden="true">✓</span>}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
 
@@ -796,10 +861,10 @@ setIsSaving(true);
 
                               <div className="mt-4 grid grid-cols-2 gap-2">
                                 <button type="button" onClick={(event) => { event.stopPropagation(); handleConsume(item); }} disabled={portions <= 0 || updatingProductId === item.id} aria-label={"Consumir una porción de " + item.name} className="rounded-xl bg-[var(--cupboard-danger)]/10 px-3 py-2.5 text-xs font-bold text-[var(--cupboard-danger)] transition hover:bg-[var(--cupboard-danger)]/20 disabled:cursor-not-allowed disabled:opacity-30">
-                                  {updatingProductId === item.id ? "Guardando…" : "− 1"}
+                                  {updatingProductId === item.id ? "↻" : "− 1"}
                                 </button>
                                 <button type="button" onClick={(event) => { event.stopPropagation(); handleAdd(item); }} disabled={updatingProductId === item.id} aria-label={"Agregar una porción de " + item.name} className="rounded-xl bg-[var(--cupboard-primary-soft)] px-3 py-2.5 text-xs font-bold text-[var(--cupboard-primary)] transition hover:bg-[var(--cupboard-primary)]/20 disabled:cursor-not-allowed disabled:opacity-30">
-                                  {updatingProductId === item.id ? "Guardando…" : "+ 1"}
+                                  {updatingProductId === item.id ? "↻" : "+ 1"}
                                 </button>
                               </div>
                             </div>
@@ -829,7 +894,7 @@ setIsSaving(true);
 
                     <div className="p-4 sm:p-6">
                       <div className="overflow-hidden rounded-[1.5rem] border border-[var(--cupboard-border)] bg-black shadow-inner">
-                        <BarcodeScanner key={scanKey} onScan={handleScan} />
+                        <BarcodeScanner onScan={handleScan} restartToken={scannerRestart} />
                       </div>
 
                       <div className="mt-4 flex flex-col gap-3 rounded-2xl border border-[var(--cupboard-border)] bg-[var(--cupboard-surface-muted)] p-4 sm:flex-row sm:items-center sm:justify-between">
