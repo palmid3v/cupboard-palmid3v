@@ -10,6 +10,7 @@ import {
   setDoc,
   updateDoc,
   where,
+  writeBatch,
 } from "firebase/firestore";
 
 import { db } from "../firebase";
@@ -28,6 +29,30 @@ export function getActiveHouseholdId() {
 export async function getUserProfile(uid) {
   const snapshot = await getDoc(doc(db, "users", uid));
   return snapshot.exists() ? { id: snapshot.id, ...snapshot.data() } : null;
+}
+
+async function migrateLegacyProducts(householdId) {
+  const legacy = await getDocs(collection(db, "products"));
+
+  if (legacy.empty) return;
+
+  for (let index = 0; index < legacy.docs.length; index += 450) {
+    const batch = writeBatch(db);
+
+    legacy.docs.slice(index, index + 450).forEach((product) => {
+      batch.set(
+        doc(db, "households", householdId, "products", product.id),
+        {
+          ...product.data(),
+          migratedFromLegacy: true,
+          migratedAt: serverTimestamp(),
+        },
+        { merge: true },
+      );
+    });
+
+    await batch.commit();
+  }
 }
 
 export async function createHouseholdForUser(user) {
@@ -56,6 +81,16 @@ export async function createHouseholdForUser(user) {
   });
 
   setActiveHouseholdId(householdId);
+
+  try {
+    await migrateLegacyProducts(householdId);
+    await updateDoc(householdRef, {
+      legacyInventoryMigratedAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
+  } catch (error) {
+    console.warn("Legacy inventory migration skipped:", error);
+  }
 
   return {
     id: householdId,
