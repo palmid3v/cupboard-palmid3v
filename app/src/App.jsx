@@ -412,7 +412,7 @@ export default function App() {
         name: product.name || "",
         description: product.description || "",
         weight: product.weight || "",
-        portions: "",
+        portions: 0,
         imageUrl: product.imageUrl || "",
         category: product.category || "",
         expiryDate: "",
@@ -523,12 +523,12 @@ setIsSaving(true);
       minStock: form.minStock,
     });
 
-    if (status === "new" && portionsValue > 0) {
+    if ((status === "new" || status === "catalog") && portionsValue > 0) {
       await addMovement({
         productId: productCode,
         type: "add",
         quantity: portionsValue,
-        reason: "Registro de producto",
+        reason: status === "catalog" ? "Agregado desde catálogo" : "Registro de producto",
         userId: auth.currentUser?.uid || null,
       });
     }
