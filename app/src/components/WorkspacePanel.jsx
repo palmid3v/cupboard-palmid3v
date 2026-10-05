@@ -55,7 +55,7 @@ function getInitialConnectionStatus() {
   if (preferredNetwork === "offline") return "offline";
 
   const storedStatus = window.localStorage.getItem("cupboard.connectionStatus");
-  if (["connected", "offline", "error"].includes(storedStatus)) {
+  if (["connected", "offline", "syncing", "error"].includes(storedStatus)) {
     return storedStatus;
   }
 
@@ -552,6 +552,7 @@ export default function WorkspacePanel() {
                     "h-3 w-3 shrink-0 rounded-full shadow-[0_0_0_4px_rgb(0_0_0_/_0.08)]",
                     connectionStatus === "connected" && "bg-[var(--cupboard-success)]",
                     connectionStatus === "connecting" && "bg-[var(--cupboard-warning)] animate-pulse",
+                    connectionStatus === "syncing" && "bg-[var(--cupboard-info)] animate-pulse",
                     connectionStatus === "offline" && "bg-[var(--cupboard-warning)]",
                     connectionStatus === "error" && "bg-[var(--cupboard-danger)]",
                   ].filter(Boolean).join(" ")}
@@ -561,6 +562,7 @@ export default function WorkspacePanel() {
                   <p className="mt-0.5 text-xl font-extrabold">
                     {connectionStatus === "connected" && "Conectada"}
                     {connectionStatus === "connecting" && "Conectando..."}
+                    {connectionStatus === "syncing" && "Sincronizando..."}
                     {connectionStatus === "offline" && "Desconectada"}
                     {connectionStatus === "error" && "Error de conexión"}
                   </p>
@@ -569,6 +571,8 @@ export default function WorkspacePanel() {
               <p className="mt-3 text-xs text-[var(--cupboard-text-subtle)]">
                 {connectionStatus === "connected"
                   ? "Firestore está disponible desde este dispositivo."
+                  : connectionStatus === "syncing"
+                    ? "Hay cambios locales pendientes de sincronización."
                   : connectionStatus === "offline"
                     ? "Cupboard está usando los datos locales disponibles."
                     : "Comprobando la conexión con Firestore…"}
