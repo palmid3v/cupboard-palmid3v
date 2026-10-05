@@ -468,3 +468,62 @@ Show version/application information. Do not invent PWA installation/update stat
 - [ ] npm run build passes.
 - [ ] Real-device smoke test passes.
 
+
+
+# October 5, 2026 — FASE 13–16 implementation checkpoint
+
+Branch: `feature/phases-13-16-hardening`
+
+## FASE 13 — Role-aware inventory UX
+**🟢 Implemented · validation pending**
+
+- Added client-side role resolution from the existing user profile.
+- Members receive a clear read-only state.
+- Member add/consume controls are disabled.
+- Member product editing is disabled.
+- Product save is blocked before submission when the known role is `member`.
+- Owner/editor flows remain writable.
+- Firestore Rules remain authoritative.
+
+## FASE 14 — Save states and error taxonomy
+**🟢 Implemented foundation · validation pending**
+
+- Added explicit save state tracking.
+- Distinguishes permission, network and unknown save failures.
+- Keeps form data available for retry.
+- Adds clearer permission messaging.
+- Existing scanner/lookup errors remain separate from the save operation.
+
+## FASE 15 — Performance
+**🟢 Implemented foundation · measurement pending**
+
+- Added session-scoped catalog metadata caching.
+- Realtime inventory hydration reuses previously resolved catalog products.
+- No new backend layer was introduced.
+- Existing catalog/inventory ownership remains unchanged.
+
+## FASE 16 — Offline/PWA hardening
+**🟢 Implemented foundation · device validation pending**
+
+- Added a visible Firestore synchronization state for pending writes/cache-backed online startup.
+- Preserves intentional local Firestore disconnect behavior.
+- Reconnect restarts the inventory listener.
+- Enabled Workbox outdated-cache cleanup.
+- Aligned PWA manifest colors with the current dark UI.
+
+## Validation required before merge
+
+- [ ] `npm run lint`
+- [ ] `npm run build`
+- [ ] Owner can add/edit/consume.
+- [ ] Editor can add/edit/consume.
+- [ ] Member can read but cannot write.
+- [ ] Rules reject unauthorized writes.
+- [ ] Save permission error is understandable.
+- [ ] Save network error is understandable.
+- [ ] Pending write becomes synchronized.
+- [ ] Browser reconnect restores live inventory.
+- [ ] Intentional Firestore disconnect remains offline.
+- [ ] PWA install/update smoke test on target devices.
+- [ ] iPhone offline/reconnect smoke test.
+- [ ] Android offline/reconnect smoke test.
