@@ -8,7 +8,7 @@ import {
 } from "../services/features";
 import { createInvite, getActiveHouseholdId, getHousehold, getUserProfile } from "../services/households";
 import { getAllProducts, saveProduct } from "../services/products";
-import { seedCatalogFromProducts } from "../services/catalog";
+import { getAllCatalogProducts, seedCatalogFromProducts } from "../services/catalog";
 import { auth, logout } from "../services/auth";
 import { connectFirestore, disconnectFirestore } from "../firebase";
 
@@ -82,6 +82,8 @@ export default function WorkspacePanel() {
   const [connectionBusy, setConnectionBusy] = useState(false);
   const [catalogSyncBusy, setCatalogSyncBusy] = useState(false);
   const [catalogSyncResult, setCatalogSyncResult] = useState(null);
+  const [catalogProducts, setCatalogProducts] = useState([]);
+  const [catalogLoading, setCatalogLoading] = useState(false);
 
   const householdId = getActiveHouseholdId();
   const isOwner = household?.ownerUid === auth.currentUser?.uid;
@@ -123,6 +125,35 @@ export default function WorkspacePanel() {
     window.addEventListener("cupboard:connection-status", handleConnectionStatus);
     return () => window.removeEventListener("cupboard:connection-status", handleConnectionStatus);
   }, []);
+  useEffect(() => {
+    if (tab !== "catalog") return undefined;
+
+    let cancelled = false;
+    setCatalogLoading(true);
+
+    getAllCatalogProducts()
+      .then((nextCatalog) => {
+        if (!cancelled) {
+          setCatalogProducts(nextCatalog);
+        }
+      })
+      .catch((err) => {
+        console.error(err);
+        if (!cancelled) {
+          setError("No pudimos cargar el catálogo compartido.");
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setCatalogLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [tab]);
+
 
   const openDatabaseConnection = async () => {
     setConnectionBusy(true);
@@ -261,8 +292,12 @@ export default function WorkspacePanel() {
 
     try {
       const seeded = await seedCatalogFromProducts(products);
+      const nextCatalog = await getAllCatalogProducts();
+
+      setCatalogProducts(nextCatalog);
       setCatalogSyncResult({
         count: seeded.length,
+        total: nextCatalog.length,
         message: "Los productos actuales quedaron registrados en el catálogo compartido.",
       });
     } catch (err) {
@@ -455,11 +490,69 @@ export default function WorkspacePanel() {
 
               {catalogSyncResult && (
                 <p className="mt-3 text-xs font-semibold text-[var(--cupboard-success)]">
-                  ✓ {catalogSyncResult.message} ({catalogSyncResult.count} productos revisados).
+                  ✓ {catalogSyncResult.message} ({catalogSyncResult.count} productos revisados · {catalogSyncResult.total} fichas en catálogo).
                 </p>
               )}
             </div>
           )}
+
+          <div className="mt-6">
+            <div className="flex items-end justify-between gap-4">
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--cupboard-info)]">Catálogo compartido</p>
+                <p className="mt-1 text-sm text-[var(--cupboard-text-muted)]">
+                  Aquí viven las fichas globales creadas a partir de los productos del inventario. El catálogo no reemplaza ni elimina las existencias de la alacena.
+                </p>
+              </div>
+              <span className="shrink-0 rounded-full bg-[var(--cupboard-primary-soft)] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--cupboard-primary)]">
+                {catalogProducts.length} fichas
+              </span>
+            </div>
+
+            {catalogLoading && (
+              <div className="mt-4 rounded-2xl border border-dashed border-[var(--cupboard-border)] bg-[var(--cupboard-bg)] px-4 py-8 text-center text-sm text-[var(--cupboard-text-muted)]">
+                Cargando catálogo compartido...
+              </div>
+            )}
+
+            {!catalogLoading && catalogProducts.length === 0 && (
+              <div className="mt-4 rounded-2xl border border-dashed border-[var(--cupboard-border)] bg-[var(--cupboard-bg)] px-4 py-8 text-center">
+                <p className="text-sm font-bold">Todavía no hay fichas en el catálogo.</p>
+                {isOwner && <p className="mt-1 text-xs text-[var(--cupboard-text-muted)]">Usa “Preparar catálogo” para registrar tu inventario actual sin modificarlo.</p>}
+              </div>
+            )}
+
+            {!catalogLoading && catalogProducts.length > 0 && (
+              <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                {catalogProducts.map((item) => (
+                  <article key={item.id} className="overflow-hidden rounded-2xl border border-[var(--cupboard-border)] bg-[var(--cupboard-bg)]">
+                    <div className="flex h-28 items-center justify-center bg-[var(--cupboard-surface-muted)] p-4">
+                      {item.imageUrl ? (
+                        <img src={item.imageUrl} alt="" className="max-h-full max-w-full object-contain" />
+                      ) : (
+                        <span className="text-3xl" aria-hidden="true">📦</span>
+                      )}
+                    </div>
+                    <div className="p-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-extrabold">{item.name || "Producto sin nombre"}</p>
+                          <p className="mt-1 text-xs text-[var(--cupboard-text-muted)]">{item.brand || "Marca no disponible"}</p>
+                        </div>
+                        <span className="shrink-0 rounded-lg bg-[var(--cupboard-surface-muted)] px-2 py-1 font-mono text-[9px] text-[var(--cupboard-text-subtle)]">
+                          {item.id}
+                        </span>
+                      </div>
+                      <p className="mt-3 text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--cupboard-text-subtle)]">
+                        {item.category || "Sin categoría"} · {item.weight || 0} g
+                      </p>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            )}
+          </div>
+
 
           <div className="mt-6">
             <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--cupboard-text-subtle)]">Catálogo externo</p>
