@@ -229,7 +229,7 @@ export default function WorkspacePanel() {
     try {
       const result = await lookupProductByBarcode(catalogBarcode);
       setCatalogResult(result || { notFound: true });
-    } catch (err) {
+    } catch {
       setError("El catálogo externo no respondió.");
     } finally {
       setBusy(false);
