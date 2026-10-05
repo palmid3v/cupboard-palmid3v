@@ -1,4 +1,29 @@
 import { BrowserMultiFormatReader } from "@zxing/browser";
+import { getScannerErrorState } from "../services/regressionContracts";
+import { useCallback, useEffect, useRef, useState } from "react";
+
+function getCameraError(error) {
+  const state = getScannerErrorState(error);
+
+  const messages = {
+    "Permiso de cámara":
+      "Cupboard necesita acceso a tu cámara para escanear códigos de barras.",
+    "No encontramos una cámara":
+      "Conecta o habilita una cámara y vuelve a intentarlo.",
+    "La cámara está ocupada":
+      "Otra aplicación o pestaña puede estar usando la cámara. Ciérrala y vuelve a intentarlo.",
+    "La cámara se interrumpió":
+      "La cámara fue reiniciada mientras se estaba iniciando. Vuelve a intentarlo.",
+    "No pudimos iniciar la cámara":
+      "Revisa los permisos del navegador e inténtalo nuevamente.",
+  };
+
+  return {
+    ...state,
+    message: messages[state.title] || messages["No pudimos iniciar la cámara"],
+  };
+}mport { BrowserMultiFormatReader } from "@zxing/browser";
+import { getScannerErrorState } from "../services/regressionContracts";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 function getCameraError(error) {
