@@ -43,6 +43,7 @@ export default function ScannerView({
   isEditing,
   setIsEditing,
   isManualEntry,
+  setBarcode,
   formError,
   isSaving,
   saveState,
