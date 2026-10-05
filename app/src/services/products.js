@@ -39,7 +39,7 @@ async function getCachedCatalogProduct(barcode) {
     return catalogCache.get(normalizedBarcode);
   }
 
-  const catalog = await getCachedCatalogProduct(normalizedBarcode);
+  const catalog = await getCatalogProduct(normalizedBarcode);
   catalogCache.set(normalizedBarcode, catalog);
 
   return catalog;
@@ -78,7 +78,7 @@ export async function getProduct(barcode) {
     return null;
   }
 
-  const catalog = await getCatalogProduct(normalizedBarcode);
+  const catalog = await getCachedCatalogProduct(normalizedBarcode);
 
   return normalizeProduct(normalizedBarcode, catalog || {}, inventory);
 }
