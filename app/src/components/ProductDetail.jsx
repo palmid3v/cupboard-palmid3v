@@ -85,6 +85,7 @@ function StatusBadge({ tone, children }) {
 export default function ProductDetail({
   product,
   updatingProductId,
+  canWriteInventory = true,
   onConsume,
   onAdd,
   onBack,
@@ -175,7 +176,7 @@ export default function ProductDetail({
                   <button
                     type="button"
                     onClick={() => onConsume(product)}
-                    disabled={portions <= 0 || isUpdating}
+                    disabled={!canWriteInventory || portions <= 0 || isUpdating}
                     className="group rounded-2xl bg-[var(--cupboard-danger)]/10 px-4 py-3.5 text-sm font-bold text-[var(--cupboard-danger)] transition duration-300 hover:-translate-y-0.5 hover:bg-[var(--cupboard-danger)]/20 disabled:cursor-not-allowed disabled:opacity-30"
                   >
                     <span className="mr-1 transition-transform duration-300 group-hover:-translate-x-0.5">−</span>
@@ -184,7 +185,7 @@ export default function ProductDetail({
                   <button
                     type="button"
                     onClick={() => onAdd(product)}
-                    disabled={isUpdating}
+                    disabled={!canWriteInventory || isUpdating}
                     className="group rounded-2xl bg-[var(--cupboard-primary-soft)] px-4 py-3.5 text-sm font-bold text-[var(--cupboard-primary)] transition duration-300 hover:-translate-y-0.5 hover:bg-[var(--cupboard-primary)]/20 disabled:opacity-50"
                   >
                     <span className="mr-1 transition-transform duration-300 group-hover:scale-125">+</span>
@@ -233,6 +234,13 @@ export default function ProductDetail({
               </span>
               {expiry.label}
             </div>
+
+
+            {!canWriteInventory && (
+              <div className="mt-5 rounded-2xl border border-[var(--cupboard-info)]/25 bg-[var(--cupboard-info)]/10 px-4 py-3 text-xs leading-5 text-[var(--cupboard-info)]">
+                Modo solo lectura: este rol puede consultar el producto, pero no modificar el inventario.
+              </div>
+            )}
 
             <button
               type="button"
