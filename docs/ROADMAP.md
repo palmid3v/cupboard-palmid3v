@@ -121,27 +121,35 @@ The old mixed household product model is retired.
 - 🟡 Make catalog success versus household inventory failure explicit.
 
 ## 🟡 FASE 13 — Role-aware inventory UX
+**Implementation: 🟢 foundation complete · validation pending**
 - Explain member/editor/admin write capabilities before save.
-- Avoid unauthorized members reaching a generic save failure.
-- Keep Firestore Rules as the final authorization boundary.
+- Members are treated as read-only in inventory controls and product editing.
+- Unauthorized saves are blocked before Firestore submission when the client knows the role.
+- Firestore Rules remain the final authorization boundary.
+- Remaining: validate all role paths against deployed Rules on real accounts.
 
 ## 🟡 FASE 14 — Save states and error taxonomy
-- Split scanner, lookup, validation, permission, network and unknown errors.
-- Introduce explicit SAVING, SAVED, permission and network states.
-- Keep technical diagnostics in logs.
+**Implementation: 🟢 foundation complete · validation pending**
+- Save flow now separates validation, saving, permission, network and unknown outcomes.
+- Permission/network messages are user-oriented.
+- Technical diagnostics remain in logs.
+- Remaining: broader scanner/lookup state taxonomy and real-device error validation.
 
 ## 🟡 FASE 15 — Performance
-- Reduce N+1 catalog reads during inventory hydration.
-- Reuse known catalog data where safe.
-- Measure mobile scan-to-result latency.
-- Avoid duplicate reads after successful writes.
+**Implementation: 🟢 foundation complete · measurement pending**
+- Added a session-scoped catalog metadata cache during inventory hydration.
+- Known catalog data is reused across realtime inventory snapshots.
+- Existing service boundaries remain unchanged.
+- Remaining: measure mobile scan-to-result latency and evaluate cache freshness as catalog editing expands.
 
 ## 🟡 FASE 16 — Offline/PWA hardening
-- Validate reconnect and pending-write behavior.
-- Test PWA install/update on target devices.
-- Finalize manifest icons.
-- Define realistic conflict expectations.
-- Test recovery from temporary Auth/Firestore unavailability.
+**Implementation: 🟢 foundation complete · device validation pending**
+- Pending Firestore writes now surface as a synchronization state instead of being misclassified as offline.
+- Intentional Firestore disconnect remains distinguishable from temporary cache-backed startup state.
+- Reconnect listeners restart the inventory subscription.
+- Workbox cleanup of outdated caches is enabled.
+- Manifest theme/background colors match the current dark application.
+- Remaining: PWA install/update device validation, final icons, reconnect/conflict testing, and temporary Auth/Firestore recovery testing.
 
 ## 🟡 FASE 17 — Automated regression coverage
 - Auth and email verification tests.
@@ -280,3 +288,10 @@ Notifications are also out of scope until a real notification system exists.
 - Low-stock UI is consistent with product `minStock`.
 - Centro remains the operational/admin workspace.
 - `npm run lint` and `npm run build` pass.
+
+
+# 8. FASE 13–16 branch checkpoint
+
+Branch: `feature/phases-13-16-hardening`
+
+The approved hardening work has been implemented as a reviewable branch. These phases should remain marked as validation-pending until `npm run lint`, `npm run build`, deployed Rules checks, and real-device/offline smoke tests pass.
