@@ -13,7 +13,7 @@ import {
 import { auth } from "./services/auth";
 import { getUserProfile } from "./services/households";
 import { connectFirestore, disconnectFirestore } from "./firebase";
-import { canWriteInventory, getSaveErrorMessage, getSaveErrorState } from "./services/regressionContracts";
+import { canWriteInventory as canWriteInventoryRole, getSaveErrorMessage, getSaveErrorState } from "./services/regressionContracts";
 
 function NavigationButton({
   icon,
