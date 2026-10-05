@@ -21,44 +21,55 @@ The app currently owns:
 ## Source structure
 
 ```text
-app/
-├── package.json
-├── vite.config.js
-├── public/
-└── src/
-    ├── App.jsx
-    ├── App.css
-    ├── index.css
-    ├── main.jsx
-    ├── firebase.js
-    ├── components/
-    │   └── BarcodeScanner.jsx
-    ├── services/
-    │   ├── products.js
-    │   ├── auth.js
-    │   ├── households.js
-    │   └── features.js
-    └── assets/
+cupboard-palmid3v/
+├── scripts/
+│   └── validate.ps1
+├── .github/
+│   └── workflows/
+│       └── regression.yml
+└── app/
+    ├── package.json
+    ├── vite.config.js
+    ├── public/
+    └── src/
+        ├── App.jsx
+        ├── App.css
+        ├── index.css
+        ├── main.jsx
+        ├── firebase.js
+        ├── components/
+        │   ├── BarcodeScanner.jsx
+        │   ├── InventoryView.jsx
+        │   ├── ProductForm.jsx
+        │   ├── ScannerView.jsx
+        │   └── SettingsPanel.jsx
+        ├── hooks/
+        │   ├── useInventorySubscription.js
+        │   └── useCupboardSettings.js
+        ├── services/
+        │   ├── products.js
+        │   ├── auth.js
+        │   ├── households.js
+        │   ├── features.js
+        │   └── regressionContracts.js
+        └── assets/
 ```
 
 ## Main files
 
 ### `src/App.jsx`
 
-The current application shell and most UI state live here.
+The application shell lives here and coordinates the extracted UI modules.
 
 It coordinates:
-- inventory loading;
-- search, filters, and sorting;
-- product detail state;
-- optimistic portion changes;
-- scanner flow;
+- navigation and view state;
+- inventory/product actions;
+- scanner workflow orchestration;
 - product lookup and registration;
-- form validation;
-- settings presentation;
+- settings integration;
 - responsive navigation.
 
-The file is intentionally still a large MVP shell and is a future refactoring point.
+Inventory presentation, scanner UI, product form, and focused persistence hooks live in dedicated modules created during FASE 18–20.
 
 ### `src/components/BarcodeScanner.jsx`
 
@@ -103,7 +114,16 @@ The PWA uses standalone display and auto-update registration. The final icon set
 
 ## Commands
 
+From the repository root:
+
+```powershell
+.\scripts\validate.ps1
+```
+
+For direct frontend development:
+
 ```bash
+cd app
 npm install
 npm run dev
 npm run lint
