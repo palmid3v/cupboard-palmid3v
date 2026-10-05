@@ -357,9 +357,6 @@ userId: auth.currentUser?.uid || null,
   const nameInputRef = useRef(null);
   const weightInputRef = useRef(null);
   const portionsInputRef = useRef(null);
-  const nameInputRef = useRef(null);
-  const weightInputRef = useRef(null);
-  const portionsInputRef = useRef(null);
 
   const handleCancelEdit = () => {
     if (isManualEntry) {
@@ -664,8 +661,6 @@ setIsSaving(true);
                 settings={settings}
                 updateSetting={updateSetting}
               />
-            )}
-
             )}
           </div>
         </main>
