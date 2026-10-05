@@ -98,7 +98,7 @@ function Assert-Text([string]$RelativePath, [string]$Pattern) {
     Assert-Path $RelativePath
     $content = Get-Content $RelativePath -Raw
     if ($content -notmatch $Pattern) {
-        throw "Required source contract not found in $RelativePath: $Pattern"
+        throw "Required source contract not found in ${RelativePath}: $Pattern"
     }
 }
 
