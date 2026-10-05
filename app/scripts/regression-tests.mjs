@@ -86,3 +86,21 @@ test("Firestore rules preserve verified-email and role boundaries", async () => 
   assert.match(rules, /match \/productCatalog\/{barcode}/);
   assert.match(rules, /allow delete: if false;/);
 });
+
+test("architecture extraction keeps App focused on orchestration", async () => {
+  const source = await read("../src/App.jsx");
+  const inventoryView = await read("../src/components/InventoryView.jsx");
+  const scannerView = await read("../src/components/ScannerView.jsx");
+  const productForm = await read("../src/components/ProductForm.jsx");
+  const inventoryHook = await read("../src/hooks/useInventorySubscription.js");
+
+  assert.match(source, /import InventoryView from "\.\/components\/InventoryView"/);
+  assert.match(source, /import ScannerView from "\.\/components\/ScannerView"/);
+  assert.match(source, /import useInventorySubscription from "\.\/hooks\/useInventorySubscription"/);
+  assert.doesNotMatch(source, /const inventorySummary = \{/);
+  assert.doesNotMatch(source, /const filteredProducts =/);
+  assert.match(inventoryView, /function InventoryView/);
+  assert.match(scannerView, /function ScannerView/);
+  assert.match(productForm, /function ProductForm/);
+  assert.match(inventoryHook, /function useInventorySubscription/);
+});
