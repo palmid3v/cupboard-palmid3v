@@ -351,3 +351,120 @@ The next phases should strengthen this loop before adding large new product feat
 ---
 
 **Cupboard · PALMI-D3V · October 4, 2026**
+
+
+
+# October 5, 2026 — FASE 19: Settings & user preferences
+
+## Objective
+
+Implement Ajustes as the personal behavior/preferences center without turning it into a second Centro.
+
+## Implementation order
+
+```text
+Settings UI
+   ↓
+Preference storage
+   ↓
+Inventory sort/filter persistence
+   ↓
+Default minStock integration
+   ↓
+Low-stock consistency audit
+   ↓
+Account/session
+   ↓
+Application information
+   ↓
+Lint/build
+   ↓
+Real-device validation
+```
+
+## Step 19.1 — Settings UI
+
+Create only:
+- Cuenta;
+- Inventario;
+- Apariencia;
+- Aplicación.
+
+Keep household administration in Centro → Equipo.
+
+## Step 19.2 — Preference storage
+
+Start with local persistence:
+
+```text
+cupboard.settings
+├── minStockDefault
+├── inventorySort
+└── inventoryFilter
+```
+
+Safe defaults:
+- `minStockDefault = 5`;
+- `inventorySort = name`;
+- `inventoryFilter = all`.
+
+## Step 19.3 — Default minimum stock
+
+Replace hard-coded `minStock: 5` initialization for new products with the configured default.
+
+The setting is a default, not a global rewrite of existing products.
+
+## Step 19.4 — Inventory preferences
+
+Initialize Inventory with saved sort/filter values and persist subsequent changes.
+
+## Step 19.5 — Low-stock consistency audit
+
+Search for hard-coded comparisons such as `portions <= 5`.
+
+Where the product already has `minStock`, use that value for user-facing low-stock behavior.
+
+Validate:
+- inventory cards;
+- low-stock filter;
+- summaries;
+- product detail;
+- registration defaults.
+
+## Step 19.6 — Account/session
+
+Read account state from Firebase Auth.
+
+Expose verification status accurately and provide logout.
+
+## Step 19.7 — Application information
+
+Show version/application information. Do not invent PWA installation/update state.
+
+## Step 19.8 — Explicitly do not implement
+
+- Light/System themes;
+- notification toggles without notification infrastructure;
+- offline connection controls in Settings;
+- Firestore connection controls in Settings;
+- household roles/invitations in Settings;
+- cross-device preference synchronization;
+- inventory unit/portion model redesign.
+
+## Step 19.9 — Done checklist
+
+- [ ] Settings has only real functionality or clearly informational content.
+- [ ] Firebase Auth identity/verification is accurate.
+- [ ] Logout works.
+- [ ] Default min stock persists.
+- [ ] New products use the configured default.
+- [ ] Existing products keep their own minStock.
+- [ ] Inventory sort persists.
+- [ ] Inventory filter persists.
+- [ ] Dark theme is unchanged.
+- [ ] Hard-coded low-stock thresholds are audited.
+- [ ] Centro remains the operational/admin workspace.
+- [ ] npm run lint passes.
+- [ ] npm run build passes.
+- [ ] Real-device smoke test passes.
+
