@@ -639,6 +639,7 @@ setIsSaving(true);
                 isEditing={isEditing}
                 setIsEditing={setIsEditing}
                 isManualEntry={isManualEntry}
+                setBarcode={setBarcode}
                 formError={formError}
                 isSaving={isSaving}
                 saveState={saveState}
