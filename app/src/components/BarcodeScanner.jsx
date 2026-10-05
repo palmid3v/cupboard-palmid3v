@@ -22,7 +22,7 @@ function getCameraError(error) {
     ...state,
     message: messages[state.title] || messages["No pudimos iniciar la cámara"],
   };
-}mport { BrowserMultiFormatReader } from "@zxing/browser";
+}\n\nimport { BrowserMultiFormatReader } from "@zxing/browser";
 import { getScannerErrorState } from "../services/regressionContracts";
 import { useCallback, useEffect, useRef, useState } from "react";
 
