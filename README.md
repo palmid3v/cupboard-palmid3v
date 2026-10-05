@@ -357,3 +357,79 @@ Relevant commits:
 - `437fedabbfd648b23a5f2f4db9aa7bedfb3eafdb` — avoid false product save errors
 
 The next phases are FASE 13–18 in `docs/ROADMAP.md` and `STEP-BY-STEP-CUPBOARD-2026-10-04.md`.
+
+
+
+# 7. October 5, 2026 — Settings & user preferences
+
+## FASE 19 — Settings & user preferences
+
+Settings is now formally defined as the **personal behavior and preference center** of Cupboard.
+
+```text
+Inventario = qué tengo
+Scanner    = qué estoy agregando
+Centro     = qué puedo hacer con mi inventario
+Ajustes    = cómo quiero que Cupboard funcione para mí
+```
+
+### Settings v1
+
+**Cuenta**
+- Current account identity.
+- Email verification status.
+- Logout/session.
+
+**Inventario**
+- Default minimum stock for newly registered products.
+- Default sort: Nombre A-Z / Más recientes / Menor stock / Mayor stock.
+- Default filter: Todos / Stock bajo / Disponibles.
+
+**Apariencia**
+- Cupboard Dark remains fixed.
+- No Light/System selector.
+
+**Aplicación**
+- Version/application information.
+- PWA information only when the state is accurate.
+
+### Persistence
+
+Start with local persistence for personal preferences:
+
+```text
+cupboard.settings
+├── minStockDefault
+├── inventorySort
+└── inventoryFilter
+```
+
+Cross-device synchronization is out of scope for v1.
+
+### Important inventory consistency rule
+
+The current default minimum stock is **5**. When Settings makes this configurable:
+
+- new products inherit the configured default;
+- existing products retain their stored `minStock`;
+- all user-facing low-stock checks must use the product threshold where available;
+- hard-coded `portions <= 5` comparisons must be audited.
+
+### Outside Settings
+
+Household invitations, roles, membership, Firestore connection controls, shared catalog administration, analytics, shopping, recipes, expiry, and movement history remain in **Centro**.
+
+Notifications are also out of scope until a real notification system exists.
+
+### Acceptance criteria
+
+- Settings contains no fake controls.
+- Account state comes from Firebase Auth.
+- Logout works.
+- Default min stock persists and is used for new products.
+- Existing product thresholds are not overwritten.
+- Sort/filter preferences persist.
+- Dark theme remains unchanged.
+- Low-stock UI is consistent with product `minStock`.
+- Centro remains the operational/admin workspace.
+- `npm run lint` and `npm run build` pass.
