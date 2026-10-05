@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 function formatExpiry(expiryDate) {
   if (!expiryDate) return "Sin fecha";
@@ -32,10 +32,6 @@ function getExpiryState(expiryDate) {
 
 function ProductImage({ product }) {
   const [failed, setFailed] = useState(false);
-
-  useEffect(() => {
-    setFailed(false);
-  }, [product.id, product.imageUrl]);
 
   return (
     <div className="group relative flex min-h-[320px] items-center justify-center overflow-hidden rounded-[2rem] border border-[var(--cupboard-border)] bg-[radial-gradient(circle_at_50%_38%,var(--cupboard-surface-raised),var(--cupboard-surface-muted)_58%,var(--cupboard-surface))] p-8 sm:min-h-[390px] lg:min-h-[520px]">
@@ -121,7 +117,7 @@ export default function ProductDetail({
 
       <div className="overflow-hidden rounded-[2.25rem] border border-[var(--cupboard-border)] bg-[var(--cupboard-surface)] shadow-[var(--cupboard-shadow-md)]">
         <div className="grid gap-0 lg:grid-cols-[0.82fr_1.18fr]">
-          <ProductImage product={product} />
+          <ProductImage key={`${product.id}-${product.imageUrl || ""}`} product={product} />
 
           <div className="p-6 sm:p-8 lg:p-10">
             <div className="flex flex-wrap items-center justify-between gap-3">
