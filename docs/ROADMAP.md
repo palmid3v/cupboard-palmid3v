@@ -160,6 +160,32 @@ The old mixed household product model is retired.
 - Movement persistence checks.
 - Scanner state checks where practical.
 
+## 🟢 FASE 17 — Automated regression coverage
+**Implementation: 🟢 complete · CI validation pending**
+
+Added a dependency-free Node regression suite covering the critical contracts of the core loop:
+
+- Auth/email verification contract.
+- Household invitation/member-only onboarding contract.
+- Firestore Rules access boundaries and verified-email requirement.
+- Inventory → catalog → new barcode recognition priority.
+- Save permission/network/unknown error taxonomy.
+- Product-specific low-stock threshold behavior.
+- Movement persistence/atomic batch contract.
+- Scanner permission/camera recovery states.
+- GitHub Actions regression workflow with lint and build.
+
+The suite runs with:
+
+```bash
+cd app
+npm run test:regression
+```
+
+The CI workflow also runs `npm run lint` and `npm run build` on pushes and pull requests.
+
+> The Rules assertions in this first regression layer are source-contract checks. Full Firestore Emulator/Auth integration tests remain the next hardening layer when the Local Emulator Suite is added to the repository toolchain.
+
 ## 🟡 FASE 18 — Incremental architecture extraction
 - Reduce App.jsx responsibility where ownership becomes clearer.
 - Extract inventory UI, scanner workflow, product form and focused hooks incrementally.
