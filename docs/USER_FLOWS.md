@@ -215,3 +215,63 @@ Animated product detail
 The scanner was tested through a real iPhone camera path. Barcode detection succeeded and the product lookup flow reached the expected product state. Camera focus/positioning still needs broader device testing, especially when recognition takes longer.
 
 A transient Firebase Authentication 503 was also observed during testing. It recovered without a code change and is documented as a recoverable availability condition rather than a product-save or scanner error.
+
+
+
+# October 5, 2026 — Settings flow definition
+
+## Settings
+
+```text
+Ajustes
+├── Cuenta
+│   ├── identidad
+│   ├── email / verificación
+│   └── cerrar sesión
+├── Inventario
+│   ├── stock mínimo por defecto
+│   ├── orden inicial
+│   └── filtro inicial
+├── Apariencia
+│   └── Cupboard Dark (fijo)
+└── Aplicación
+    └── versión / información PWA
+```
+
+Settings configures **how Cupboard behaves for the user**. It does not administer the household.
+
+### Preference behavior
+
+Use local persistence first:
+
+```text
+cupboard.settings
+├── minStockDefault
+├── inventorySort
+└── inventoryFilter
+```
+
+The default minimum stock affects newly registered products only. Existing products keep their own `minStock`.
+
+Changing the default does not retroactively modify existing products.
+
+### Inventory startup
+
+Saved sort and filter preferences are used when Inventory opens. Changes made in Inventory should update the saved preference.
+
+### Centro boundary
+
+The following remain in Centro:
+- invitations;
+- roles/membership;
+- Firestore connect/disconnect;
+- catalog administration;
+- analytics;
+- shopping;
+- recipes;
+- expiry;
+- movement history.
+
+### UX rule
+
+Ajustes must never expose a control whose underlying behavior does not exist. No fake notification, offline, cross-device sync, or theme controls.
