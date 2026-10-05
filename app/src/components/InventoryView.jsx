@@ -11,10 +11,12 @@ export default function InventoryView({
   inventoryActionError,
   inventoryActionSuccess,
   onAddProduct,
+  initialSort = "name",
+  initialFilter = "all",
 }) {
   const [search, setSearch] = useState("");
-  const [inventoryFilter, setInventoryFilter] = useState("all");
-  const [inventorySort, setInventorySort] = useState("name");
+  const [inventoryFilter, setInventoryFilter] = useState(initialFilter);
+  const [inventorySort, setInventorySort] = useState(initialSort);
   const [isSortOpen, setIsSortOpen] = useState(false);
   const sortMenuRef = useRef(null);
 
