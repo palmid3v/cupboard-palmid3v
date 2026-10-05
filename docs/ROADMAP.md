@@ -186,10 +186,23 @@ The CI workflow also runs `npm run lint` and `npm run build` on pushes and pull 
 
 > The Rules assertions in this first regression layer are source-contract checks. Full Firestore Emulator/Auth integration tests remain the next hardening layer when the Local Emulator Suite is added to the repository toolchain.
 
-## 🟡 FASE 18 — Incremental architecture extraction
-- Reduce App.jsx responsibility where ownership becomes clearer.
-- Extract inventory UI, scanner workflow, product form and focused hooks incrementally.
-- Avoid unnecessary abstraction.
+## 🟢 FASE 18 — Incremental architecture extraction
+**Implementation: 🟢 complete · CI validation pending**
+
+App.jsx was reduced to application orchestration while ownership moved into focused modules:
+
+- `components/InventoryView.jsx` owns inventory search, filters, sorting, summary, and inventory presentation.
+- `components/ScannerView.jsx` owns the scanner workflow presentation and coordinates the product form.
+- `components/ProductForm.jsx` owns the product editing/registration UI and field-level interaction.
+- `hooks/useInventorySubscription.js` owns inventory realtime subscription, connection state, and role resolution.
+- Existing persistence services, Firestore rules, role boundaries, scanner behavior, and PWA behavior remain unchanged.
+- No new runtime dependency or framework was introduced.
+
+Validation remains pending in CI/device environments:
+- `npm run test:regression`
+- `npm run lint`
+- `npm run build`
+- Real-device scanner/offline smoke tests.
 
 # 5. Product opportunities
 
