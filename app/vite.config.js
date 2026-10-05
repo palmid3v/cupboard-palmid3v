@@ -18,12 +18,17 @@ export default defineConfig({
         short_name: "Cupboard",
         description:
           "Aplicación de gestión de inventario para organizar productos y controlar existencias.",
-        theme_color: "#3f7d4a",
-        background_color: "#f6f8f5",
+        theme_color: "#78a85b",
+        background_color: "#12100d",
         display: "standalone",
         start_url: "/",
         scope: "/",
         icons: [],
+      },
+
+      workbox: {
+        cleanupOutdatedCaches: true,
+        navigateFallback: "/",
       },
     }),
   ],

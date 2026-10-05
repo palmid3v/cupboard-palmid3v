@@ -433,3 +433,18 @@ Notifications are also out of scope until a real notification system exists.
 - Low-stock UI is consistent with product `minStock`.
 - Centro remains the operational/admin workspace.
 - `npm run lint` and `npm run build` pass.
+
+
+## October 5, 2026 — FASE 13–16 hardening checkpoint
+
+The hardening branch `feature/phases-13-16-hardening` implements the approved FASE 13–16 foundation:
+
+- role-aware inventory write UX for owner/editor/member;
+- explicit permission, network, unknown and saving states;
+- product-level read-only behavior for members;
+- Firestore pending-write/synchronization visibility;
+- reconnect handling that distinguishes intentional Firestore disconnect from temporary cache state;
+- session-scoped catalog metadata caching to reduce repeated catalog reads during realtime hydration;
+- PWA Workbox cache cleanup and dark manifest colors.
+
+The branch still requires lint/build and real-device/offline validation before merge.

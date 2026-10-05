@@ -11,6 +11,7 @@ import {
   updatePortions,
 } from "./services/products";
 import { auth } from "./services/auth";
+import { getUserProfile } from "./services/households";
 import { connectFirestore, disconnectFirestore } from "./firebase";
 
 function NavigationButton({
@@ -82,6 +83,14 @@ function ConnectionStatus({ status, compact = false }) {
       badge: "SIN CONEXIÓN",
       color: "var(--cupboard-warning)",
       soft: "rgb(213 162 77 / 0.10)",
+    },
+    syncing: {
+      icon: "🔵",
+      title: "Sincronizando",
+      description: "Guardando cambios pendientes",
+      badge: "SINCRONIZANDO",
+      color: "var(--cupboard-info)",
+      soft: "rgb(118 152 184 / 0.10)",
     },
     error: {
       icon: "🔴",
@@ -180,6 +189,8 @@ export default function App() {
   const [products, setProducts] = useState([]);
   const [isLoadingProducts, setIsLoadingProducts] = useState(true);
   const [connectionStatus, setConnectionStatus] = useState("connecting");
+  const [userRole, setUserRole] = useState(null);
+  const [saveState, setSaveState] = useState("idle");
   const [status, setStatus] = useState("");
   const [formError, setFormError] = useState("");
   const [isSaving, setIsSaving] = useState(false);
@@ -194,6 +205,33 @@ export default function App() {
   const [scannerRestart, setScannerRestart] = useState(0);
   const [isManualEntry, setIsManualEntry] = useState(false);
   const sortMenuRef = useRef(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    if (!auth.currentUser) {
+      setUserRole(null);
+      return undefined;
+    }
+
+    getUserProfile(auth.currentUser.uid)
+      .then((profile) => {
+        if (!cancelled) {
+          setUserRole(profile?.role || null);
+        }
+      })
+      .catch((error) => {
+        console.error("No se pudo resolver el rol del usuario:", error);
+        if (!cancelled) setUserRole(null);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [auth.currentUser?.uid]);
+
+  const canWriteInventory = userRole !== "member";
+  const roleKnown = Boolean(userRole);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -226,8 +264,15 @@ export default function App() {
           setProducts(data);
           setIsLoadingProducts(false);
 
-          if (!navigator.onLine || metadata.fromCache) {
+          const preferredNetwork = window.localStorage.getItem("cupboard.firestoreNetwork");
+
+          if (preferredNetwork === "offline" || !navigator.onLine) {
             setConnectionStatus("offline");
+            return;
+          }
+
+          if (metadata.hasPendingWrites || metadata.fromCache) {
+            setConnectionStatus("syncing");
             return;
           }
 
@@ -454,6 +499,16 @@ userId: auth.currentUser?.uid || null,
   const portionsInputRef = useRef(null);
   const handleSave = async () => {
   setFormError("");
+  setStatus("");
+
+  if (!canWriteInventory) {
+    setSaveState("permission");
+    setStatus("permission");
+    setFormError("Tu rol actual es de solo lectura. Un editor o propietario debe agregar o editar productos.");
+    return;
+  }
+
+  setSaveState("validating");
 
   const productCode = barcode.trim();
   const name = form.name.trim();
@@ -507,6 +562,7 @@ if (isManualEntry) {
 }
 
 setIsSaving(true);
+  setSaveState("saving");
 
   try {
     await saveProduct(
@@ -534,26 +590,36 @@ setIsSaving(true);
     );
   } catch (error) {
     console.error("Error guardando producto:", error);
-    setStatus("error");
-
     const saveErrorMessages = {
       "permission-denied":
-        "No tienes permisos para agregar productos a esta alacena.",
+        "No tienes permisos para modificar esta alacena.",
       unavailable:
         "No pudimos conectar con la base de datos. Revisa tu conexión e inténtalo nuevamente.",
       "failed-precondition":
         "La base de datos no está disponible en este momento. Inténtalo nuevamente.",
+      "network-request-failed":
+        "La red no está disponible. Revisa tu conexión e inténtalo nuevamente.",
     };
 
+    const nextSaveState =
+      error?.code === "permission-denied"
+        ? "permission"
+        : ["unavailable", "network-request-failed"].includes(error?.code)
+          ? "network"
+          : "unknown";
+
+    setSaveState(nextSaveState);
+    setStatus(nextSaveState === "permission" ? "permission" : "error");
     setFormError(
       saveErrorMessages[error?.code] ||
-        "No pudimos guardar el producto. Inténtalo nuevamente.",
+        "No pudimos guardar el producto. Revisa los datos e inténtalo nuevamente.",
     );
     return;
   } finally {
     setIsSaving(false);
   }
 
+  setSaveState("saved");
   setStatus("saved");
   setFormError("");
   setBarcode("");
@@ -569,6 +635,7 @@ setIsSaving(true);
     minStock: 5,
   });
 
+  setSaveState("idle");
   setIsEditing(false);
   setIsManualEntry(false);
   setScannerRestart((previous) => previous + 1);
@@ -753,6 +820,7 @@ setIsSaving(true);
             {selectedProduct && (
               <ProductDetail
                 product={selectedProduct}
+                canWriteInventory={canWriteInventory}
                 updatingProductId={updatingProductId}
                 onConsume={handleConsume}
                 onAdd={handleAdd}
@@ -954,8 +1022,10 @@ setIsSaving(true);
                     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
                       {filteredProducts.map((item) => {
                         const portions = Number(item.portions) || 0;
-                        const isLow = portions <= 5;
-                        const isWarning = portions > 5 && portions <= 10;
+                        const minStock = Number(item.minStock) || 5;
+                        const warningStock = Math.max(minStock * 2, minStock + 1);
+                        const isLow = portions <= minStock;
+                        const isWarning = portions > minStock && portions <= warningStock;
                         const cardStatus = portions === 0
                           ? ["Agotado", "bg-[var(--cupboard-surface-muted)] text-[var(--cupboard-text-muted)]", "border-[var(--cupboard-border)]"]
                           : isLow
@@ -1036,10 +1106,10 @@ setIsSaving(true);
                               )}
 
                               <div className="mt-4 grid grid-cols-2 gap-2">
-                                <button type="button" onClick={(event) => { event.stopPropagation(); handleConsume(item); }} disabled={portions <= 0 || updatingProductId === item.id} aria-label={"Consumir una porción de " + item.name} className="rounded-xl bg-[var(--cupboard-danger)]/10 px-3 py-2.5 text-xs font-bold text-[var(--cupboard-danger)] transition hover:bg-[var(--cupboard-danger)]/20 disabled:cursor-not-allowed disabled:opacity-30">
+                                <button type="button" onClick={(event) => { event.stopPropagation(); handleConsume(item); }} disabled={!canWriteInventory || portions <= 0 || updatingProductId === item.id} aria-label={"Consumir una porción de " + item.name} className="rounded-xl bg-[var(--cupboard-danger)]/10 px-3 py-2.5 text-xs font-bold text-[var(--cupboard-danger)] transition hover:bg-[var(--cupboard-danger)]/20 disabled:cursor-not-allowed disabled:opacity-30">
                                   {updatingProductId === item.id ? "↻" : "− 1"}
                                 </button>
-                                <button type="button" onClick={(event) => { event.stopPropagation(); handleAdd(item); }} disabled={updatingProductId === item.id} aria-label={"Agregar una porción de " + item.name} className="rounded-xl bg-[var(--cupboard-primary-soft)] px-3 py-2.5 text-xs font-bold text-[var(--cupboard-primary)] transition hover:bg-[var(--cupboard-primary)]/20 disabled:cursor-not-allowed disabled:opacity-30">
+                                <button type="button" onClick={(event) => { event.stopPropagation(); handleAdd(item); }} disabled={!canWriteInventory || updatingProductId === item.id} aria-label={"Agregar una porción de " + item.name} className="rounded-xl bg-[var(--cupboard-primary-soft)] px-3 py-2.5 text-xs font-bold text-[var(--cupboard-primary)] transition hover:bg-[var(--cupboard-primary)]/20 disabled:cursor-not-allowed disabled:opacity-30">
                                   {updatingProductId === item.id ? "↻" : "+ 1"}
                                 </button>
                               </div>
@@ -1099,12 +1169,20 @@ setIsSaving(true);
                       </div>
                     )}
 
+                    {roleKnown && userRole === "member" && (
+                      <div role="status" aria-live="polite" className="rounded-3xl border border-[var(--cupboard-info)]/25 bg-[var(--cupboard-info)]/10 p-5">
+                        <p className="text-sm font-extrabold text-[var(--cupboard-info)]">Modo solo lectura</p>
+                        <p className="mt-1 text-xs leading-5 text-[var(--cupboard-text-muted)]">Puedes consultar y escanear productos, pero necesitas un editor o propietario para guardar cambios.</p>
+                      </div>
+                    )}
+
                     {status && (
                       <div role="status" className={["rounded-3xl border p-5", statusConfig[status]?.className || "border-[var(--cupboard-border)] bg-[var(--cupboard-surface)]"].join(" ")}>
                         <p className="text-sm font-extrabold">
                           {status === "found" && "🟢 Producto encontrado"}
                           {status === "new" && "🆕 Producto nuevo"}
                           {status === "saved" && "✅ Producto guardado"}
+                          {status === "permission" && "🔒 Guardado no disponible para este rol"}
                           {status === "error" && "⚠️ No pudimos guardar el producto"}
                         </p>
                         <p className="mt-1 text-xs opacity-80">{statusConfig[status]?.label || status}</p>
@@ -1209,7 +1287,7 @@ setIsSaving(true);
 
                     <div className="mt-7 flex flex-col-reverse gap-3 border-t border-[var(--cupboard-border)] pt-6 sm:flex-row sm:justify-end">
                       <button type="button" onClick={() => { if (isManualEntry) { setBarcode(""); setStatus(""); setFormError(""); setIsEditing(false); setIsManualEntry(false); setScannerRestart((previous) => previous + 1); return; } setIsEditing(false); }} className="rounded-2xl border border-[var(--cupboard-border)] bg-[var(--cupboard-surface-muted)] px-5 py-3.5 text-sm font-bold text-[var(--cupboard-text-muted)] transition hover:text-[var(--cupboard-text)]">Cancelar</button>
-                      <button type="button" onClick={handleSave} disabled={!barcode || isSaving} className="rounded-2xl bg-[var(--cupboard-primary)] px-5 py-3.5 text-sm font-bold text-[#10140d] shadow-[0_8px_20px_rgb(120_168_91_/_0.12)] transition hover:-translate-y-0.5 hover:bg-[var(--cupboard-primary-hover)] disabled:cursor-not-allowed disabled:opacity-40">{isSaving ? "Guardando..." : "Guardar producto"}</button>
+                      <button type="button" onClick={handleSave} disabled={!barcode || isSaving || !canWriteInventory} className="rounded-2xl bg-[var(--cupboard-primary)] px-5 py-3.5 text-sm font-bold text-[#10140d] shadow-[0_8px_20px_rgb(120_168_91_/_0.12)] transition hover:-translate-y-0.5 hover:bg-[var(--cupboard-primary-hover)] disabled:cursor-not-allowed disabled:opacity-40">{isSaving ? "Guardando..." : saveState === "permission" ? "Solo lectura" : "Guardar producto"}</button>
                     </div>
                   </section>
                 )}

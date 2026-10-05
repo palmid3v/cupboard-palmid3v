@@ -1,6 +1,10 @@
 // src/services/products.js
 
 import { createCatalogProductIfMissing, getCatalogProduct } from "./catalog";
+
+// Session-scoped catalog cache reduces duplicate catalog reads during
+// realtime inventory hydration while preserving the existing service boundary.
+const catalogCache = new Map();
 import {
   getAllInventory,
   getInventoryProduct,
@@ -26,10 +30,25 @@ function normalizeProduct(id, catalog = {}, inventory = {}) {
   };
 }
 
+async function getCachedCatalogProduct(barcode) {
+  const normalizedBarcode = String(barcode || "").trim();
+
+  if (!normalizedBarcode) return null;
+
+  if (catalogCache.has(normalizedBarcode)) {
+    return catalogCache.get(normalizedBarcode);
+  }
+
+  const catalog = await getCatalogProduct(normalizedBarcode);
+  catalogCache.set(normalizedBarcode, catalog);
+
+  return catalog;
+}
+
 async function hydrateInventory(inventory) {
   const products = await Promise.all(
     inventory.map(async (item) => {
-      const catalog = await getCatalogProduct(item.id);
+      const catalog = await getCachedCatalogProduct(item.id);
 
       if (!catalog) {
         return normalizeProduct(item.id, {}, item);
@@ -59,7 +78,7 @@ export async function getProduct(barcode) {
     return null;
   }
 
-  const catalog = await getCatalogProduct(normalizedBarcode);
+  const catalog = await getCachedCatalogProduct(normalizedBarcode);
 
   return normalizeProduct(normalizedBarcode, catalog || {}, inventory);
 }
