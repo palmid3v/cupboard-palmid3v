@@ -103,7 +103,7 @@ function AuthScreen({ mode, setMode }) {
   };
 
   return (
-    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[var(--cupboard-bg)] px-4 py-10">
+    <main className="cupboard-retro relative flex min-h-screen items-center justify-center overflow-hidden bg-[var(--cupboard-bg)] px-4 py-10">
       <div className="pointer-events-none absolute inset-0 opacity-70">
         <div className="cupboard-orb cupboard-orb-one" />
         <div className="cupboard-orb cupboard-orb-two" />
@@ -274,7 +274,7 @@ function VerificationScreen({ user, onVerified }) {
   };
 
   return (
-    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[var(--cupboard-bg)] px-4 py-10">
+    <main className="cupboard-retro relative flex min-h-screen items-center justify-center overflow-hidden bg-[var(--cupboard-bg)] px-4 py-10">
       <div className="pointer-events-none absolute inset-0 opacity-70">
         <div className="cupboard-orb cupboard-orb-one" />
         <div className="cupboard-orb cupboard-orb-two" />
@@ -400,7 +400,7 @@ export default function AuthGate({ children }) {
 
   if (user === undefined) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-[var(--cupboard-bg)] text-[var(--cupboard-text)]">
+      <main className="cupboard-retro flex min-h-screen items-center justify-center bg-[var(--cupboard-bg)] text-[var(--cupboard-text)]">
         <div className="animate-cupboard-pulse text-sm font-semibold text-[var(--cupboard-text-muted)]">
           Encendiendo Cupboard…
         </div>
@@ -431,7 +431,7 @@ export default function AuthGate({ children }) {
 
   if (error || !household) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-[var(--cupboard-bg)] px-4 text-[var(--cupboard-text)]">
+      <main className="cupboard-retro flex min-h-screen items-center justify-center bg-[var(--cupboard-bg)] px-4 text-[var(--cupboard-text)]">
         <div className="w-full max-w-md rounded-[2rem] border border-[var(--cupboard-border)] bg-[var(--cupboard-surface)] p-8 text-center">
           <p className="text-3xl">🔴</p>
           <h1 className="mt-4 text-xl font-extrabold">{error ? "No pudimos abrir la alacena" : "Conectando con Cupboard…"}</h1>
