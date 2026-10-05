@@ -15,7 +15,6 @@ export default function useInventorySubscription() {
     let cancelled = false;
 
     if (!auth.currentUser) {
-      setUserRole(null);
       return undefined;
     }
 
@@ -31,7 +30,7 @@ export default function useInventorySubscription() {
     return () => {
       cancelled = true;
     };
-  }, [auth.currentUser?.uid]);
+  }, []);
 
   useEffect(() => {
     let unsubscribe = () => {};
