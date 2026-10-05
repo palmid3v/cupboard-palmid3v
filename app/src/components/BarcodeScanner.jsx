@@ -22,55 +22,6 @@ function getCameraError(error) {
     ...state,
     message: messages[state.title] || messages["No pudimos iniciar la cámara"],
   };
-}\n\nimport { BrowserMultiFormatReader } from "@zxing/browser";
-import { getScannerErrorState } from "../services/regressionContracts";
-import { useCallback, useEffect, useRef, useState } from "react";
-
-function getCameraError(error) {
-  if (error?.name === "NotAllowedError") {
-    return {
-      title: "Permiso de cámara",
-      message:
-        "Cupboard necesita acceso a tu cámara para escanear códigos de barras.",
-      action: "Permitir acceso",
-    };
-  }
-
-  if (error?.name === "NotFoundError") {
-    return {
-      title: "No encontramos una cámara",
-      message:
-        "Conecta o habilita una cámara y vuelve a intentarlo.",
-      action: "Revisar cámara",
-    };
-  }
-
-  if (error?.name === "NotReadableError") {
-    return {
-      title: "La cámara está ocupada",
-      message:
-        "Otra aplicación o pestaña puede estar usando la cámara. Ciérrala y vuelve a intentarlo.",
-      action: "Intentar nuevamente",
-    };
-  }
-
-  if (error?.name === "AbortError") {
-    return {
-      title: "La cámara se interrumpió",
-      message:
-        "La cámara fue reiniciada mientras se estaba iniciando. Vuelve a intentarlo.",
-      action: "Reiniciar cámara",
-    };
-  }
-
-  return {
-    title: "No pudimos iniciar la cámara",
-    message:
-      "Revisa los permisos del navegador e inténtalo nuevamente.",
-    action: "Intentar nuevamente",
-  };
-}
-
 export default function BarcodeScanner({ onScan, restartToken = 0 }) {
   const videoRef = useRef(null);
   const controlsRef = useRef(null);
