@@ -288,12 +288,12 @@ export default function InventoryView({
                         return (
                           <article
                             key={item.id}
-                            onClick={() => openProduct(item)}
+                            onClick={() => onOpenProduct(item)}
                             onKeyDown={(event) => {
                               if (event.target !== event.currentTarget) return;
                               if (event.key === "Enter" || event.key === " ") {
                                 event.preventDefault();
-                                openProduct(item);
+                                onOpenProduct(item);
                               }
                             }}
                             tabIndex={0}
@@ -345,7 +345,7 @@ export default function InventoryView({
                                   <p className="text-3xl font-extrabold leading-none">{portions}</p>
                                   <p className="mt-1 text-[9px] font-bold uppercase tracking-[0.16em] text-[var(--cupboard-text-subtle)]">porciones</p>
                                 </div>
-                                <button type="button" onClick={(event) => { event.stopPropagation(); openProduct(item); }} className="rounded-xl px-2 py-1.5 text-xs font-bold text-[var(--cupboard-primary)] transition hover:bg-[var(--cupboard-primary-soft)]">Ver →</button>
+                                <button type="button" onClick={(event) => { event.stopPropagation(); onOpenProduct(item); }} className="rounded-xl px-2 py-1.5 text-xs font-bold text-[var(--cupboard-primary)] transition hover:bg-[var(--cupboard-primary-soft)]">Ver →</button>
                               </div>
 
                               {inventoryActionError?.productId === item.id && (
@@ -357,10 +357,10 @@ export default function InventoryView({
                               )}
 
                               <div className="mt-4 grid grid-cols-2 gap-2">
-                                <button type="button" onClick={(event) => { event.stopPropagation(); handleConsume(item); }} disabled={!canWriteInventory || portions <= 0 || updatingProductId === item.id} aria-label={"Consumir una porción de " + item.name} className="rounded-xl bg-[var(--cupboard-danger)]/10 px-3 py-2.5 text-xs font-bold text-[var(--cupboard-danger)] transition hover:bg-[var(--cupboard-danger)]/20 disabled:cursor-not-allowed disabled:opacity-30">
+                                <button type="button" onClick={(event) => { event.stopPropagation(); onConsume(item); }} disabled={!canWriteInventory || portions <= 0 || updatingProductId === item.id} aria-label={"Consumir una porción de " + item.name} className="rounded-xl bg-[var(--cupboard-danger)]/10 px-3 py-2.5 text-xs font-bold text-[var(--cupboard-danger)] transition hover:bg-[var(--cupboard-danger)]/20 disabled:cursor-not-allowed disabled:opacity-30">
                                   {updatingProductId === item.id ? "↻" : "− 1"}
                                 </button>
-                                <button type="button" onClick={(event) => { event.stopPropagation(); handleAdd(item); }} disabled={!canWriteInventory || updatingProductId === item.id} aria-label={"Agregar una porción de " + item.name} className="rounded-xl bg-[var(--cupboard-primary-soft)] px-3 py-2.5 text-xs font-bold text-[var(--cupboard-primary)] transition hover:bg-[var(--cupboard-primary)]/20 disabled:cursor-not-allowed disabled:opacity-30">
+                                <button type="button" onClick={(event) => { event.stopPropagation(); onAdd(item); }} disabled={!canWriteInventory || updatingProductId === item.id} aria-label={"Agregar una porción de " + item.name} className="rounded-xl bg-[var(--cupboard-primary-soft)] px-3 py-2.5 text-xs font-bold text-[var(--cupboard-primary)] transition hover:bg-[var(--cupboard-primary)]/20 disabled:cursor-not-allowed disabled:opacity-30">
                                   {updatingProductId === item.id ? "↻" : "+ 1"}
                                 </button>
                               </div>
