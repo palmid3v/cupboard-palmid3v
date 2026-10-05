@@ -184,9 +184,18 @@ npm install
 npm run dev
 ```
 
-Quality checks:
+Quality checks from the repository root:
+
+```powershell
+.\scripts\validate.ps1
+```
+
+The runner enters `app/` internally and validates phase contracts, regression tests, lint, build, and PWA configuration.
+
+For direct frontend commands:
 
 ```bash
+cd app
 npm run lint
 npm run build
 npm run preview
