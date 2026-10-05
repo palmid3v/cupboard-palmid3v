@@ -104,3 +104,41 @@ test("architecture extraction keeps App focused on orchestration", async () => {
   assert.match(productForm, /function ProductForm/);
   assert.match(inventoryHook, /function useInventorySubscription/);
 });
+
+test("settings contracts remain local and bounded", async () => {
+  const source = await read("../src/hooks/useCupboardSettings.js");
+  const panel = await read("../src/components/SettingsPanel.jsx");
+  const app = await read("../src/App.jsx");
+
+  assert.match(source, /cupboard\.settings/);
+  assert.match(source, /minStockDefault/);
+  assert.match(source, /inventorySort/);
+  assert.match(source, /inventoryFilter/);
+  assert.match(source, /localStorage/);
+
+  assert.match(panel, /auth\.currentUser/);
+  assert.match(panel, /logout/);
+  assert.match(panel, /Cupboard Dark/);
+  assert.match(panel, /v\{APP_VERSION\}/);
+
+  assert.match(app, /useCupboardSettings/);
+  assert.match(app, /minStock: settings\.minStockDefault/);
+  assert.match(app, /initialSort=\{settings\.inventorySort\}/);
+  assert.match(app, /initialFilter=\{settings\.inventoryFilter\}/);
+});
+
+test("retro-digital design system remains present without changing the application stack", async () => {
+  const css = await read("../src/index.css");
+  const packageJson = await read("../package.json");
+
+  assert.match(css, /Retro-Digital \/ modern 8-bit visual system/);
+  assert.match(css, /#070b12/);
+  assert.match(css, /#39a8ff/);
+  assert.match(css, /Courier New/);
+  assert.match(css, /prefers-reduced-motion/);
+
+  assert.match(packageJson, /"react":/);
+  assert.match(packageJson, /"firebase":/);
+  assert.match(packageJson, /"vite":/);
+  assert.match(packageJson, /"vite-plugin-pwa":/);
+});
