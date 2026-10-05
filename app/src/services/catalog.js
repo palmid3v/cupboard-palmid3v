@@ -1,6 +1,8 @@
 import {
+  collection,
   doc,
   getDoc,
+  getDocs,
   serverTimestamp,
   setDoc,
 } from "firebase/firestore";
@@ -37,6 +39,14 @@ export async function getCatalogProduct(barcode) {
   }
 
   return normalizeCatalogProduct(snapshot.id, snapshot.data());
+}
+
+export async function getAllCatalogProducts() {
+  const snapshot = await getDocs(collection(db, "productCatalog"));
+
+  return snapshot.docs
+    .map((item) => normalizeCatalogProduct(item.id, item.data()))
+    .sort((a, b) => a.name.localeCompare(b.name, "es"));
 }
 
 export async function createCatalogProductIfMissing(barcode, data) {
