@@ -254,11 +254,42 @@ Build trust in the core inventory experience before adding complexity.
 
 
 
-# 7. October 5, 2026 — Settings & user preferences
+# 7. October 5, 2026 — FASE 19–20 product polish
 
-## FASE 19 — Settings & user preferences
+## 🟢 FASE 19 — Retro-Digital / modern 8-bit visual redesign
+**Implementation: 🟢 complete · CI validation pending**
 
-Settings is now formally defined as the **personal behavior and preference center** of Cupboard.
+The visual system now uses a restrained Retro-Digital direction while preserving the existing product architecture and workflows.
+
+### Visual system
+- Deep black / blue-black surfaces.
+- White primary text.
+- Electric blue primary action color.
+- Explicit green/yellow/red/blue state colors.
+- Monospace system typography with a pixel-inspired digital feel.
+- Rectangular controls and minimal radii.
+- Hard, minimal shadows.
+- Compact terminal/panel treatment.
+- Subtle grid background and scanline-inspired texture.
+- Discreet motion only; reduced-motion behavior remains supported.
+
+### Scope completed
+- Design tokens in the Cupboard shell.
+- Core panels, buttons, inputs, cards, navigation, and status treatment.
+- Inventory visual treatment.
+- Scanner and product-registration visual treatment.
+- Centro visual treatment through shared tokens.
+- Responsive/mobile behavior preserved.
+- Focus-visible and touch/keyboard behavior preserved.
+- Existing React/Vite/Firebase/Firestore/ZXing/PWA stack preserved.
+- No data-model or persistence changes.
+
+---
+
+## 🟢 FASE 20 — Settings & user preferences
+**Implementation: 🟢 complete · CI validation pending**
+
+Settings is the personal behavior and preference center:
 
 ```text
 Inventario = qué tengo
@@ -267,29 +298,35 @@ Centro     = qué puedo hacer con mi inventario
 Ajustes    = cómo quiero que Cupboard funcione para mí
 ```
 
-### Settings v1
+### Cuenta
+- Current Firebase Auth identity.
+- Email verification state.
+- Logout/session action.
 
-**Cuenta**
-- Current account identity.
-- Email verification status.
-- Logout/session.
-
-**Inventario**
+### Inventario
 - Default minimum stock for newly registered products.
-- Default sort: Nombre A-Z / Más recientes / Menor stock / Mayor stock.
-- Default filter: Todos / Stock bajo / Disponibles.
+- Default sort:
+  - Nombre A-Z
+  - Más recientes
+  - Menor stock
+  - Mayor stock
+- Default filter:
+  - Todos
+  - Stock bajo
+  - Disponibles
 
-**Apariencia**
+### Apariencia
 - Cupboard Dark remains fixed.
+- Retro-Digital visual language is fixed.
 - No Light/System selector.
 
-**Aplicación**
-- Version/application information.
-- PWA information only when the state is accurate.
+### Aplicación
+- Current application version.
+- PWA state: browser vs installed standalone mode.
 
 ### Persistence
 
-Start with local persistence for personal preferences:
+Personal preferences are stored locally:
 
 ```text
 cupboard.settings
@@ -298,25 +335,21 @@ cupboard.settings
 └── inventoryFilter
 ```
 
-Cross-device synchronization is out of scope for v1.
+Cross-device synchronization remains out of scope for v1.
 
-### Important inventory consistency rule
-
-The current default minimum stock is **5**. When Settings makes this configurable:
-
-- new products inherit the configured default;
-- existing products retain their stored `minStock`;
-- all user-facing low-stock checks must use the product threshold where available;
-- hard-coded `portions <= 5` comparisons must be audited.
+### Inventory consistency
+- Default minimum stock starts at 5.
+- New products inherit `settings.minStockDefault`.
+- Existing products retain their stored `minStock`.
+- Low-stock UI continues to use each product's threshold.
+- Hard-coded `portions <= 5` comparisons were audited out of the active UI path.
 
 ### Outside Settings
-
 Household invitations, roles, membership, Firestore connection controls, shared catalog administration, analytics, shopping, recipes, expiry, and movement history remain in **Centro**.
 
-Notifications are also out of scope until a real notification system exists.
+Notifications remain out of scope until a real notification system exists.
 
 ### Acceptance criteria
-
 - Settings contains no fake controls.
 - Account state comes from Firebase Auth.
 - Logout works.
@@ -324,10 +357,11 @@ Notifications are also out of scope until a real notification system exists.
 - Existing product thresholds are not overwritten.
 - Sort/filter preferences persist.
 - Dark theme remains unchanged.
+- Retro-Digital visual language is consistent.
 - Low-stock UI is consistent with product `minStock`.
 - Centro remains the operational/admin workspace.
-- `npm run lint` and `npm run build` pass.
-
+- Scanner → Product → Inventory flow remains intact.
+- `npm run test:regression`, `npm run lint`, and `npm run build` pass in CI.
 
 # 8. FASE 13–16 branch checkpoint
 
