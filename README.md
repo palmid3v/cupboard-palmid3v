@@ -65,9 +65,19 @@ Cards keep a fixed visual image area and contain the supplied image inside a bou
 Cupboard can enrich products from an external barcode catalog. Product images are currently handled through remote image URLs; local file uploads are deferred until Firebase Storage is enabled.
 
 ### Theme
-The current application uses a **dark-only Cupboard visual theme**. The settings screen presents this as a fixed theme.
+The current application uses a **dark-only Retro-Digital visual theme**.
 
-There is no implemented light/dark/system theme switch in the current UI.
+The visual language uses:
+- deep black / blue-black surfaces;
+- white text;
+- electric blue primary actions;
+- explicit state colors;
+- monospace typography;
+- rectangular controls and minimal radii;
+- restrained hard shadows;
+- subtle digital grid texture.
+
+There is no light/dark/system theme switch.
 
 ### PWA
 `vite-plugin-pwa` is configured for standalone behavior and auto-update registration.
@@ -96,10 +106,13 @@ Browser
 React UI
   │
   └── App.jsx
-       ├── Inventory
-       ├── Scanner flow
-       ├── Product registration
-       └── Settings
+       ├── InventoryView.jsx
+       ├── ScannerView.jsx
+       ├── ProductForm.jsx
+       ├── SettingsPanel.jsx
+       └── hooks/
+            ├── useInventorySubscription.js
+            └── useCupboardSettings.js
              │
              ├── BarcodeScanner.jsx
              │      └── @zxing/browser
@@ -322,12 +335,14 @@ The catalog/inventory migration has completed. The former mixed household produc
 - 🟢 FASE 10 — Cleanup
 - 🟢 FASE 11 — Scanner startup reliability foundation
 - 🟢 FASE 12 — Save-flow correctness foundation
-- 🟡 FASE 13 — Role-aware inventory UX
-- 🟡 FASE 14 — Save states and error taxonomy
-- 🟡 FASE 15 — Performance
-- 🟡 FASE 16 — Offline/PWA hardening
-- 🟡 FASE 17 — Automated regression coverage
-- 🟡 FASE 18 — Incremental architecture extraction
+- 🟢 FASE 13 — Role-aware inventory UX
+- 🟢 FASE 14 — Save states and error taxonomy
+- 🟢 FASE 15 — Performance
+- 🟢 FASE 16 — Offline/PWA hardening
+- 🟢 FASE 17 — Automated regression coverage
+- 🟢 FASE 18 — Incremental architecture extraction
+- 🟢 FASE 19 — Retro-Digital / modern 8-bit visual redesign
+- 🟢 FASE 20 — Settings & user preferences
 
 ### Firebase Rules deployment
 
@@ -448,3 +463,22 @@ The hardening branch `feature/phases-13-16-hardening` implements the approved FA
 - PWA Workbox cache cleanup and dark manifest colors.
 
 The branch still requires lint/build and real-device/offline validation before merge.
+
+
+## October 5, 2026 — FASE 19–20 checkpoint
+
+### FASE 19
+Cupboard now uses the approved Retro-Digital / modern 8-bit visual direction without changing the React, Vite, Firebase, Firestore, ZXing, or PWA stack.
+
+### FASE 20
+Settings now provides:
+- Firebase account identity and verification state;
+- logout;
+- default minimum stock for new products;
+- persistent inventory sort and filter preferences;
+- fixed Cupboard Dark theme;
+- application version and PWA state.
+
+Preferences are stored locally under `cupboard.settings`. Existing product `minStock` values are preserved.
+
+CI validation remains the source of truth for lint, build, and automated regression status.
