@@ -95,7 +95,7 @@ function AuthScreen({ mode, setMode }) {
     try {
       await resetPassword(email);
       setResetSent(true);
-    } catch (err) {
+    } catch {
       setError("No pudimos enviar el correo de recuperación.");
     } finally {
       setBusy(false);
