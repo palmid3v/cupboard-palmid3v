@@ -188,18 +188,6 @@ export default function App() {
   });
 
   const [isEditing, setIsEditing] = useState(false);
-  const [barcode, setBarcode] = useState("");
-  const [form, setForm] = useState({
-    name: "",
-    description: "",
-    weight: "",
-    portions: "",
-    imageUrl: "",
-    category: "",
-    expiryDate: "",
-    minStock: 5,
-  });
-  const [isEditing, setIsEditing] = useState(false);
   const [saveState, setSaveState] = useState("idle");
   const [status, setStatus] = useState("");
   const [formError, setFormError] = useState("");
@@ -218,6 +206,7 @@ export default function App() {
     userRole,
     canWriteInventory,
     roleKnown,
+    updateProductLocally,
   } = useInventorySubscription();
 
 
@@ -237,13 +226,7 @@ export default function App() {
     setInventoryActionError(null);
     setInventoryActionSuccess(null);
 
-    setProducts((current) =>
-      current.map((product) =>
-        product.id === item.id
-          ? { ...product, portions: newPortions }
-          : product,
-      ),
-    );
+    updateProductLocally(item.id, newPortions);
 
     setSelectedProduct((current) =>
       current?.id === item.id
@@ -266,13 +249,7 @@ userId: auth.currentUser?.uid || null,
     } catch (error) {
       console.error("Error actualizando porciones:", error);
 
-      setProducts((current) =>
-        current.map((product) =>
-          product.id === item.id
-            ? { ...product, portions: previousPortions }
-            : product,
-        ),
-      );
+      updateProductLocally(item.id, previousPortions);
 
       setSelectedProduct((current) =>
         current?.id === item.id
