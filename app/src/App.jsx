@@ -3,6 +3,8 @@ import WorkspacePanel from "./components/WorkspacePanel";
 import InventoryView from "./components/InventoryView";
 import ScannerView from "./components/ScannerView";
 import useInventorySubscription from "./hooks/useInventorySubscription";
+import useCupboardSettings from "./hooks/useCupboardSettings";
+import SettingsPanel from "./components/SettingsPanel";
 import ProductDetail from "./components/ProductDetail";
 import {
   getProduct,
@@ -174,6 +176,8 @@ export default function App() {
   const [view, setView] = useState("inventory");
   const [selectedProduct, setSelectedProduct] = useState(null);
 
+  const { settings, updateSetting } = useCupboardSettings();
+
   const [barcode, setBarcode] = useState("");
 
   const [form, setForm] = useState({
@@ -184,7 +188,7 @@ export default function App() {
     imageUrl: "",
     category: "",
     expiryDate: "",
-    minStock: 5,
+    minStock: settings.minStockDefault,
   });
 
   const [isEditing, setIsEditing] = useState(false);
@@ -313,7 +317,7 @@ userId: auth.currentUser?.uid || null,
         imageUrl: product.imageUrl || "",
         category: product.category || "",
         expiryDate: "",
-        minStock: 5,
+        minStock: settings.minStockDefault,
       });
     } else {
       setStatus("new");
@@ -326,7 +330,7 @@ userId: auth.currentUser?.uid || null,
         imageUrl: "",
         category: "",
         expiryDate: "",
-        minStock: 5,
+        minStock: settings.minStockDefault,
       });
     }
   } catch (error) {
@@ -490,7 +494,7 @@ setIsSaving(true);
     imageUrl: "",
     category: "",
     expiryDate: "",
-    minStock: 5,
+    minStock: settings.minStockDefault,
   });
 
   setSaveState("idle");
@@ -521,7 +525,7 @@ setIsSaving(true);
   };
 
   return (
-    <div className="min-h-screen bg-[var(--cupboard-bg)] text-[var(--cupboard-text)]">
+    <div className="cupboard-retro min-h-screen bg-[var(--cupboard-bg)] text-[var(--cupboard-text)]">
       <div className="mx-auto flex min-h-screen w-full max-w-[1600px]">
         <aside className="sticky top-0 hidden h-screen w-[248px] shrink-0 flex-col border-r border-[var(--cupboard-border)] bg-[var(--cupboard-surface)]/90 px-4 py-5 backdrop-blur lg:flex">
           <div className="flex items-center gap-3 px-2">
@@ -615,6 +619,8 @@ setIsSaving(true);
                 inventoryActionError={inventoryActionError}
                 inventoryActionSuccess={inventoryActionSuccess}
                 onAddProduct={() => setView("scanner")}
+                initialSort={settings.inventorySort}
+                initialFilter={settings.inventoryFilter}
               />
             )}
 
@@ -654,34 +660,12 @@ setIsSaving(true);
             )}
 
             {view === "settings" && (
-              <section className="grid gap-5 lg:grid-cols-[1fr_0.8fr]">
-                <div className="rounded-[2rem] border border-[var(--cupboard-border)] bg-[var(--cupboard-surface)] p-6 shadow-[var(--cupboard-shadow-sm)] sm:p-8">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--cupboard-primary)]">Apariencia</p>
-                  <h2 className="mt-2 text-2xl font-extrabold">Cupboard Dark</h2>
-                  <p className="mt-2 max-w-xl text-sm leading-6 text-[var(--cupboard-text-muted)]">Un tema oscuro fijo inspirado en una alacena real: madera, hojas, alimentos y superficies cálidas.</p>
-                  <div className="mt-7 rounded-3xl border border-[var(--cupboard-border)] bg-[var(--cupboard-surface-muted)] p-5">
-                    <div className="flex items-center gap-4">
-                      <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--cupboard-primary-soft)] text-xl">🌙</span>
-                      <div>
-                        <p className="text-sm font-extrabold">Tema fijo</p>
-                        <p className="mt-1 text-xs text-[var(--cupboard-text-muted)]">Cupboard no cambia a light ni sigue el sistema.</p>
-                      </div>
-                      <span className="ml-auto rounded-full bg-[var(--cupboard-primary)] px-3 py-1.5 text-[9px] font-bold uppercase tracking-[0.14em] text-[#10140d]">Activo</span>
-                    </div>
-                  </div>
-                </div>
+              <SettingsPanel
+                settings={settings}
+                updateSetting={updateSetting}
+              />
+            )}
 
-                <div className="rounded-[2rem] border border-[var(--cupboard-border)] bg-[var(--cupboard-surface)] p-6 shadow-[var(--cupboard-shadow-sm)] sm:p-8">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--cupboard-accent)]">Cupboard</p>
-                  <h2 className="mt-2 text-2xl font-extrabold">Inventory Control</h2>
-                  <p className="mt-3 text-sm leading-6 text-[var(--cupboard-text-muted)]">Una experiencia sencilla para registrar, consultar y mantener bajo control lo que tienes en casa.</p>
-                  <div className="mt-7 grid grid-cols-2 gap-2">
-                    {["React", "Vite", "Firebase", "PWA"].map((tag) => (
-                      <span key={tag} className="rounded-xl bg-[var(--cupboard-surface-muted)] px-3 py-2.5 text-center text-xs font-bold text-[var(--cupboard-text-muted)]">{tag}</span>
-                    ))}
-                  </div>
-                </div>
-              </section>
             )}
           </div>
         </main>
