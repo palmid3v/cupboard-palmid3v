@@ -13,6 +13,7 @@ import {
 import { auth } from "./services/auth";
 import { getUserProfile } from "./services/households";
 import { connectFirestore, disconnectFirestore } from "./firebase";
+import { canWriteInventory, getSaveErrorMessage, getSaveErrorState } from "./services/regressionContracts";
 
 function NavigationButton({
   icon,
@@ -230,7 +231,7 @@ export default function App() {
     };
   }, [auth.currentUser?.uid]);
 
-  const canWriteInventory = userRole !== "member";
+  const canWriteInventory = canWriteInventoryRole(userRole);
   const roleKnown = Boolean(userRole);
 
   useEffect(() => {
@@ -590,29 +591,13 @@ setIsSaving(true);
     );
   } catch (error) {
     console.error("Error guardando producto:", error);
-    const saveErrorMessages = {
-      "permission-denied":
-        "No tienes permisos para modificar esta alacena.",
-      unavailable:
-        "No pudimos conectar con la base de datos. Revisa tu conexión e inténtalo nuevamente.",
-      "failed-precondition":
-        "La base de datos no está disponible en este momento. Inténtalo nuevamente.",
-      "network-request-failed":
-        "La red no está disponible. Revisa tu conexión e inténtalo nuevamente.",
-    };
-
-    const nextSaveState =
-      error?.code === "permission-denied"
-        ? "permission"
-        : ["unavailable", "network-request-failed"].includes(error?.code)
-          ? "network"
-          : "unknown";
+    const nextSaveState = getSaveErrorState(error?.code);
+    const saveErrorMessage = getSaveErrorMessage(error?.code);
 
     setSaveState(nextSaveState);
     setStatus(nextSaveState === "permission" ? "permission" : "error");
     setFormError(
-      saveErrorMessages[error?.code] ||
-        "No pudimos guardar el producto. Revisa los datos e inténtalo nuevamente.",
+      saveErrorMessage,
     );
     return;
   } finally {
