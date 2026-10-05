@@ -71,7 +71,7 @@ export default function ScannerView({
 
                     <div className="p-4 sm:p-6">
                       <div className="overflow-hidden rounded-[1.5rem] border border-[var(--cupboard-border)] bg-black shadow-inner">
-                        <BarcodeScanner onScan={handleScan} restartToken={scannerRestart} />
+                        <BarcodeScanner onScan={onScan} restartToken={scannerRestart} />
                       </div>
 
                       <div className="mt-4 flex flex-col gap-3 rounded-2xl border border-[var(--cupboard-border)] bg-[var(--cupboard-surface-muted)] p-4 sm:flex-row sm:items-center sm:justify-between">
@@ -79,7 +79,7 @@ export default function ScannerView({
                           <p className="text-sm font-bold">¿No puedes escanear?</p>
                           <p className="mt-1 text-xs text-[var(--cupboard-text-muted)]">Introduce el código manualmente.</p>
                         </div>
-                        <button type="button" onClick={() => { setIsManualEntry(true); setBarcode(""); setStatus(""); setFormError(""); setIsEditing(true); }} className="rounded-xl border border-[var(--cupboard-border)] bg-[var(--cupboard-surface)] px-4 py-2.5 text-xs font-bold text-[var(--cupboard-text)] transition hover:border-[var(--cupboard-primary)]/40">Agregar manualmente</button>
+                        <button type="button" onClick={onStartManualEntry} className="rounded-xl border border-[var(--cupboard-border)] bg-[var(--cupboard-surface)] px-4 py-2.5 text-xs font-bold text-[var(--cupboard-text)] transition hover:border-[var(--cupboard-primary)]/40">Agregar manualmente</button>
                       </div>
 
                       <div className="mt-4 flex items-center justify-between gap-4 rounded-2xl border border-[var(--cupboard-border)] bg-[var(--cupboard-bg)] px-4 py-3">
@@ -87,7 +87,7 @@ export default function ScannerView({
                           <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-[var(--cupboard-text-subtle)]">Código</p>
                           <p className="mt-1 truncate font-mono text-sm font-semibold">{isLookingUp ? "Buscando producto..." : barcode || "Esperando escaneo..."}</p>
                         </div>
-                        <button type="button" onClick={() => setScannerRestart((previous) => previous + 1)} className="shrink-0 rounded-xl border border-[var(--cupboard-border)] px-3 py-2 text-xs font-bold text-[var(--cupboard-text-muted)] transition hover:bg-[var(--cupboard-surface-muted)] hover:text-[var(--cupboard-text)]">↻ Repetir</button>
+                        <button type="button" onClick={onRestartScanner} className="shrink-0 rounded-xl border border-[var(--cupboard-border)] px-3 py-2 text-xs font-bold text-[var(--cupboard-text-muted)] transition hover:bg-[var(--cupboard-surface-muted)] hover:text-[var(--cupboard-text)]">↻ Repetir</button>
                       </div>
                     </div>
                   </section>
