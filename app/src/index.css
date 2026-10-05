@@ -291,3 +291,127 @@ textarea::selection {
     animation: none !important;
   }
 }
+
+
+/* FASE 19 — Retro-Digital / modern 8-bit visual system */
+.cupboard-retro {
+  --cupboard-bg: #070b12;
+  --cupboard-surface: #0d1420;
+  --cupboard-surface-muted: #111b29;
+  --cupboard-surface-raised: #172334;
+  --cupboard-text: #f4f7fb;
+  --cupboard-text-muted: #aab7c8;
+  --cupboard-text-subtle: #6f7f93;
+  --cupboard-primary: #39a8ff;
+  --cupboard-primary-hover: #67bdff;
+  --cupboard-primary-soft: #102b43;
+  --cupboard-accent: #8b7cff;
+  --cupboard-accent-soft: #241f4a;
+  --cupboard-border: #29415c;
+  --cupboard-success: #52e39a;
+  --cupboard-warning: #ffd166;
+  --cupboard-danger: #ff6b7a;
+  --cupboard-info: #5fc8ff;
+  --cupboard-radius-sm: 0.25rem;
+  --cupboard-radius-md: 0.25rem;
+  --cupboard-radius-lg: 0.35rem;
+  --cupboard-radius-xl: 0.4rem;
+  font-family: "Courier New", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  background-image:
+    linear-gradient(rgb(57 168 255 / 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(57 168 255 / 0.025) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.cupboard-retro h1,
+.cupboard-retro h2,
+.cupboard-retro h3 {
+  font-family: "Courier New", ui-monospace, monospace;
+  letter-spacing: -0.03em;
+}
+
+.cupboard-retro [class*="rounded-"] {
+  border-radius: 0.3rem !important;
+}
+
+.cupboard-retro [class*="shadow-"] {
+  box-shadow: 3px 3px 0 rgb(0 0 0 / 0.42) !important;
+}
+
+.cupboard-retro button,
+.cupboard-retro input,
+.cupboard-retro select,
+.cupboard-retro textarea {
+  border-radius: 0.25rem !important;
+}
+
+.cupboard-retro button:not(:disabled):hover {
+  transform: translate(-1px, -1px);
+}
+
+.cupboard-retro-panel {
+  border: 1px solid var(--cupboard-border);
+  background: var(--cupboard-surface);
+  box-shadow: 4px 4px 0 rgb(0 0 0 / 0.38);
+}
+
+.cupboard-retro-inset {
+  border: 1px solid var(--cupboard-border);
+  background: var(--cupboard-bg);
+}
+
+.cupboard-retro-kicker {
+  color: var(--cupboard-primary);
+  font-size: 0.65rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.cupboard-retro-status {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  border: 1px solid rgb(57 168 255 / 0.35);
+  background: var(--cupboard-primary-soft);
+  padding: 0.9rem;
+}
+
+.cupboard-retro-button-secondary {
+  border: 1px solid var(--cupboard-border);
+  background: var(--cupboard-surface-muted);
+  padding: 0.7rem 1rem;
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+
+.cupboard-retro-setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1.15rem 0;
+}
+
+@media (max-width: 640px) {
+  .cupboard-retro-setting-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .cupboard-retro-setting-row > :last-child {
+    width: 100%;
+  }
+
+  .cupboard-retro-setting-row select,
+  .cupboard-retro-setting-row input {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cupboard-retro button:not(:disabled):hover {
+    transform: none;
+  }
+}
