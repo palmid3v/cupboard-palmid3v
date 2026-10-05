@@ -22,6 +22,8 @@ function getCameraError(error) {
     ...state,
     message: messages[state.title] || messages["No pudimos iniciar la cámara"],
   };
+}
+
 export default function BarcodeScanner({ onScan, restartToken = 0 }) {
   const videoRef = useRef(null);
   const controlsRef = useRef(null);
