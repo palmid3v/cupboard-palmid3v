@@ -1,19 +1,20 @@
-import { useEffect, useRef, useState } from "react";
-import BarcodeScanner from "./components/BarcodeScanner";
+import { useRef, useState } from "react";
 import WorkspacePanel from "./components/WorkspacePanel";
+import InventoryView from "./components/InventoryView";
+import ScannerView from "./components/ScannerView";
+import useInventorySubscription from "./hooks/useInventorySubscription";
 import ProductDetail from "./components/ProductDetail";
 import {
   getProduct,
   findProductByBarcode,
   saveProduct,
-  getAllProducts,
-  subscribeToProducts,
   updatePortions,
 } from "./services/products";
 import { auth } from "./services/auth";
-import { getUserProfile } from "./services/households";
-import { connectFirestore, disconnectFirestore } from "./firebase";
-import { canWriteInventory as canWriteInventoryRole, getSaveErrorMessage, getSaveErrorState } from "./services/regressionContracts";
+import {
+  getSaveErrorMessage,
+  getSaveErrorState,
+} from "./services/regressionContracts";
 
 function NavigationButton({
   icon,
@@ -187,10 +188,18 @@ export default function App() {
   });
 
   const [isEditing, setIsEditing] = useState(false);
-  const [products, setProducts] = useState([]);
-  const [isLoadingProducts, setIsLoadingProducts] = useState(true);
-  const [connectionStatus, setConnectionStatus] = useState("connecting");
-  const [userRole, setUserRole] = useState(null);
+  const [barcode, setBarcode] = useState("");
+  const [form, setForm] = useState({
+    name: "",
+    description: "",
+    weight: "",
+    portions: "",
+    imageUrl: "",
+    category: "",
+    expiryDate: "",
+    minStock: 5,
+  });
+  const [isEditing, setIsEditing] = useState(false);
   const [saveState, setSaveState] = useState("idle");
   const [status, setStatus] = useState("");
   const [formError, setFormError] = useState("");
@@ -199,149 +208,18 @@ export default function App() {
   const [updatingProductId, setUpdatingProductId] = useState(null);
   const [inventoryActionError, setInventoryActionError] = useState(null);
   const [inventoryActionSuccess, setInventoryActionSuccess] = useState(null);
-  const [search, setSearch] = useState("");
-  const [inventoryFilter, setInventoryFilter] = useState("all");
-  const [inventorySort, setInventorySort] = useState("name");
-  const [isSortOpen, setIsSortOpen] = useState(false);
   const [scannerRestart, setScannerRestart] = useState(0);
   const [isManualEntry, setIsManualEntry] = useState(false);
-  const sortMenuRef = useRef(null);
 
-  useEffect(() => {
-    let cancelled = false;
+  const {
+    products,
+    isLoadingProducts,
+    connectionStatus,
+    userRole,
+    canWriteInventory,
+    roleKnown,
+  } = useInventorySubscription();
 
-    if (!auth.currentUser) {
-      setUserRole(null);
-      return undefined;
-    }
-
-    getUserProfile(auth.currentUser.uid)
-      .then((profile) => {
-        if (!cancelled) {
-          setUserRole(profile?.role || null);
-        }
-      })
-      .catch((error) => {
-        console.error("No se pudo resolver el rol del usuario:", error);
-        if (!cancelled) setUserRole(null);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [auth.currentUser?.uid]);
-
-  const canWriteInventory = canWriteInventoryRole(userRole);
-  const roleKnown = Boolean(userRole);
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem("cupboard.connectionStatus", connectionStatus);
-      window.dispatchEvent(new CustomEvent("cupboard:connection-status", { detail: connectionStatus }));
-    }
-  }, [connectionStatus]);
-
-  const loadProducts = async () => {
-    setIsLoadingProducts(true);
-
-    try {
-      const data = await getAllProducts();
-      setProducts(data);
-    } catch (error) {
-      console.error("Error cargando productos:", error);
-    } finally {
-      setIsLoadingProducts(false);
-    }
-  };
-
-  useEffect(() => {
-    let unsubscribe = () => {};
-
-    const startListener = () => {
-      unsubscribe();
-
-      unsubscribe = subscribeToProducts(
-        (data, metadata) => {
-          setProducts(data);
-          setIsLoadingProducts(false);
-
-          const preferredNetwork = window.localStorage.getItem("cupboard.firestoreNetwork");
-
-          if (preferredNetwork === "offline" || !navigator.onLine) {
-            setConnectionStatus("offline");
-            return;
-          }
-
-          if (metadata.hasPendingWrites || metadata.fromCache) {
-            setConnectionStatus("syncing");
-            return;
-          }
-
-          setConnectionStatus("connected");
-        },
-        (error) => {
-          console.error("Error escuchando el inventario:", error);
-          setIsLoadingProducts(false);
-          setConnectionStatus(
-            navigator.onLine ? "error" : "offline",
-          );
-        },
-      );
-    };
-
-    const handleOffline = () => {
-      setConnectionStatus("offline");
-    };
-
-    const handleOnline = () => {
-      if (window.localStorage.getItem("cupboard.firestoreNetwork") === "offline") {
-        setConnectionStatus("offline");
-        return;
-      }
-
-      setConnectionStatus("connecting");
-      startListener();
-    };
-
-    const preferredNetwork = window.localStorage.getItem("cupboard.firestoreNetwork");
-
-    if (preferredNetwork === "offline") {
-      disconnectFirestore().catch((error) => console.error("No se pudo mantener Firestore desconectado:", error));
-    }
-
-    startListener();
-
-    const handleFirestoreNetwork = (event) => {
-      if (event.detail === "offline") {
-        setConnectionStatus("offline");
-      } else if (event.detail === "online") {
-        setConnectionStatus("connecting");
-        startListener();
-      }
-    };
-
-    window.addEventListener("offline", handleOffline);
-    window.addEventListener("online", handleOnline);
-    window.addEventListener("cupboard:firestore-network", handleFirestoreNetwork);
-
-    return () => {
-      unsubscribe();
-      window.removeEventListener("offline", handleOffline);
-      window.removeEventListener("online", handleOnline);
-      window.removeEventListener("cupboard:firestore-network", handleFirestoreNetwork);
-    };
-  }, []);
-
-  useEffect(() => {
-    const handlePointerDown = (event) => {
-      if (!sortMenuRef.current?.contains(event.target)) {
-        setIsSortOpen(false);
-      }
-    };
-
-    document.addEventListener("pointerdown", handlePointerDown);
-    return () => document.removeEventListener("pointerdown", handlePointerDown);
-  }, []);
 
   const openProduct = (item) => {
   setInventoryActionError(null);
@@ -498,6 +376,24 @@ userId: auth.currentUser?.uid || null,
   const nameInputRef = useRef(null);
   const weightInputRef = useRef(null);
   const portionsInputRef = useRef(null);
+  const nameInputRef = useRef(null);
+  const weightInputRef = useRef(null);
+  const portionsInputRef = useRef(null);
+
+  const handleCancelEdit = () => {
+    if (isManualEntry) {
+      setBarcode("");
+      setStatus("");
+      setFormError("");
+      setIsEditing(false);
+      setIsManualEntry(false);
+      setScannerRestart((previous) => previous + 1);
+      return;
+    }
+
+    setIsEditing(false);
+  };
+
   const handleSave = async () => {
   setFormError("");
   setStatus("");
@@ -629,106 +525,6 @@ setIsSaving(true);
   // Evitamos una segunda lectura que podía competir con el guardado en dispositivos lentos.
   setView("inventory");
 };
-  const inventorySummary = {
-  products: products.length,
-
-  portions: products.reduce(
-    (total, item) => total + (Number(item.portions) || 0),
-    0,
-  ),
-
-  lowStock: products.filter(
-    (item) => (Number(item.portions) || 0) <= (Number(item.minStock) || 5),
-  ).length,
-};
-
-  const filteredProducts = products
-  .filter((item) => {
-    const searchTerm = search.trim().toLowerCase();
-
-    const matchesSearch =
-      !searchTerm ||
-      item.name?.toLowerCase().includes(searchTerm) ||
-      item.id?.toLowerCase().includes(searchTerm);
-
-    const portions = Number(item.portions) || 0;
-    const minStock = Number(item.minStock) || 5;
-
-    const matchesFilter =
-      inventoryFilter === "all"
-        ? true
-        : inventoryFilter === "low"
-          ? portions <= minStock
-          : portions > 0;
-
-    return matchesSearch && matchesFilter;
-  })
-  .sort((a, b) => {
-    if (inventorySort === "name") {
-      return (a.name || "").localeCompare(
-        b.name || "",
-        "es",
-        { sensitivity: "base" },
-      );
-    }
-
-    if (inventorySort === "low-stock") {
-      return (
-        (Number(a.portions) || 0) -
-        (Number(b.portions) || 0)
-      );
-    }
-
-    if (inventorySort === "high-stock") {
-      return (
-        (Number(b.portions) || 0) -
-        (Number(a.portions) || 0)
-      );
-    }
-
-    if (inventorySort === "recent") {
-      const aTime = a.updatedAt?.toMillis?.() || 0;
-      const bTime = b.updatedAt?.toMillis?.() || 0;
-
-      return bTime - aTime;
-    }
-
-    return 0;
-  })
-
-  
-  const statusConfig = {
-    found: {
-      label: "Producto encontrado en tu alacena",
-      className:
-        "border-[var(--cupboard-success)]/30 bg-[var(--cupboard-primary-soft)] text-[var(--cupboard-success)]",
-    },
-
-    catalog: {
-      label: "Producto reconocido · listo para agregar",
-      className:
-        "border-[var(--cupboard-primary)]/30 bg-[var(--cupboard-primary-soft)] text-[var(--cupboard-primary)]",
-    },
-
-    new: {
-      label: "Producto nuevo · completa la información",
-      className:
-        "border-[var(--cupboard-warning)]/30 bg-amber-500/10 text-[var(--cupboard-warning)]",
-    },
-
-    saved: {
-      label: "Producto guardado correctamente",
-      className:
-        "border-[var(--cupboard-success)]/30 bg-[var(--cupboard-primary-soft)] text-[var(--cupboard-success)]",
-    },
-
-    error: {
-      label: "No pudimos guardar el producto",
-      className:
-        "border-[var(--cupboard-danger)]/30 bg-red-500/10 text-[var(--cupboard-danger)]",
-    },
-  };
-
   const pageTitle = {
     inventory: "Tu inventario",
     scanner: "Scanner",
@@ -831,452 +627,52 @@ setIsSaving(true);
             )}
 
             {view === "inventory" && !selectedProduct && (
-              <>
-                <section className="grid gap-4 md:grid-cols-[1.45fr_0.8fr_0.8fr]">
-                  <div className="relative overflow-hidden rounded-[2rem] border border-[var(--cupboard-border)] bg-[linear-gradient(135deg,var(--cupboard-surface),var(--cupboard-surface-muted))] p-6 shadow-[var(--cupboard-shadow-sm)] sm:p-7">
-                    <div className="absolute -right-12 -top-16 h-48 w-48 rounded-full bg-[var(--cupboard-primary)]/10 blur-3xl" />
-                    <div className="relative">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xl">🥫</span>
-                        <span className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--cupboard-accent)]">Resumen de alacena</span>
-                      </div>
-                      <p className="mt-4 max-w-lg text-2xl font-extrabold tracking-tight sm:text-3xl">
-                        Tienes <span className="text-[var(--cupboard-primary)]">{inventorySummary.portions}</span> porciones disponibles.
-                      </p>
-                      <p className="mt-2 max-w-lg text-sm leading-6 text-[var(--cupboard-text-muted)]">
-                        {inventorySummary.lowStock > 0 ? inventorySummary.lowStock + " productos necesitan atención." : "Todo está en orden. Tu alacena está lista."}
-                      </p>
-                      <button type="button" onClick={() => setView("scanner")} className="mt-5 inline-flex items-center gap-2 rounded-2xl bg-[var(--cupboard-primary)] px-4 py-3 text-sm font-bold text-[#10140d] transition hover:-translate-y-0.5 hover:bg-[var(--cupboard-primary-hover)]">
-                        📷 Añadir producto <span aria-hidden="true">→</span>
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="rounded-[2rem] border border-[var(--cupboard-border)] bg-[var(--cupboard-surface)] p-5 shadow-[var(--cupboard-shadow-sm)]">
-                    <div className="flex items-center justify-between">
-                      <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--cupboard-primary-soft)]">📦</span>
-                      <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--cupboard-text-subtle)]">Productos</span>
-                    </div>
-                    <p className="mt-6 text-4xl font-extrabold tracking-tight">{inventorySummary.products}</p>
-                    <p className="mt-1 text-xs text-[var(--cupboard-text-muted)]">registrados</p>
-                  </div>
-
-                  <div className="rounded-[2rem] border border-[var(--cupboard-danger)]/20 bg-[var(--cupboard-surface)] p-5 shadow-[var(--cupboard-shadow-sm)]">
-                    <div className="flex items-center justify-between">
-                      <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--cupboard-danger)]/10">⚠️</span>
-                      <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--cupboard-danger)]">Atención</span>
-                    </div>
-                    <p className="mt-6 text-4xl font-extrabold tracking-tight text-[var(--cupboard-danger)]">{inventorySummary.lowStock}</p>
-                    <p className="mt-1 text-xs text-[var(--cupboard-text-muted)]">con stock bajo</p>
-                  </div>
-                </section>
-
-                <section className="mt-8">
-                  <div className="sticky top-3 z-30 rounded-3xl border border-[var(--cupboard-border)] bg-[var(--cupboard-surface)]/95 p-3 shadow-[0_16px_40px_rgb(0_0_0_/_0.18)] backdrop-blur-xl sm:p-4">
-                    <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-                      <div className="relative min-w-0 flex-1">
-                        <span className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-base text-[var(--cupboard-text-subtle)]">⌕</span>
-                        <input type="text" placeholder="Busca por nombre o código..." aria-label="Buscar productos" value={search} onChange={(event) => setSearch(event.target.value)} className="w-full rounded-2xl border border-[var(--cupboard-border)] bg-[var(--cupboard-bg)] px-11 py-3.5 text-sm font-medium outline-none transition placeholder:text-[var(--cupboard-text-subtle)] focus:border-[var(--cupboard-primary)] focus:ring-4 focus:ring-[var(--cupboard-primary)]/10" />
-                      </div>
-
-                      <div className="flex gap-2 overflow-x-auto pb-0.5">
-                        {[
-                          ["all", "Todos"],
-                          ["low", "Stock bajo"],
-                          ["available", "Disponibles"],
-                        ].map(([value, label]) => {
-                          const active = inventoryFilter === value;
-                          return (
-                            <button key={value} type="button" onClick={() => setInventoryFilter(value)} aria-pressed={active} className={[
-                              "shrink-0 rounded-2xl px-4 py-3 text-xs font-bold transition",
-                              active ? "bg-[var(--cupboard-primary)] text-[#10140d] shadow-[0_6px_16px_rgb(120_168_91_/_0.14)]" : "border border-[var(--cupboard-border)] bg-[var(--cupboard-surface-muted)] text-[var(--cupboard-text-muted)] hover:text-[var(--cupboard-text)]",
-                            ].join(" ")}>
-                              {label}
-                            </button>
-                          );
-                        })}
-                      </div>
-
-                      <div ref={sortMenuRef} className="relative shrink-0">
-                        <button
-                          type="button"
-                          onClick={() => setIsSortOpen((open) => !open)}
-                          aria-haspopup="listbox"
-                          aria-expanded={isSortOpen}
-                          className="flex items-center gap-2 rounded-2xl border border-[var(--cupboard-border)] bg-[var(--cupboard-surface-muted)] px-3.5 py-3 text-left transition hover:border-[var(--cupboard-primary)]/40"
-                        >
-                          <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--cupboard-text-subtle)]">Orden</span>
-                          <span className="max-w-[120px] truncate text-xs font-bold text-[var(--cupboard-text)]">
-                            {{
-                              name: "Nombre A-Z",
-                              recent: "Más recientes",
-                              "low-stock": "Menor stock",
-                              "high-stock": "Mayor stock",
-                            }[inventorySort]}
-                          </span>
-                          <span
-                            className={[
-                              "text-[var(--cupboard-text-subtle)] transition-transform",
-                              isSortOpen ? "rotate-180" : "",
-                            ].join(" ")}
-                            aria-hidden="true"
-                          >
-                            ⌄
-                          </span>
-                        </button>
-
-                        {isSortOpen && (
-                          <div
-                            role="listbox"
-                            aria-label="Ordenar inventario"
-                            className="absolute right-0 top-[calc(100%+0.5rem)] z-50 min-w-[190px] overflow-hidden rounded-2xl border border-[var(--cupboard-border)] bg-[var(--cupboard-surface)] p-1.5 shadow-[0_18px_45px_rgb(0_0_0_/_0.38)]"
-                          >
-                            {[
-                              ["name", "Nombre A-Z"],
-                              ["recent", "Más recientes"],
-                              ["low-stock", "Menor stock"],
-                              ["high-stock", "Mayor stock"],
-                            ].map(([value, label]) => {
-                              const active = inventorySort === value;
-
-                              return (
-                                <button
-                                  key={value}
-                                  type="button"
-                                  role="option"
-                                  aria-selected={active}
-                                  onClick={() => {
-                                    setInventorySort(value);
-                                    setIsSortOpen(false);
-                                  }}
-                                  className={[
-                                    "flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-xs font-bold transition",
-                                    active
-                                      ? "bg-[var(--cupboard-primary-soft)] text-[var(--cupboard-primary)]"
-                                      : "text-[var(--cupboard-text-muted)] hover:bg-[var(--cupboard-surface-muted)] hover:text-[var(--cupboard-text)]",
-                                  ].join(" ")}
-                                >
-                                  <span>{label}</span>
-                                  {active && <span aria-hidden="true">✓</span>}
-                                </button>
-                              );
-                            })}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="mb-4 mt-7 flex items-end justify-between gap-4">
-                    <div>
-                      <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--cupboard-primary)]">Inventario</p>
-                      <h2 className="mt-1 text-2xl font-extrabold tracking-tight">Tus productos</h2>
-                    </div>
-                    <p className="text-xs font-medium text-[var(--cupboard-text-subtle)]">{filteredProducts.length} visibles</p>
-                  </div>
-
-                  {isLoadingProducts && (
-                    <div className="rounded-[2rem] border border-dashed border-[var(--cupboard-border)] bg-[var(--cupboard-surface)] px-6 py-16 text-center">
-                      <div className="mx-auto flex h-16 w-16 animate-pulse items-center justify-center rounded-2xl bg-[var(--cupboard-primary-soft)] text-3xl">📦</div>
-                      <p className="mt-5 text-base font-bold">Cargando alacena...</p>
-                      <p className="mt-1 text-sm text-[var(--cupboard-text-muted)]">Estamos preparando tu inventario.</p>
-                    </div>
-                  )}
-
-                  {!isLoadingProducts && products.length === 0 && (
-                    <div className="rounded-[2rem] border border-dashed border-[var(--cupboard-border)] bg-[var(--cupboard-surface)] px-6 py-16 text-center">
-                      <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-[1.5rem] bg-[var(--cupboard-primary-soft)] text-4xl">🥫</div>
-                      <h3 className="mt-6 text-xl font-extrabold">Tu alacena está vacía</h3>
-                      <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[var(--cupboard-text-muted)]">Escanea tu primer producto para empezar a organizar tus existencias.</p>
-                      <button type="button" onClick={() => setView("scanner")} className="mt-6 rounded-2xl bg-[var(--cupboard-primary)] px-5 py-3 text-sm font-bold text-[#10140d]">📷 Escanear primer producto</button>
-                    </div>
-                  )}
-
-                  {!isLoadingProducts && products.length > 0 && filteredProducts.length === 0 && (
-                    <div className="rounded-[2rem] border border-dashed border-[var(--cupboard-border)] bg-[var(--cupboard-surface)] px-6 py-16 text-center">
-                      <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[var(--cupboard-surface-muted)] text-3xl">🔎</div>
-                      <h3 className="mt-5 text-xl font-extrabold">No encontramos productos</h3>
-                      <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[var(--cupboard-text-muted)]">
-                        {search.trim() ? "No hay productos que coincidan con \"" + search.trim() + "\"." : "No hay productos que coincidan con el filtro seleccionado."}
-                      </p>
-                      <button type="button" onClick={() => { setSearch(""); setInventoryFilter("all"); }} className="mt-6 rounded-2xl border border-[var(--cupboard-border)] bg-[var(--cupboard-surface-muted)] px-5 py-3 text-sm font-bold">Limpiar búsqueda</button>
-                    </div>
-                  )}
-
-                  {!isLoadingProducts && filteredProducts.length > 0 && (
-                    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-                      {filteredProducts.map((item) => {
-                        const portions = Number(item.portions) || 0;
-                        const minStock = Number(item.minStock) || 5;
-                        const warningStock = Math.max(minStock * 2, minStock + 1);
-                        const isLow = portions <= minStock;
-                        const isWarning = portions > minStock && portions <= warningStock;
-                        const cardStatus = portions === 0
-                          ? ["Agotado", "bg-[var(--cupboard-surface-muted)] text-[var(--cupboard-text-muted)]", "border-[var(--cupboard-border)]"]
-                          : isLow
-                            ? ["Stock bajo", "bg-[var(--cupboard-danger)]/10 text-[var(--cupboard-danger)]", "border-[var(--cupboard-danger)]/25"]
-                            : isWarning
-                              ? ["Atención", "bg-[var(--cupboard-warning)]/10 text-[var(--cupboard-warning)]", "border-[var(--cupboard-warning)]/20"]
-                              : ["Disponible", "bg-[var(--cupboard-primary-soft)] text-[var(--cupboard-success)]", "border-[var(--cupboard-border)]"];
-
-                        return (
-                          <article
-                            key={item.id}
-                            onClick={() => openProduct(item)}
-                            onKeyDown={(event) => {
-                              if (event.target !== event.currentTarget) return;
-                              if (event.key === "Enter" || event.key === " ") {
-                                event.preventDefault();
-                                openProduct(item);
-                              }
-                            }}
-                            tabIndex={0}
-                            role="button"
-                            aria-label={"Abrir producto " + (item.name || "sin nombre")}
-                            className={[
-                              "group overflow-hidden rounded-[1.75rem] border bg-[var(--cupboard-surface)] shadow-[var(--cupboard-shadow-sm)] transition-all duration-200",
-                              "hover:-translate-y-1 hover:border-[var(--cupboard-primary)]/30 hover:shadow-[var(--cupboard-shadow-md)] focus:outline-none focus:ring-2 focus:ring-[var(--cupboard-primary)]/30",
-                              cardStatus[2],
-                            ].join(" ")}
-                          >
-                            <div className="relative flex h-40 items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_center,var(--cupboard-surface-raised),var(--cupboard-surface-muted))]">
-                              {item.imageUrl ? (
-                                <div className="flex h-[116px] w-[116px] items-center justify-center overflow-hidden rounded-[1.25rem] bg-white p-2.5 shadow-[var(--cupboard-shadow-sm)]">
-                                  <img
-                                    src={item.imageUrl}
-                                    alt=""
-                                    onError={(event) => {
-                                      event.currentTarget.style.display = "none";
-                                      event.currentTarget.parentElement?.classList.add("hidden");
-                                      event.currentTarget.parentElement?.parentElement?.querySelector("[data-image-fallback]")?.classList.remove("hidden");
-                                    }}
-                                    className="max-h-full max-w-full object-contain transition duration-300 group-hover:scale-105"
-                                  />
-                                </div>
-                              ) : null}
-                              <div
-                                data-image-fallback
-                                className={[
-                                  "h-16 w-16 items-center justify-center rounded-2xl bg-[var(--cupboard-surface)] text-3xl shadow-[var(--cupboard-shadow-sm)]",
-                                  item.imageUrl ? "hidden" : "flex",
-                                ].join(" ")}
-                                aria-hidden="true"
-                              >📦</div>
-                              <span className={["absolute left-3 top-3 rounded-full px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.12em]", cardStatus[1]].join(" ")}>{cardStatus[0]}</span>
-                            </div>
-
-                            <div className="p-4">
-                              <div className="flex items-start justify-between gap-3">
-                                <div className="min-w-0">
-                                  <h3 className="truncate text-sm font-extrabold">{item.name || "Producto sin nombre"}</h3>
-                                  <p className="mt-1 text-xs text-[var(--cupboard-text-muted)]">{item.weight || 0} g</p>
-                                </div>
-                                <span className="shrink-0 rounded-xl bg-[var(--cupboard-surface-muted)] px-2 py-1 text-[9px] font-bold uppercase tracking-[0.12em] text-[var(--cupboard-text-subtle)]">{item.id ? "SKU" : "ITEM"}</span>
-                              </div>
-
-                              <div className="mt-5 flex items-end justify-between gap-3">
-                                <div>
-                                  <p className="text-3xl font-extrabold leading-none">{portions}</p>
-                                  <p className="mt-1 text-[9px] font-bold uppercase tracking-[0.16em] text-[var(--cupboard-text-subtle)]">porciones</p>
-                                </div>
-                                <button type="button" onClick={(event) => { event.stopPropagation(); openProduct(item); }} className="rounded-xl px-2 py-1.5 text-xs font-bold text-[var(--cupboard-primary)] transition hover:bg-[var(--cupboard-primary-soft)]">Ver →</button>
-                              </div>
-
-                              {inventoryActionError?.productId === item.id && (
-                                <div role="alert" aria-live="assertive" className="mt-4 rounded-xl border border-[var(--cupboard-danger)]/25 bg-[var(--cupboard-danger)]/10 px-3 py-2 text-[11px] font-medium text-[var(--cupboard-danger)]">{inventoryActionError.message}</div>
-                              )}
-
-                              {inventoryActionSuccess?.productId === item.id && (
-                                <div role="status" aria-live="polite" className="mt-4 rounded-xl border border-[var(--cupboard-success)]/20 bg-[var(--cupboard-success)]/10 px-3 py-2 text-[11px] font-medium text-[var(--cupboard-success)]">{inventoryActionSuccess.message}</div>
-                              )}
-
-                              <div className="mt-4 grid grid-cols-2 gap-2">
-                                <button type="button" onClick={(event) => { event.stopPropagation(); handleConsume(item); }} disabled={!canWriteInventory || portions <= 0 || updatingProductId === item.id} aria-label={"Consumir una porción de " + item.name} className="rounded-xl bg-[var(--cupboard-danger)]/10 px-3 py-2.5 text-xs font-bold text-[var(--cupboard-danger)] transition hover:bg-[var(--cupboard-danger)]/20 disabled:cursor-not-allowed disabled:opacity-30">
-                                  {updatingProductId === item.id ? "↻" : "− 1"}
-                                </button>
-                                <button type="button" onClick={(event) => { event.stopPropagation(); handleAdd(item); }} disabled={!canWriteInventory || updatingProductId === item.id} aria-label={"Agregar una porción de " + item.name} className="rounded-xl bg-[var(--cupboard-primary-soft)] px-3 py-2.5 text-xs font-bold text-[var(--cupboard-primary)] transition hover:bg-[var(--cupboard-primary)]/20 disabled:cursor-not-allowed disabled:opacity-30">
-                                  {updatingProductId === item.id ? "↻" : "+ 1"}
-                                </button>
-                              </div>
-                            </div>
-                          </article>
-                        );
-                      })}
-                    </div>
-                  )}
-                </section>
-              </>
+              <InventoryView
+                products={products}
+                isLoadingProducts={isLoadingProducts}
+                onOpenProduct={openProduct}
+                onConsume={handleConsume}
+                onAdd={handleAdd}
+                canWriteInventory={canWriteInventory}
+                updatingProductId={updatingProductId}
+                inventoryActionError={inventoryActionError}
+                inventoryActionSuccess={inventoryActionSuccess}
+                onAddProduct={() => setView("scanner")}
+              />
             )}
 
             {view === "scanner" && (
-              <section className="space-y-5">
-                <div className="grid gap-5 xl:grid-cols-[1.15fr_0.85fr]">
-                  <section className="overflow-hidden rounded-[2rem] border border-[var(--cupboard-border)] bg-[var(--cupboard-surface)] shadow-[var(--cupboard-shadow-md)]">
-                    <div className="border-b border-[var(--cupboard-border)] px-5 py-5 sm:px-7">
-                      <div className="flex items-start justify-between gap-4">
-                        <div>
-                          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--cupboard-primary)]">Añadir a la alacena</p>
-                          <h2 className="mt-2 text-2xl font-extrabold tracking-tight">Escanea un producto</h2>
-                          <p className="mt-1.5 max-w-lg text-sm leading-6 text-[var(--cupboard-text-muted)]">Apunta la cámara al código de barras. Cupboard buscará el producto automáticamente.</p>
-                        </div>
-                        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[var(--cupboard-primary-soft)] text-xl">📷</span>
-                      </div>
-                    </div>
-
-                    <div className="p-4 sm:p-6">
-                      <div className="overflow-hidden rounded-[1.5rem] border border-[var(--cupboard-border)] bg-black shadow-inner">
-                        <BarcodeScanner onScan={handleScan} restartToken={scannerRestart} />
-                      </div>
-
-                      <div className="mt-4 flex flex-col gap-3 rounded-2xl border border-[var(--cupboard-border)] bg-[var(--cupboard-surface-muted)] p-4 sm:flex-row sm:items-center sm:justify-between">
-                        <div>
-                          <p className="text-sm font-bold">¿No puedes escanear?</p>
-                          <p className="mt-1 text-xs text-[var(--cupboard-text-muted)]">Introduce el código manualmente.</p>
-                        </div>
-                        <button type="button" onClick={() => { setIsManualEntry(true); setBarcode(""); setStatus(""); setFormError(""); setIsEditing(true); }} className="rounded-xl border border-[var(--cupboard-border)] bg-[var(--cupboard-surface)] px-4 py-2.5 text-xs font-bold text-[var(--cupboard-text)] transition hover:border-[var(--cupboard-primary)]/40">Agregar manualmente</button>
-                      </div>
-
-                      <div className="mt-4 flex items-center justify-between gap-4 rounded-2xl border border-[var(--cupboard-border)] bg-[var(--cupboard-bg)] px-4 py-3">
-                        <div className="min-w-0">
-                          <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-[var(--cupboard-text-subtle)]">Código</p>
-                          <p className="mt-1 truncate font-mono text-sm font-semibold">{isLookingUp ? "Buscando producto..." : barcode || "Esperando escaneo..."}</p>
-                        </div>
-                        <button type="button" onClick={() => setScannerRestart((previous) => previous + 1)} className="shrink-0 rounded-xl border border-[var(--cupboard-border)] px-3 py-2 text-xs font-bold text-[var(--cupboard-text-muted)] transition hover:bg-[var(--cupboard-surface-muted)] hover:text-[var(--cupboard-text)]">↻ Repetir</button>
-                      </div>
-                    </div>
-                  </section>
-
-                  <div className="space-y-4">
-                    {isLookingUp && (
-                      <div role="status" aria-live="polite" className="rounded-3xl border border-[var(--cupboard-primary)]/20 bg-[var(--cupboard-primary-soft)] p-5">
-                        <p className="text-sm font-bold text-[var(--cupboard-primary)]">Buscando producto...</p>
-                        <p className="mt-1 text-xs text-[var(--cupboard-text-muted)]">Consultando tu inventario.</p>
-                      </div>
-                    )}
-
-                    {roleKnown && userRole === "member" && (
-                      <div role="status" aria-live="polite" className="rounded-3xl border border-[var(--cupboard-info)]/25 bg-[var(--cupboard-info)]/10 p-5">
-                        <p className="text-sm font-extrabold text-[var(--cupboard-info)]">Modo solo lectura</p>
-                        <p className="mt-1 text-xs leading-5 text-[var(--cupboard-text-muted)]">Puedes consultar y escanear productos, pero necesitas un editor o propietario para guardar cambios.</p>
-                      </div>
-                    )}
-
-                    {status && (
-                      <div role="status" className={["rounded-3xl border p-5", statusConfig[status]?.className || "border-[var(--cupboard-border)] bg-[var(--cupboard-surface)]"].join(" ")}>
-                        <p className="text-sm font-extrabold">
-                          {status === "found" && "🟢 Producto encontrado"}
-                          {status === "new" && "🆕 Producto nuevo"}
-                          {status === "saved" && "✅ Producto guardado"}
-                          {status === "permission" && "🔒 Guardado no disponible para este rol"}
-                          {status === "error" && "⚠️ No pudimos guardar el producto"}
-                        </p>
-                        <p className="mt-1 text-xs opacity-80">{statusConfig[status]?.label || status}</p>
-                      </div>
-                    )}
-
-                    {status === "new" && barcode && (
-                      <div className="rounded-3xl border border-[var(--cupboard-warning)]/20 bg-[var(--cupboard-warning)]/10 p-5">
-                        <p className="text-sm font-bold text-[var(--cupboard-warning)]">Este producto es nuevo.</p>
-                        <p className="mt-1 text-xs leading-5 text-[var(--cupboard-text-muted)]">Completa los datos para agregarlo a tu alacena.</p>
-                      </div>
-                    )}
-
-                    {barcode && !isEditing && (
-                      <section className="rounded-3xl border border-[var(--cupboard-border)] bg-[var(--cupboard-surface)] p-5 shadow-[var(--cupboard-shadow-sm)]">
-                        <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--cupboard-primary)]">Producto</p>
-                        <h2 className="mt-2 text-xl font-extrabold">{form.name || "Nuevo producto"}</h2>
-                        <div className="mt-5 grid gap-2 sm:grid-cols-3">
-                          <div className="rounded-2xl bg-[var(--cupboard-surface-muted)] p-4"><p className="text-[10px] uppercase tracking-[0.12em] text-[var(--cupboard-text-subtle)]">Descripción</p><p className="mt-1 text-sm font-semibold">{form.description || "—"}</p></div>
-                          <div className="rounded-2xl bg-[var(--cupboard-surface-muted)] p-4"><p className="text-[10px] uppercase tracking-[0.12em] text-[var(--cupboard-text-subtle)]">Peso</p><p className="mt-1 text-sm font-semibold">{form.weight || 0} g</p></div>
-                          <div className="rounded-2xl bg-[var(--cupboard-surface-muted)] p-4"><p className="text-[10px] uppercase tracking-[0.12em] text-[var(--cupboard-text-subtle)]">Porciones</p><p className="mt-1 text-sm font-semibold">{form.portions || 0}</p></div>
-                        </div>
-                        <button type="button" onClick={() => setIsEditing(true)} className="mt-4 w-full rounded-2xl bg-[var(--cupboard-primary)] px-4 py-3.5 text-sm font-bold text-[#10140d]">Editar producto</button>
-                      </section>
-                    )}
-                  </div>
-                </div>
-
-                {isEditing && (
-                  <section className="rounded-[2rem] border border-[var(--cupboard-border)] bg-[var(--cupboard-surface)] p-5 shadow-[var(--cupboard-shadow-sm)] sm:p-7">
-                    <div className="mb-7">
-                      <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--cupboard-primary)]">Información</p>
-                      <h2 className="mt-2 text-2xl font-extrabold">{form.name ? "Editar producto" : "Nuevo producto"}</h2>
-                      <p className="mt-1.5 text-sm text-[var(--cupboard-text-muted)]">Mantén los datos de tu alacena actualizados.</p>
-                    </div>
-
-                    <div className="grid gap-5 lg:grid-cols-2">
-                      <div className="lg:col-span-2">
-                        <label htmlFor="product-barcode" className="mb-2 block text-xs font-bold uppercase tracking-[0.12em] text-[var(--cupboard-text-subtle)]">{isManualEntry ? "Código del producto" : "Código de barras"}</label>
-                        <input id="product-barcode" type="text" inputMode="numeric" autoComplete="off" value={barcode} onChange={(event) => { if (isManualEntry) setBarcode(event.target.value); }} readOnly={!isManualEntry} placeholder={isManualEntry ? "Ej. 123456789" : undefined} className={[
-                          "w-full rounded-2xl border px-4 py-3.5 font-mono text-sm outline-none transition",
-                          isManualEntry ? "border-[var(--cupboard-border)] bg-[var(--cupboard-bg)] focus:border-[var(--cupboard-primary)] focus:ring-4 focus:ring-[var(--cupboard-primary)]/10" : "cursor-not-allowed border-[var(--cupboard-border)] bg-[var(--cupboard-surface-muted)] text-[var(--cupboard-text-muted)]",
-                        ].join(" ")} />
-                      </div>
-
-                      <div>
-                        <label htmlFor="product-name" className="mb-2 block text-xs font-bold uppercase tracking-[0.12em] text-[var(--cupboard-text-subtle)]">Nombre</label>
-                        <input id="product-name" ref={nameInputRef} name="name" type="text" placeholder="Ej. Leche entera" value={form.name} onChange={handleChange} autoFocus className="w-full rounded-2xl border border-[var(--cupboard-border)] bg-[var(--cupboard-bg)] px-4 py-3.5 text-sm outline-none transition placeholder:text-[var(--cupboard-text-subtle)] focus:border-[var(--cupboard-primary)] focus:ring-4 focus:ring-[var(--cupboard-primary)]/10" />
-                      </div>
-
-                      <div>
-                        <label htmlFor="product-description" className="mb-2 block text-xs font-bold uppercase tracking-[0.12em] text-[var(--cupboard-text-subtle)]">Descripción</label>
-                        <textarea id="product-description" name="description" rows="1" placeholder="Describe brevemente el producto..." value={form.description} onChange={handleChange} className="min-h-[52px] w-full resize-none rounded-2xl border border-[var(--cupboard-border)] bg-[var(--cupboard-bg)] px-4 py-3.5 text-sm outline-none transition placeholder:text-[var(--cupboard-text-subtle)] focus:border-[var(--cupboard-primary)] focus:ring-4 focus:ring-[var(--cupboard-primary)]/10" />
-                      </div>
-
-                      <div>
-                        <label htmlFor="product-weight" className="mb-2 block text-xs font-bold uppercase tracking-[0.12em] text-[var(--cupboard-text-subtle)]">Peso</label>
-                        <div className="relative">
-                          <input id="product-weight" ref={weightInputRef} name="weight" type="number" min="0" placeholder="0" value={form.weight} onChange={handleChange} className="w-full rounded-2xl border border-[var(--cupboard-border)] bg-[var(--cupboard-bg)] px-4 py-3.5 pr-10 text-sm outline-none transition placeholder:text-[var(--cupboard-text-subtle)] focus:border-[var(--cupboard-primary)] focus:ring-4 focus:ring-[var(--cupboard-primary)]/10" />
-                          <span className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-xs font-bold text-[var(--cupboard-text-subtle)]">g</span>
-                        </div>
-                      </div>
-
-                      <div>
-                        <label htmlFor="product-portions" className="mb-2 block text-xs font-bold uppercase tracking-[0.12em] text-[var(--cupboard-text-subtle)]">Porciones</label>
-                        <input id="product-portions" ref={portionsInputRef} name="portions" type="number" min="0" placeholder="0" value={form.portions} onChange={handleChange} className="w-full rounded-2xl border border-[var(--cupboard-border)] bg-[var(--cupboard-bg)] px-4 py-3.5 text-sm outline-none transition placeholder:text-[var(--cupboard-text-subtle)] focus:border-[var(--cupboard-primary)] focus:ring-4 focus:ring-[var(--cupboard-primary)]/10" />
-                      </div>
-
-                      <div>
-                        <label htmlFor="product-min-stock" className="mb-2 block text-xs font-bold uppercase tracking-[0.12em] text-[var(--cupboard-text-subtle)]">Stock mínimo</label>
-                        <input id="product-min-stock" name="minStock" type="number" min="0" placeholder="5" value={form.minStock} onChange={handleChange} className="w-full rounded-2xl border border-[var(--cupboard-border)] bg-[var(--cupboard-bg)] px-4 py-3.5 text-sm outline-none transition placeholder:text-[var(--cupboard-text-subtle)] focus:border-[var(--cupboard-primary)] focus:ring-4 focus:ring-[var(--cupboard-primary)]/10" />
-                      </div>
-
-                      <div>
-                        <label htmlFor="product-expiry" className="mb-2 block text-xs font-bold uppercase tracking-[0.12em] text-[var(--cupboard-text-subtle)]">Caducidad</label>
-                        <input id="product-expiry" name="expiryDate" type="date" value={form.expiryDate} onChange={handleChange} className="w-full rounded-2xl border border-[var(--cupboard-border)] bg-[var(--cupboard-bg)] px-4 py-3.5 text-sm outline-none transition focus:border-[var(--cupboard-primary)] focus:ring-4 focus:ring-[var(--cupboard-primary)]/10" />
-                      </div>
-
-                      <div className="lg:col-span-2">
-                        <label htmlFor="product-category" className="mb-2 block text-xs font-bold uppercase tracking-[0.12em] text-[var(--cupboard-text-subtle)]">Categoría</label>
-                        <input id="product-category" name="category" type="text" placeholder="Ej. Pasta, lácteos, bebidas..." value={form.category} onChange={handleChange} className="w-full rounded-2xl border border-[var(--cupboard-border)] bg-[var(--cupboard-bg)] px-4 py-3.5 text-sm outline-none transition placeholder:text-[var(--cupboard-text-subtle)] focus:border-[var(--cupboard-primary)] focus:ring-4 focus:ring-[var(--cupboard-primary)]/10" />
-                      </div>
-
-                      <div className="lg:col-span-2">
-                        <label htmlFor="product-image" className="mb-2 block text-xs font-bold uppercase tracking-[0.12em] text-[var(--cupboard-text-subtle)]">Imagen <span className="normal-case font-normal tracking-normal">· opcional</span></label>
-                        <input id="product-image" name="imageUrl" type="url" placeholder="https://..." value={form.imageUrl} onChange={handleChange} className="w-full rounded-2xl border border-[var(--cupboard-border)] bg-[var(--cupboard-bg)] px-4 py-3.5 text-sm outline-none transition placeholder:text-[var(--cupboard-text-subtle)] focus:border-[var(--cupboard-primary)] focus:ring-4 focus:ring-[var(--cupboard-primary)]/10" />
-
-                        {form.imageUrl && (
-                          <div className="mt-3 overflow-hidden rounded-2xl border border-[var(--cupboard-border)] bg-[var(--cupboard-surface-muted)] p-3">
-                            <div className="flex min-h-40 items-center justify-center rounded-xl bg-[var(--cupboard-bg)] p-4">
-                              <img src={form.imageUrl} alt="Vista previa del producto" onError={(event) => { event.currentTarget.style.display = "none"; event.currentTarget.nextElementSibling?.classList.remove("hidden"); }} className="max-h-40 max-w-full rounded-xl object-contain" />
-                              <div className="hidden flex-col items-center justify-center text-center"><span className="text-4xl">📦</span><span className="mt-2 text-xs text-[var(--cupboard-text-muted)]">Imagen no disponible</span></div>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    {formError && (
-                      <div id="product-form-error" role="alert" aria-live="assertive" className="mt-6 rounded-2xl border border-[var(--cupboard-danger)]/25 bg-[var(--cupboard-danger)]/10 px-4 py-3 text-sm font-medium text-[var(--cupboard-danger)]">{formError}</div>
-                    )}
-
-                    <div className="mt-7 flex flex-col-reverse gap-3 border-t border-[var(--cupboard-border)] pt-6 sm:flex-row sm:justify-end">
-                      <button type="button" onClick={() => { if (isManualEntry) { setBarcode(""); setStatus(""); setFormError(""); setIsEditing(false); setIsManualEntry(false); setScannerRestart((previous) => previous + 1); return; } setIsEditing(false); }} className="rounded-2xl border border-[var(--cupboard-border)] bg-[var(--cupboard-surface-muted)] px-5 py-3.5 text-sm font-bold text-[var(--cupboard-text-muted)] transition hover:text-[var(--cupboard-text)]">Cancelar</button>
-                      <button type="button" onClick={handleSave} disabled={!barcode || isSaving || !canWriteInventory} className="rounded-2xl bg-[var(--cupboard-primary)] px-5 py-3.5 text-sm font-bold text-[#10140d] shadow-[0_8px_20px_rgb(120_168_91_/_0.12)] transition hover:-translate-y-0.5 hover:bg-[var(--cupboard-primary-hover)] disabled:cursor-not-allowed disabled:opacity-40">{isSaving ? "Guardando..." : saveState === "permission" ? "Solo lectura" : "Guardar producto"}</button>
-                    </div>
-                  </section>
-                )}
-              </section>
+              <ScannerView
+                onScan={handleScan}
+                scannerRestart={scannerRestart}
+                barcode={barcode}
+                isLookingUp={isLookingUp}
+                onStartManualEntry={() => {
+                  setIsManualEntry(true);
+                  setBarcode("");
+                  setStatus("");
+                  setFormError("");
+                  setIsEditing(true);
+                }}
+                onRestartScanner={() => setScannerRestart((previous) => previous + 1)}
+                roleKnown={roleKnown}
+                userRole={userRole}
+                status={status}
+                form={form}
+                isEditing={isEditing}
+                setIsEditing={setIsEditing}
+                isManualEntry={isManualEntry}
+                formError={formError}
+                isSaving={isSaving}
+                saveState={saveState}
+                canWriteInventory={canWriteInventory}
+                handleChange={handleChange}
+                handleSave={handleSave}
+                handleCancelEdit={handleCancelEdit}
+                nameInputRef={nameInputRef}
+                weightInputRef={weightInputRef}
+                portionsInputRef={portionsInputRef}
+              />
             )}
 
             {view === "settings" && (
