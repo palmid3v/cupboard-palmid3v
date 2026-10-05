@@ -110,6 +110,16 @@ export default function useInventorySubscription() {
   const canWriteInventory = canWriteInventoryRole(userRole);
   const roleKnown = Boolean(userRole);
 
+  const updateProductLocally = (productId, portions) => {
+    setProducts((current) =>
+      current.map((product) =>
+        product.id === productId
+          ? { ...product, portions }
+          : product,
+      ),
+    );
+  };
+
   useEffect(() => {
     window.localStorage.setItem("cupboard.connectionStatus", connectionStatus);
     window.dispatchEvent(
@@ -124,5 +134,6 @@ export default function useInventorySubscription() {
     userRole,
     canWriteInventory,
     roleKnown,
+    updateProductLocally,
   };
 }
