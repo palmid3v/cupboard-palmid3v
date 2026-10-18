@@ -368,3 +368,8 @@ Notifications remain out of scope until a real notification system exists.
 Branch: `feature/phases-13-16-hardening`
 
 The approved hardening work has been implemented as a reviewable branch. These phases should remain marked as validation-pending until `npm run lint`, `npm run build`, deployed Rules checks, and real-device/offline smoke tests pass.
+
+
+## Documentation checkpoint — 2026-10-18
+
+The current release focus remains reliability hardening of the mobile scan → recognize → register → inventory loop. The roadmap records implemented inventory, barcode scanning, household roles, movement history, expiry tracking and shopping/recipe workflows. Do not mark real-device validation as complete without current evidence; continue testing camera permissions, retry/cleanup, Firestore failures and optimistic-update rollback on supported phones.
