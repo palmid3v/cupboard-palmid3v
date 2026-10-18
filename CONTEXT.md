@@ -213,3 +213,10 @@ The migration gate was completed after runtime adoption, movements, Rules, migra
 Scanner startup-race protection and interrupted-camera recovery are implemented. Real-device iPhone scanning has been validated. The save flow was corrected so a secondary refresh cannot falsely report that the primary product write failed. A transient Firebase Auth HTTP 503 was observed during testing and recovered without a code change; Auth availability remains a recoverable runtime condition.
 
 Next phases: scanner hardening, role-aware save UX, save-state taxonomy, performance, offline/PWA validation, automated regression, and incremental App.jsx extraction.
+
+
+## Documentation checkpoint — 2026-10-18
+
+README.md actualizado para MVP de inventario doméstico. Prioridad vigente: endurecer el flujo escaneo → reconocimiento → registro → inventario en móviles reales y comprobar rollback ante errores Firestore. No afirmar validación completa en dispositivos reales sin evidencia.
+
+Public README states the product scope and release limits. Use the source code, tests and latest audit reports to decide whether a milestone is actually complete.
