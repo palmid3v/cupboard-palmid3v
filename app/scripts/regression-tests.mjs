@@ -142,3 +142,29 @@ test("retro-digital design system remains present without changing the applicati
   assert.match(packageJson, /"vite":/);
   assert.match(packageJson, /"vite-plugin-pwa":/);
 });
+
+test("workspace selection is persistent and rejects unknown workspaces", async () => {
+  const source = await read("../src/services/workspaces.js");
+  assert.match(source, /cupboard\\.workspaceId/);
+  assert.match(source, /VALID_WORKSPACES = new Set\\(\\["home", "sandwichies"\\]\\)/);
+  assert.match(source, /throw new Error\\("INVALID_WORKSPACE"\\)/);
+  assert.match(source, /localStorage\\.setItem\\(STORAGE_KEY, workspaceId\\)/);
+});
+
+test("Hogar retains legacy paths while Sandwichies uses isolated workspace paths", async () => {
+  const inventory = await read("../src/services/inventory.js");
+  const features = await read("../src/services/features.js");
+  assert.match(inventory, /collection\\(db, "households", householdId, "inventory"\\)/);
+  assert.match(inventory, /"workspaces", "sandwichies", "inventory"/);
+  assert.match(inventory, /"workspaces", "sandwichies", "movements"/);
+  assert.match(features, /"workspaces", "sandwichies", name/);
+  assert.match(features, /getActiveWorkspaceId\\(\\) === "sandwichies"/);
+});
+
+test("Sandwichies workspace rules restrict access to household members and editors", async () => {
+  const rules = await read("../../firestore.rules");
+  assert.match(rules, /match \/workspaces\/{workspaceId}\/{document=\*\*}/);
+  assert.match(rules, /allow read: if workspaceId == "sandwichies" && member\\(householdId\\)/);
+  assert.match(rules, /allow create, update, delete: if workspaceId == "sandwichies" && editor\\(householdId\\)/);
+});
+
