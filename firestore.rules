@@ -113,6 +113,12 @@ service cloud.firestore {
         allow read: if member(householdId);
         allow create, update, delete: if owner(householdId);
       }
+
+      // Business inventory is isolated from the legacy household inventory.
+      match /workspaces/{workspaceId}/{document=**} {
+        allow read: if workspaceId == "sandwichies" && member(householdId);
+        allow create, update, delete: if workspaceId == "sandwichies" && editor(householdId);
+      }
     }
 
     match /productCatalog/{barcode} {
