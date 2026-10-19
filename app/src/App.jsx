@@ -13,6 +13,7 @@ import {
   updatePortions,
 } from "./services/products";
 import { auth } from "./services/auth";
+import { getActiveWorkspaceId, setActiveWorkspaceId } from "./services/workspaces";
 import {
   getSaveErrorMessage,
   getSaveErrorState,
@@ -174,6 +175,7 @@ function ConnectionStatus({ status, compact = false }) {
 
 export default function App() {
   const [view, setView] = useState("inventory");
+  const [workspaceId, setWorkspaceId] = useState(getActiveWorkspaceId);
   const [selectedProduct, setSelectedProduct] = useState(null);
 
   const { settings, updateSetting } = useCupboardSettings();
@@ -562,11 +564,25 @@ setIsSaving(true);
                 <p className="mt-1.5 max-w-2xl text-sm text-[var(--cupboard-text-muted)]">{pageDescription[view]}</p>
               </div>
 
-              <div className="hidden shrink-0 items-center gap-2 sm:flex">
+              <div className="flex shrink-0 items-center gap-2">
+                <label className="sr-only" htmlFor="cupboard-workspace">Espacio de inventario</label>
+                <select id="cupboard-workspace" value={workspaceId}
+                  onChange={(event) => {
+                    const nextWorkspace = event.target.value;
+                    setActiveWorkspaceId(nextWorkspace);
+                    setWorkspaceId(nextWorkspace);
+                    window.location.reload();
+                  }}
+                  className="max-w-[155px] rounded-xl border border-[var(--cupboard-border)] bg-[var(--cupboard-surface)] px-2 py-2.5 text-xs font-bold text-[var(--cupboard-text)] sm:max-w-none sm:px-3">
+                  <option value="home">🏠 Hogar</option>
+                  <option value="sandwichies">🥪 Negocio · Sandwichies</option>
+                </select>
+                <div className="hidden shrink-0 items-center gap-2 sm:flex">
                 <ConnectionStatus status={connectionStatus} compact />
                 <button type="button" onClick={() => setView("scanner")} className="rounded-2xl bg-[var(--cupboard-primary)] px-4 py-2.5 text-xs font-bold text-[#10140d] shadow-[0_8px_20px_rgb(120_168_91_/_0.14)] transition hover:-translate-y-0.5 hover:bg-[var(--cupboard-primary-hover)]">
                   + Escanear
                 </button>
+                </div>
               </div>
             </header>
 
