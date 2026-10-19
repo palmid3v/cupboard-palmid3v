@@ -145,26 +145,25 @@ test("retro-digital design system remains present without changing the applicati
 
 test("workspace selection is persistent and rejects unknown workspaces", async () => {
   const source = await read("../src/services/workspaces.js");
-  assert.match(source, /cupboard\\.workspaceId/);
-  assert.match(source, /VALID_WORKSPACES = new Set\\(\\["home", "sandwichies"\\]\\)/);
-  assert.match(source, /throw new Error\\("INVALID_WORKSPACE"\\)/);
-  assert.match(source, /localStorage\\.setItem\\(STORAGE_KEY, workspaceId\\)/);
+  assert.ok(source.includes('"cupboard.workspaceId"'));
+  assert.ok(source.includes('new Set(["home", "sandwichies"])'));
+  assert.ok(source.includes('throw new Error("INVALID_WORKSPACE")'));
+  assert.ok(source.includes('localStorage.setItem(STORAGE_KEY, workspaceId)'));
 });
 
 test("Hogar retains legacy paths while Sandwichies uses isolated workspace paths", async () => {
   const inventory = await read("../src/services/inventory.js");
   const features = await read("../src/services/features.js");
-  assert.match(inventory, /collection\\(db, "households", householdId, "inventory"\\)/);
-  assert.match(inventory, /"workspaces", "sandwichies", "inventory"/);
-  assert.match(inventory, /"workspaces", "sandwichies", "movements"/);
-  assert.match(features, /"workspaces", "sandwichies", name/);
-  assert.match(features, /getActiveWorkspaceId\\(\\) === "sandwichies"/);
+  assert.ok(inventory.includes('collection(db, "households", householdId, "inventory")'));
+  assert.ok(inventory.includes('"workspaces", "sandwichies", "inventory"'));
+  assert.ok(inventory.includes('"workspaces", "sandwichies", "movements"'));
+  assert.ok(features.includes('"workspaces", "sandwichies", name'));
+  assert.ok(features.includes('getActiveWorkspaceId() === "sandwichies"'));
 });
 
 test("Sandwichies workspace rules restrict access to household members and editors", async () => {
   const rules = await read("../../firestore.rules");
-  assert.match(rules, /match \/workspaces\/{workspaceId}\/{document=\*\*}/);
-  assert.match(rules, /allow read: if workspaceId == "sandwichies" && member\\(householdId\\)/);
-  assert.match(rules, /allow create, update, delete: if workspaceId == "sandwichies" && editor\\(householdId\\)/);
+  assert.ok(rules.includes('match /workspaces/{workspaceId}/{document=**}'));
+  assert.ok(rules.includes('allow read: if workspaceId == "sandwichies" && member(householdId)'));
+  assert.ok(rules.includes('allow create, update, delete: if workspaceId == "sandwichies" && editor(householdId)'));
 });
-
