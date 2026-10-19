@@ -373,3 +373,15 @@ The approved hardening work has been implemented as a reviewable branch. These p
 ## Documentation checkpoint — 2026-10-18
 
 The current release focus remains reliability hardening of the mobile scan → recognize → register → inventory loop. The roadmap records implemented inventory, barcode scanning, household roles, movement history, expiry tracking and shopping/recipe workflows. Do not mark real-device validation as complete without current evidence; continue testing camera permissions, retry/cleanup, Firestore failures and optimistic-update rollback on supported phones.
+
+
+## Cupboard — primera implementación de espacios
+
+- [x] Selector persistente de contexto Hogar / Negocio · Sandwichies.
+- [x] Mantener Hogar en sus rutas actuales sin migración automática.
+- [x] Separar inventario y movimientos de Sandwichies bajo `households/{householdId}/workspaces/sandwichies/`.
+- [x] Aplicar membresía y roles del hogar a las escrituras/lecturas del subárbol comercial.
+- [ ] Ejecutar lint, build y pruebas de Rules en local/emulador.
+- [ ] Validar en emulador aislamiento frente a usuarios ajenos al hogar.
+- [ ] Conectar consumo de pedidos mediante operación confiable e idempotente; no descontar inventario con una llamada de cliente repetible.
+- [ ] Acordar la integración con el inventario de producción de Sandwichies antes de importar o sincronizar datos reales.
