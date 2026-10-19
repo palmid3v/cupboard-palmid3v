@@ -13,11 +13,14 @@ import {
 
 import { db } from "../firebase";
 import { getActiveHouseholdId } from "./households";
+import { getActiveWorkspaceId } from "./workspaces";
 
 function scopedCollection(name) {
   const householdId = getActiveHouseholdId();
   if (!householdId) throw new Error("HOUSEHOLD_REQUIRED");
-  return collection(db, "households", householdId, name);
+  return getActiveWorkspaceId() === "sandwichies"
+    ? collection(db, "households", householdId, "workspaces", "sandwichies", name)
+    : collection(db, "households", householdId, name);
 }
 
 export function subscribeFeature(name, onData, onError, sortField = "updatedAt") {
