@@ -14,6 +14,7 @@ import {
 
 import { db } from "../firebase";
 import { getActiveHouseholdId } from "./households";
+import { getActiveWorkspaceId } from "./workspaces";
 
 function requireHouseholdId() {
   const householdId = getActiveHouseholdId();
@@ -26,7 +27,10 @@ function requireHouseholdId() {
 }
 
 function inventoryCollection() {
-  return collection(db, "households", requireHouseholdId(), "inventory");
+  const householdId = requireHouseholdId();
+  return getActiveWorkspaceId() === "sandwichies"
+    ? collection(db, "households", householdId, "workspaces", "sandwichies", "inventory")
+    : collection(db, "households", householdId, "inventory");
 }
 
 function inventoryRef(barcode) {
@@ -134,7 +138,11 @@ export async function updateInventoryPortions(barcode, newPortions) {
 
 
 function movementRef() {
-  return doc(collection(db, "households", requireHouseholdId(), "movements"));
+  const householdId = requireHouseholdId();
+  const movements = getActiveWorkspaceId() === "sandwichies"
+    ? collection(db, "households", householdId, "workspaces", "sandwichies", "movements")
+    : collection(db, "households", householdId, "movements");
+  return doc(movements);
 }
 
 function movementData({ productId, type, quantity, reason = "", userId = null }) {
