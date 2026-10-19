@@ -385,3 +385,18 @@ The current release focus remains reliability hardening of the mobile scan → r
 - [ ] Validar en emulador aislamiento frente a usuarios ajenos al hogar.
 - [ ] Conectar consumo de pedidos mediante operación confiable e idempotente; no descontar inventario con una llamada de cliente repetible.
 - [ ] Acordar la integración con el inventario de producción de Sandwichies antes de importar o sincronizar datos reales.
+
+## Firestore Rules integration tests — 2026-10-18
+
+- Added `app/scripts/firestore-rules.test.mjs` using `@firebase/rules-unit-testing`.
+- Covers verified-email enforcement, member read-only access, editor writes, unrelated-user denial, and rejection of unsupported workspace IDs.
+- Run from the repository root after installing app dependencies and updating the lockfile:
+
+```powershell
+npm --prefix app install
+npx firebase-tools emulators:exec --project demo-cupboard-rules --only firestore "npm --prefix app run test:rules"
+```
+
+- These tests use the local Firestore emulator and seed only emulator data; they do not connect to or modify production Firestore.
+- Keep emulator integration status pending until the command passes locally.
+
