@@ -20,6 +20,7 @@ function normalizeProduct(id, catalog = {}, inventory = {}) {
     description: catalog.description ?? "",
     weight: Number(catalog.weight) || 0,
     portions: Number(inventory.portions) || 0,
+    unit: inventory.unit || "porciones",
     imageUrl: catalog.imageUrl ?? "",
     category: catalog.category ?? "",
     expiryDate: inventory.expiryDate ?? null,
@@ -121,6 +122,7 @@ export async function saveProduct(barcode, data = {}, movement = null) {
     normalizedBarcode,
     {
       portions: data.portions,
+      unit: data.unit,
       expiryDate: data.expiryDate,
       minStock: data.minStock,
       notes: data.notes,
