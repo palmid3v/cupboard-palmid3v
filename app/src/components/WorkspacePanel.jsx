@@ -202,10 +202,10 @@ export default function WorkspacePanel() {
 
   const analytics = useMemo(() => {
     const consumed = movements
-      .filter((item) => item.type === "consume")
+      .filter((item) => item.type === "consume" || item.type === "consumption")
       .reduce((total, item) => total + (Number(item.quantity) || 0), 0);
     const added = movements
-      .filter((item) => item.type === "add")
+      .filter((item) => item.type === "add" || item.type === "reversal")
       .reduce((total, item) => total + (Number(item.quantity) || 0), 0);
 
     return {
