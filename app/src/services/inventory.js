@@ -41,6 +41,7 @@ function normalizeInventory(id, data = {}) {
   return {
     id,
     portions: Number(data.portions) || 0,
+    unit: typeof data.unit === "string" && data.unit.trim() ? data.unit.trim() : "porciones",
     expiryDate: data.expiryDate ?? null,
     minStock: Math.max(0, Number(data.minStock) || 5),
     notes: data.notes ?? "",
@@ -107,6 +108,7 @@ export async function saveInventoryProduct(barcode, data = {}) {
 
   const inventoryData = {
     portions: Math.max(0, Number(data.portions) || 0),
+    unit: String(data.unit || snapshot.data()?.unit || "porciones").trim() || "porciones",
     expiryDate: data.expiryDate || null,
     minStock: Math.max(0, Number(data.minStock) || 5),
     notes: data.notes?.trim() ?? "",
