@@ -88,6 +88,7 @@ export default function ProductDetail({
   onEdit,
 }) {
   const portions = Number(product.portions) || 0;
+  const unit = product.unit || "porciones";
   const minStock = Number(product.minStock) || 5;
   const expiry = getExpiryState(product.expiryDate);
   const isUpdating = updatingProductId === product.id;
@@ -99,10 +100,10 @@ export default function ProductDetail({
   const stockProgress = Math.min(100, Math.round((portions / maxStock) * 100));
 
   const stockMessage = useMemo(() => {
-    if (portions === 0) return "Este producto ya no tiene porciones disponibles.";
-    if (portions <= minStock) return `Quedan pocas unidades. El mínimo configurado es ${minStock}.`;
+    if (portions === 0) return "Este producto ya no tiene existencias disponibles.";
+    if (portions <= minStock) return `Quedan pocas existencias. El mínimo configurado es ${minStock} ${unit}.`;
     return "Tu inventario tiene una cantidad saludable de este producto.";
-  }, [minStock, portions]);
+  }, [minStock, portions, unit]);
 
   return (
     <section className="space-y-5 animate-cupboard-enter">
@@ -145,7 +146,7 @@ export default function ProductDetail({
                     <div key={portions} className="animate-cupboard-count mt-1 text-6xl font-extrabold tracking-tight sm:text-7xl">
                       {portions}
                     </div>
-                    <p className="mt-1 text-xs text-[var(--cupboard-text-muted)]">porciones</p>
+                    <p className="mt-1 text-xs text-[var(--cupboard-text-muted)]">{unit}</p>
                   </div>
 
                   <span className="hidden text-xs font-semibold text-[var(--cupboard-text-muted)] sm:block">
@@ -196,7 +197,7 @@ export default function ProductDetail({
                 ["Peso", product.weight ? `${product.weight} g` : "Sin registrar", "⚖️"],
                 ["Código", product.id || "—", "🏷️"],
                 ["Caducidad", formatExpiry(product.expiryDate), "📅"],
-                ["Stock mínimo", `${minStock} porciones`, "📦"],
+                ["Stock mínimo", `${minStock} ${unit}`, "📦"],
               ].map(([label, value, icon]) => (
                 <div
                   key={label}
