@@ -372,7 +372,7 @@ export default function WorkspacePanel() {
                   <p className="text-sm font-bold">{item.name}</p>
                   <p className="text-xs text-[var(--cupboard-text-muted)]">{item.expiryDate}</p>
                 </div>
-                <span className="text-xs font-bold text-[var(--cupboard-warning)]">{item.portions} porciones</span>
+                <span className="text-xs font-bold text-[var(--cupboard-warning)]">{item.portions} {item.unit || "porciones"}</span>
               </div>
             ))}
           </div>
@@ -388,7 +388,7 @@ export default function WorkspacePanel() {
             {movements.slice(0, 30).map((item) => (
               <div key={item.id} className="flex items-center justify-between rounded-2xl bg-[var(--cupboard-bg)] px-4 py-3">
                 <div>
-                  <p className="text-sm font-bold">{item.type === "consume" ? "Consumo" : "Entrada"}</p>
+                  <p className="text-sm font-bold">{item.type === "consume" || item.type === "consumption" ? "Consumo" : item.type === "reversal" ? "Reversión" : "Entrada"}</p>
                   <p className="text-xs text-[var(--cupboard-text-muted)]">{item.reason || item.productId}</p>
                 </div>
                 <span className="font-mono text-sm font-bold">{item.quantity}</span>
