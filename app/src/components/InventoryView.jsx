@@ -109,7 +109,7 @@ export default function InventoryView({
                         <span className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--cupboard-accent)]">Resumen de alacena</span>
                       </div>
                       <p className="mt-4 max-w-lg text-2xl font-extrabold tracking-tight sm:text-3xl">
-                        Tienes <span className="text-[var(--cupboard-primary)]">{inventorySummary.portions}</span> porciones disponibles.
+                        Controlas <span className="text-[var(--cupboard-primary)]">{inventorySummary.products}</span> productos con su unidad de medida.
                       </p>
                       <p className="mt-2 max-w-lg text-sm leading-6 text-[var(--cupboard-text-muted)]">
                         {inventorySummary.lowStock > 0 ? inventorySummary.lowStock + " productos necesitan atención." : "Todo está en orden. Tu alacena está lista."}
@@ -345,7 +345,7 @@ export default function InventoryView({
                               <div className="mt-5 flex items-end justify-between gap-3">
                                 <div>
                                   <p className="text-3xl font-extrabold leading-none">{portions}</p>
-                                  <p className="mt-1 text-[9px] font-bold uppercase tracking-[0.16em] text-[var(--cupboard-text-subtle)]">porciones</p>
+                                  <p className="mt-1 text-[9px] font-bold uppercase tracking-[0.16em] text-[var(--cupboard-text-subtle)]">{item.unit || "porciones"}</p>
                                 </div>
                                 <button type="button" onClick={(event) => { event.stopPropagation(); onOpenProduct(item); }} className="rounded-xl px-2 py-1.5 text-xs font-bold text-[var(--cupboard-primary)] transition hover:bg-[var(--cupboard-primary-soft)]">Ver →</button>
                               </div>
