@@ -11,7 +11,7 @@ Aplicación de inventario doméstico pensada para saber qué productos hay en ca
 - Filtros por stock bajo y disponibilidad
 - Registro con cámara o código manual
 - Detalles de producto, vencimiento y stock mínimo
-- Aumentar o consumir porciones
+- Aumentar o consumir existencias y conservar la unidad de medida por producto
 - Actualizaciones optimistas con reversión ante error
 - Interfaz mobile-first y base PWA
 
