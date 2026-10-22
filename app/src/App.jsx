@@ -191,7 +191,6 @@ export default function App() {
     imageUrl: "",
     category: "",
     expiryDate: "",
-    unit: "porciones",
     minStock: settings.minStockDefault,
   });
 
