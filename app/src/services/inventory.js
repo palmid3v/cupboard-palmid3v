@@ -178,6 +178,7 @@ export async function saveInventoryProductWithMovement(
 
   const inventoryData = {
     portions: Math.max(0, Number(data.portions) || 0),
+    unit: String(data.unit || snapshot.data()?.unit || "porciones").trim() || "porciones",
     expiryDate: data.expiryDate || null,
     minStock: Math.max(0, Number(data.minStock) || 5),
     notes: data.notes?.trim() ?? "",
