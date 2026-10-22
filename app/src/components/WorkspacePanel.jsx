@@ -205,7 +205,12 @@ export default function WorkspacePanel() {
       .filter((item) => item.type === "consume" || item.type === "consumption")
       .reduce((total, item) => total + (Number(item.quantity) || 0), 0);
     const added = movements
-      .filter((item) => item.type === "add" || item.type === "reversal")
+      .filter((item) =>
+        item.type === "add" ||
+        item.type === "purchase" ||
+        item.type === "reversal" ||
+        (item.type === "adjustment" && Number(item.quantityDelta) > 0)
+      )
       .reduce((total, item) => total + (Number(item.quantity) || 0), 0);
 
     return {
@@ -388,7 +393,7 @@ export default function WorkspacePanel() {
             {movements.slice(0, 30).map((item) => (
               <div key={item.id} className="flex items-center justify-between rounded-2xl bg-[var(--cupboard-bg)] px-4 py-3">
                 <div>
-                  <p className="text-sm font-bold">{item.type === "consume" || item.type === "consumption" ? "Consumo" : item.type === "reversal" ? "Reversión" : "Entrada"}</p>
+                  <p className="text-sm font-bold">{item.type === "consume" || item.type === "consumption" ? "Consumo" : item.type === "reversal" ? "Reversión" : item.type === "purchase" ? "Compra" : item.type === "adjustment" ? "Ajuste" : "Entrada"}</p>
                   <p className="text-xs text-[var(--cupboard-text-muted)]">{item.reason || item.productId}</p>
                 </div>
                 <span className="font-mono text-sm font-bold">{item.quantity}</span>
