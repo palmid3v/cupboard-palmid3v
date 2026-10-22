@@ -52,7 +52,7 @@ export default function ProductForm({
                       </div>
 
                       <div>
-                        <label htmlFor="product-portions" className="mb-2 block text-xs font-bold uppercase tracking-[0.12em] text-[var(--cupboard-text-subtle)]">Porciones</label>
+                        <label htmlFor="product-portions" className="mb-2 block text-xs font-bold uppercase tracking-[0.12em] text-[var(--cupboard-text-subtle)]">{form.unit && form.unit !== "porciones" ? `Cantidad disponible (${form.unit})` : "Porciones"}</label>
                         <input id="product-portions" ref={portionsInputRef} name="portions" type="number" min="0" placeholder="0" value={form.portions} onChange={onChange} className="w-full rounded-2xl border border-[var(--cupboard-border)] bg-[var(--cupboard-bg)] px-4 py-3.5 text-sm outline-none transition placeholder:text-[var(--cupboard-text-subtle)] focus:border-[var(--cupboard-primary)] focus:ring-4 focus:ring-[var(--cupboard-primary)]/10" />
                       </div>
 
