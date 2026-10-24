@@ -122,6 +122,7 @@ export async function joinHouseholdByCode(user, code) {
   batch.set(memberRef, {
     uid: user.uid,
     role,
+    workspaces: [],
     email: user.email || "",
     displayName: user.displayName || user.email?.split("@")[0] || "Miembro",
     inviteCode: normalized,
