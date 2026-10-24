@@ -92,7 +92,7 @@ export default function ProductDetail({
   const unit = product.unit || "porciones";
   const minStock = Number(product.minStock) || 5;
   const expiry = getExpiryState(product.expiryDate);
-  const isUpdating = updatingProductId === product.id;
+  const isUpdating = updatingProductId === `${product.workspaceId || "home"}:${product.id}`;
   const stockTone =
     portions === 0 ? "danger" : portions <= minStock ? "warning" : "success";
   const stockLabel =
