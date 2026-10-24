@@ -26,15 +26,19 @@ function requireHouseholdId() {
   return householdId;
 }
 
-function inventoryCollection() {
+function normalizeWorkspaceId(workspaceId = getActiveWorkspaceId()) {
+  return workspaceId === "sandwichies" ? "sandwichies" : "home";
+}
+
+function inventoryCollection(workspaceId = getActiveWorkspaceId()) {
   const householdId = requireHouseholdId();
-  return getActiveWorkspaceId() === "sandwichies"
+  return normalizeWorkspaceId(workspaceId) === "sandwichies"
     ? collection(db, "households", householdId, "workspaces", "sandwichies", "inventory")
     : collection(db, "households", householdId, "inventory");
 }
 
-function inventoryRef(barcode) {
-  return doc(inventoryCollection(), String(barcode).trim());
+function inventoryRef(barcode, workspaceId = getActiveWorkspaceId()) {
+  return doc(inventoryCollection(workspaceId), String(barcode).trim());
 }
 
 function normalizeInventory(id, data = {}) {
@@ -56,12 +60,12 @@ function normalizeInventory(id, data = {}) {
  * This collection stores household-specific stock state only.
  * Product identity belongs to productCatalog/{barcode}.
  */
-export async function getInventoryProduct(barcode) {
+export async function getInventoryProduct(barcode, workspaceId = getActiveWorkspaceId()) {
   const normalizedBarcode = String(barcode || "").trim();
 
   if (!normalizedBarcode) return null;
 
-  const snapshot = await getDoc(inventoryRef(normalizedBarcode));
+  const snapshot = await getDoc(inventoryRef(normalizedBarcode, workspaceId));
 
   if (!snapshot.exists()) {
     return null;
@@ -70,17 +74,17 @@ export async function getInventoryProduct(barcode) {
   return normalizeInventory(snapshot.id, snapshot.data());
 }
 
-export async function getAllInventory() {
-  const snapshot = await getDocs(inventoryCollection());
+export async function getAllInventory(workspaceId = getActiveWorkspaceId()) {
+  const snapshot = await getDocs(inventoryCollection(workspaceId));
 
   return snapshot.docs.map((inventoryDoc) =>
     normalizeInventory(inventoryDoc.id, inventoryDoc.data()),
   );
 }
 
-export function subscribeToInventory(onData, onError) {
+export function subscribeToInventory(onData, onError, workspaceId = getActiveWorkspaceId()) {
   return onSnapshot(
-    inventoryCollection(),
+    inventoryCollection(workspaceId),
     { includeMetadataChanges: true },
     (snapshot) => {
       const data = snapshot.docs.map((inventoryDoc) =>
@@ -96,14 +100,14 @@ export function subscribeToInventory(onData, onError) {
   );
 }
 
-export async function saveInventoryProduct(barcode, data = {}) {
+export async function saveInventoryProduct(barcode, data = {}, workspaceId = getActiveWorkspaceId()) {
   const normalizedBarcode = String(barcode || "").trim();
 
   if (!normalizedBarcode) {
     throw new Error("BARCODE_REQUIRED");
   }
 
-  const ref = inventoryRef(normalizedBarcode);
+  const ref = inventoryRef(normalizedBarcode, workspaceId);
   const snapshot = await getDoc(ref);
 
   const inventoryData = {
@@ -129,8 +133,8 @@ export async function saveInventoryProduct(barcode, data = {}) {
   });
 }
 
-export async function updateInventoryPortions(barcode, newPortions) {
-  const ref = inventoryRef(barcode);
+export async function updateInventoryPortions(barcode, newPortions, workspaceId = getActiveWorkspaceId()) {
+  const ref = inventoryRef(barcode, workspaceId);
 
   await updateDoc(ref, {
     portions: Math.max(0, Number(newPortions) || 0),
@@ -139,9 +143,9 @@ export async function updateInventoryPortions(barcode, newPortions) {
 }
 
 
-function movementRef() {
+function movementRef(workspaceId = getActiveWorkspaceId()) {
   const householdId = requireHouseholdId();
-  const movements = getActiveWorkspaceId() === "sandwichies"
+  const movements = normalizeWorkspaceId(workspaceId) === "sandwichies"
     ? collection(db, "households", householdId, "workspaces", "sandwichies", "movements")
     : collection(db, "households", householdId, "movements");
   return doc(movements);
@@ -166,6 +170,7 @@ export async function saveInventoryProductWithMovement(
   barcode,
   data = {},
   movement = null,
+  workspaceId = getActiveWorkspaceId(),
 ) {
   const normalizedBarcode = String(barcode || "").trim();
 
@@ -173,7 +178,7 @@ export async function saveInventoryProductWithMovement(
     throw new Error("BARCODE_REQUIRED");
   }
 
-  const ref = inventoryRef(normalizedBarcode);
+  const ref = inventoryRef(normalizedBarcode, workspaceId);
   const snapshot = await getDoc(ref);
 
   const inventoryData = {
@@ -201,7 +206,7 @@ export async function saveInventoryProductWithMovement(
 
   if (movement && Number(movement.quantity) > 0) {
     batch.set(
-      movementRef(),
+      movementRef(workspaceId),
       movementData({
         productId: normalizedBarcode,
         ...movement,
@@ -219,8 +224,9 @@ export async function updateInventoryPortionsWithMovement(
   barcode,
   newPortions,
   movement = null,
+  workspaceId = getActiveWorkspaceId(),
 ) {
-  const ref = inventoryRef(barcode);
+  const ref = inventoryRef(barcode, workspaceId);
   const batch = writeBatch(db);
 
   batch.update(ref, {
@@ -230,7 +236,7 @@ export async function updateInventoryPortionsWithMovement(
 
   if (movement && Number(movement.quantity) > 0) {
     batch.set(
-      movementRef(),
+      movementRef(workspaceId),
       movementData({
         productId: String(barcode).trim(),
         ...movement,
