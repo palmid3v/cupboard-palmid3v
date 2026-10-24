@@ -80,6 +80,17 @@ updatePortions(barcode, newPortions)
 
 Keep Firestore calls behind this boundary where practical.
 
+## Multi-workspace inventory boundary
+
+The administrator's inventory screen subscribes to both supported workspaces:
+
+- `households/{householdId}/inventory/{barcode}` — Cupboard / Home.
+- `households/{householdId}/workspaces/sandwichies/inventory/{barcode}` — Sandwichies / Business.
+
+Each hydrated product includes a `workspaceId` so identical barcodes can appear in both lists without conflating their quantities. The admin UI filters by workspace and passes the chosen destination explicitly to `saveProduct` and `updatePortions`; persistence does not rely on the browser's active-workspace selector for admin inventory operations.
+
+Product identity remains shared in `productCatalog/{barcode}`. Inventory-specific state and movement history remain separate. Editing an existing item preserves its destination; a future cross-workspace transfer must be an explicit, movement-aware operation.
+
 ## Firebase
 
 `src/firebase.js` initializes Firebase and exports Authentication and Firestore instances.
