@@ -238,6 +238,7 @@ export default function App() {
   });
 
   const [isEditing, setIsEditing] = useState(false);
+  const [isEditingExistingProduct, setIsEditingExistingProduct] = useState(false);
   const [saveState, setSaveState] = useState("idle");
   const [status, setStatus] = useState("");
   const [formError, setFormError] = useState("");
@@ -332,6 +333,7 @@ userId: auth.currentUser?.uid || null,
   const handleScan = async (code) => {
   setBarcode(code);
   setIsEditing(false);
+  setIsEditingExistingProduct(false);
   setFormError("");
   setIsLookingUp(true);
 
@@ -341,6 +343,7 @@ userId: auth.currentUser?.uid || null,
     if (result.source === "inventory") {
       const product = result.product;
       setTargetWorkspaceId(product.workspaceId || targetWorkspaceId);
+      setIsEditingExistingProduct(true);
       setStatus("found");
 
       setForm({
@@ -356,6 +359,7 @@ userId: auth.currentUser?.uid || null,
       });
     } else if (result.source === "catalog") {
       const product = result.product;
+      setIsEditingExistingProduct(false);
       setStatus("catalog");
 
       setForm({
@@ -370,6 +374,7 @@ userId: auth.currentUser?.uid || null,
         minStock: settings.minStockDefault,
       });
     } else {
+      setIsEditingExistingProduct(false);
       setStatus("new");
 
       setForm({
@@ -549,6 +554,7 @@ setIsSaving(true);
 
   setSaveState("idle");
   setIsEditing(false);
+  setIsEditingExistingProduct(false);
   setIsManualEntry(false);
   setScannerRestart((previous) => previous + 1);
 
