@@ -1,8 +1,8 @@
-# 🗄️ Cupboard — Inventario del hogar
+# 🗄️ Cupboard — Inventario central de Cupboard y Sandwichies
 
 > **by PALMI-D3V** · Producto digital en desarrollo continuo.
 
-Aplicación de inventario doméstico pensada para saber qué productos hay en casa, buscar rápidamente y mantener las cantidades actualizadas sin la complejidad de un sistema de bodega.
+Aplicación de inventario con espacios independientes para el hogar (Cupboard) y el negocio (Sandwichies). El administrador puede consultar ambos desde una vista central, sin mezclar sus existencias ni sus movimientos.
 
 ## ✨ Funcionalidades
 
@@ -46,6 +46,14 @@ Diseñado y desarrollado bajo la identidad **PALMI-D3V**.
 ---
 
 *Build · Create · Improve · Validate*
+
+## Administración central de inventario
+
+- El administrador ve en una sola vista los inventarios de **Cupboard** y **Sandwichies**, con filtros y etiquetas que indican el destino de cada producto.
+- Al registrar un producto, el administrador elige el destino. La identidad del producto vive en el catálogo compartido; cantidades, caducidad, stock mínimo y movimientos siguen separados por espacio.
+- Desde el detalle se puede revisar el destino del producto y editar su información. Los productos existentes conservan su destino durante la edición; un traslado entre inventarios requiere una operación explícita, no se hace silenciosamente.
+- Solo el administrador puede crear productos o editar sus datos de catálogo y configuración de inventario. Los editores autorizados pueden ajustar cantidades de Hogar; Firestore Rules valida los permisos en el servidor.
+- No se requiere una migración destructiva para habilitar esta vista: se consultan las colecciones actuales de Hogar y Sandwichies.
 
 ## Espacios de inventario
 
