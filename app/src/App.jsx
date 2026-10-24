@@ -204,7 +204,7 @@ export default function App() {
       setAllowedWorkspaces(nextAllowed);
       if (nextAllowed.length && !nextAllowed.includes(getActiveWorkspaceId())) {
         setActiveWorkspaceId(nextAllowed[0]);
-        setWorkspaceId(nextAllowed[0]);
+        window.location.reload();
       }
       setWorkspaceAccessReady(true);
     }).catch((error) => {
