@@ -146,7 +146,7 @@ async function main() {
         unit: String(balance.unit || "porciones").trim() || "porciones",
         expiryDate: null,
         minStock: 5,
-        notes: "Existencia inicial importada desde Sandwichies.",
+        notes: "",
         sandwichiesInventoryRevision: 0,
         importedFrom: "sandwichies",
         createdAt: balance.createdAt || FieldValue.serverTimestamp(),
