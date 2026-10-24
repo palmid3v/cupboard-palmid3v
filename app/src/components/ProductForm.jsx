@@ -14,6 +14,9 @@ export default function ProductForm({
   isSaving,
   saveState,
   canWriteInventory,
+  targetWorkspaceId = "home",
+  onTargetWorkspaceChange,
+  canChooseWorkspace = false,
 }) {
   return (
     isEditing ? (
@@ -32,6 +35,17 @@ export default function ProductForm({
                           isManualEntry ? "border-[var(--cupboard-border)] bg-[var(--cupboard-bg)] focus:border-[var(--cupboard-primary)] focus:ring-4 focus:ring-[var(--cupboard-primary)]/10" : "cursor-not-allowed border-[var(--cupboard-border)] bg-[var(--cupboard-surface-muted)] text-[var(--cupboard-text-muted)]",
                         ].join(" ")} />
                       </div>
+
+                      {canChooseWorkspace && (
+                        <div className="lg:col-span-2">
+                          <label htmlFor="product-destination" className="mb-2 block text-xs font-bold uppercase tracking-[0.12em] text-[var(--cupboard-text-subtle)]">Destino del inventario</label>
+                          <select id="product-destination" value={targetWorkspaceId} onChange={(event) => onTargetWorkspaceChange(event.target.value)} className="w-full rounded-2xl border border-[var(--cupboard-primary)]/40 bg-[var(--cupboard-bg)] px-4 py-3.5 text-sm font-bold outline-none focus:border-[var(--cupboard-primary)] focus:ring-4 focus:ring-[var(--cupboard-primary)]/10">
+                            <option value="home">Cupboard · Hogar</option>
+                            <option value="sandwichies">Sandwichies · Negocio</option>
+                          </select>
+                          <p className="mt-2 text-xs text-[var(--cupboard-text-muted)]">Las existencias se guardarán únicamente en el destino seleccionado.</p>
+                        </div>
+                      )}
 
                       <div>
                         <label htmlFor="product-name" className="mb-2 block text-xs font-bold uppercase tracking-[0.12em] text-[var(--cupboard-text-subtle)]">Nombre</label>
