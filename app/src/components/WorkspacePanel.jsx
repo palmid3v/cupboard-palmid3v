@@ -322,9 +322,8 @@ export default function WorkspacePanel() {
   const updateMemberAccess = async (member, workspaceId, enabled) => {
     if (!isOwner || member.id === auth.currentUser?.uid) return;
     const current = Array.isArray(member.workspaces) ? member.workspaces : [];
-    const next = enabled
-      ? [...new Set([...current, workspaceId])]
-      : current.filter((item) => item !== workspaceId);
+    if (workspaceId !== "home") return;
+    const next = enabled ? ["home"] : current.filter((item) => item !== "home");
     setSavingMemberAccess(member.id);
     setError("");
     try {
@@ -664,20 +663,19 @@ export default function WorkspacePanel() {
             <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--cupboard-primary)]">Permisos por espacio</p>
             <h2 className="mt-2 text-2xl font-extrabold">Accesos del equipo</h2>
             <p className="mt-2 text-sm leading-6 text-[var(--cupboard-text-muted)]">
-              Asigna a cada miembro acceso a Hogar, Negocio · Sandwichies o ambos. Sin asignación, el miembro no puede abrir ninguno de esos inventarios. El catálogo de productos es compartido.
+              Los miembros solo pueden recibir acceso a Hogar. El inventario de Negocio · Sandwichies es privado del administrador. El catálogo de productos es compartido.
             </p>
             <div className="mt-5 space-y-3">
               {householdMembers.filter((member) => member.id !== auth.currentUser?.uid && member.role !== "admin").map((member) => {
                 const assigned = Array.isArray(member.workspaces) ? member.workspaces : [];
                 return (
-                  <div key={member.id} className="grid gap-3 rounded-2xl border border-[var(--cupboard-border)] p-4 sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:items-center">
+                  <div key={member.id} className="grid gap-3 rounded-2xl border border-[var(--cupboard-border)] p-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
                     <div className="min-w-0">
                       <p className="truncate text-sm font-bold">{member.displayName || member.email || member.id}</p>
                       <p className="truncate text-xs text-[var(--cupboard-text-muted)]">{member.email || "Miembro"}</p>
                     </div>
                     {[
                       ["home", "🏠 Hogar"],
-                      ["sandwichies", "🥪 Negocio · Sandwichies"],
                     ].map(([workspaceId, label]) => (
                       <label key={workspaceId} className="flex items-center gap-2 text-xs font-semibold">
                         <input
