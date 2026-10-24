@@ -4,14 +4,14 @@
 - Product: Cupboard
 - Repository: `palmid3v/cupboard-palmid3v`
 - Owner: PALMI-D3V
-- Type: Home-first inventory web application
+- Type: Multi-workspace inventory web application with a central admin view
 - Stage: Functional MVP / active development / reliability hardening
 - Experience: Mobile-first with responsive desktop support
 - Current visual direction: dark-only, warm, calm, green-centered
 
 ## Product intent
 
-Cupboard helps a household know what it has, find products quickly, and keep portions current without feeling like warehouse-management software.
+Cupboard helps manage household inventory and, for the administrator, provides a central view over the separate Cupboard (home) and Sandwichies (business) inventories without merging their stock or movement records.
 
 Core qualities:
 
@@ -99,6 +99,15 @@ The parent receives successful scans through `onScan(code)`.
 ### Theme
 
 The current UI is dark-only. There is no active light/system theme selector in the current implementation.
+
+## Central admin inventory — October 2026
+
+- Admin sees Home/Cupboard and Sandwichies inventory together, with per-workspace filters and visible destination labels.
+- Product registration requires an explicit destination choice: `home` or `sandwichies`.
+- Existing products retain their current destination during editing. Moving stock between workspaces is not implicit and needs a dedicated transfer operation.
+- Shared product identity remains in `productCatalog/{barcode}`; stock and movements remain in their existing workspace-specific collections.
+- Only the admin/household owner can create inventory records or edit product metadata and inventory configuration. Editors may adjust Home quantities only; Firestore Rules restrict their inventory updates to `portions` and `updatedAt`.
+- The admin UI listens to both inventory collections. Non-admin access remains scoped to the workspace granted to that account.
 
 ## “Inventario conectado” status
 
