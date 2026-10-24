@@ -106,6 +106,17 @@ test("architecture extraction keeps App focused on orchestration", async () => {
   assert.match(inventoryHook, /function useInventorySubscription/);
 });
 
+test("Sandwichies import defaults to dry-run and preserves authoritative Cupboard data", async () => {
+  const source = await read("../scripts/import-sandwichies-inventory.mjs");
+
+  assert.match(source, /SANDWICHIES_PROJECT_ID/);
+  assert.match(source, /process\.argv\.includes\("--apply"\)/);
+  assert.match(source, /cupboardInventoryRevision !== undefined/);
+  assert.match(source, /if \(destinationSnapshot\.exists\)/);
+  assert.match(source, /batch\.create\(operation\.ref, operation\.data\)/);
+  assert.match(source, /sandwichies-import-/);
+});
+
 test("admin inventory view combines workspaces and keeps destination explicit", async () => {
   const app = await read("../src/App.jsx");
   const hook = await read("../src/hooks/useInventorySubscription.js");
