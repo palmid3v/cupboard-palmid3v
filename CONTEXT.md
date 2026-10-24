@@ -109,6 +109,12 @@ The current UI is dark-only. There is no active light/system theme selector in t
 - Only the admin/household owner can create inventory records or edit product metadata and inventory configuration. Editors may adjust Home quantities only; Firestore Rules restrict their inventory updates to `portions` and `updatedAt`.
 - The admin UI listens to both inventory collections. Non-admin access remains scoped to the workspace granted to that account.
 
+### Initial Sandwichies inventory import
+
+The source Sandwichies app stores a projection in `inventoryBalances` and history in `inventoryTransactions`. Its trusted backend is already designed to apply new manual/order movements to Cupboard's `workspaces/sandwichies` inventory and mirror the resulting balance back to Sandwichies.
+
+For legacy data, `app/scripts/import-sandwichies-inventory.mjs` imports only missing balances that are not marked with `cupboardInventoryRevision`, and imports legacy movement history idempotently. It defaults to dry-run and requires ADC permissions across both Firebase projects. Do not claim the live stock is unified until the dry-run has been reviewed, the import has been applied, and Sandwichies' deployed ingredient mapping points to the `sandwichies-*` catalog IDs.
+
 ## “Inventario conectado” status
 
 The sidebar/header indicator is backed by the active Firestore inventory listener, browser online/offline events, and Firestore snapshot metadata.
