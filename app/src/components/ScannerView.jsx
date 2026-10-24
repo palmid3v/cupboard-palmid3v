@@ -48,6 +48,9 @@ export default function ScannerView({
   isSaving,
   saveState,
   canWriteInventory,
+  targetWorkspaceId,
+  onTargetWorkspaceChange,
+  canChooseWorkspace,
   handleChange,
   handleSave,
   handleCancelEdit,
@@ -159,6 +162,9 @@ export default function ScannerView({
                   isSaving={isSaving}
                   saveState={saveState}
                   canWriteInventory={canWriteInventory}
+                  targetWorkspaceId={targetWorkspaceId}
+                  onTargetWorkspaceChange={onTargetWorkspaceChange}
+                  canChooseWorkspace={canChooseWorkspace}
                 />
               </section>
   );
