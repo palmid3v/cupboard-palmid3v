@@ -14,6 +14,15 @@ It is deliberately smaller and more human than a warehouse-management applicatio
 
 Today Cupboard can authenticate verified users, connect invited users to households, register products by barcode/manual entry, recognize household or shared-catalog products, show inventory with search/filter/sort, identify low stock and expiry, add/consume portions optimistically, record movements, show product details, display remote product images, manage shopping items and simple recipes, expose basic analytics, persist to Firestore with local cache, and run as a configured PWA.
 
+## Central inventory for two independent products
+
+Cupboard's admin experience can inspect both product inventories in one place:
+
+- **Cupboard / Home** — household stock and movements.
+- **Sandwichies / Business** — business stock and movements.
+
+The catalog identity can be shared, but stock is not shared. During registration, the admin explicitly selects the destination. Product cards and details identify that destination. Existing items remain assigned to their current workspace when edited; changing destinations must not silently duplicate or relocate stock.
+
 ## Product loop
 
 ```text
