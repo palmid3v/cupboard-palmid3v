@@ -58,6 +58,20 @@ Verified signed-in users can read catalog metadata. Catalog creation/update is p
 
 A barcode can exist once in the shared catalog and independently in multiple households.
 
+## Business inventory workspace
+
+Sandwichies stock is stored in a separate Cupboard workspace and must not be mixed with Home:
+
+`households/{householdId}/workspaces/sandwichies/inventory/{productId}`
+
+Movement history uses:
+
+`households/{householdId}/workspaces/sandwichies/movements/{movementId}`
+
+The product ID is mapped from Sandwichies ingredient IDs to shared catalog entries such as `sandwichies-base`. The Sandwichies app's `inventoryBalances` collection is a projection used by its existing admin UI; Cupboard is the source of truth for mapped business stock once the cross-project bridge is configured.
+
+Initial legacy balances and historical transactions can be imported with `npm run cupboard:inventory-import` from the `app` directory. The command is non-destructive and defaults to dry-run. It imports only missing records, skips balances already marked as mirrored from Cupboard, and never overwrites existing Cupboard stock.
+
 ## Movements
 
 `households/{householdId}/movements/{movementId}`
