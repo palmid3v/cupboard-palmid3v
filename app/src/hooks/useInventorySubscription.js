@@ -33,50 +33,67 @@ export default function useInventorySubscription(enabled = true) {
   }, []);
 
   useEffect(() => {
-    let unsubscribe = () => {};
+    let unsubscribers = [];
+    let active = true;
 
-    if (!enabled) {
-      return undefined;
-    }
+    if (!enabled) return undefined;
+
+    const stopListeners = () => {
+      unsubscribers.forEach((unsubscribe) => unsubscribe());
+      unsubscribers = [];
+    };
+
+    const updateStatus = (metadata) => {
+      const preferredNetwork = window.localStorage.getItem("cupboard.firestoreNetwork");
+      if (preferredNetwork === "offline" || !navigator.onLine) {
+        setConnectionStatus("offline");
+      } else if (metadata.hasPendingWrites || metadata.fromCache) {
+        setConnectionStatus("syncing");
+      } else {
+        setConnectionStatus("connected");
+      }
+    };
 
     const startListener = () => {
-      unsubscribe();
+      stopListeners();
+      setIsLoadingProducts(true);
 
-      unsubscribe = subscribeToProducts(
+      const workspaces = userRole === "admin"
+        ? ["home", "sandwichies"]
+        : [window.localStorage.getItem("cupboard.workspaceId") === "sandwichies" ? "sandwichies" : "home"];
+
+      const workspaceProducts = new Map();
+      const workspaceMetadata = new Map();
+
+      unsubscribers = workspaces.map((workspaceId) => subscribeToProducts(
         (data, metadata) => {
-          setProducts(data);
-          setIsLoadingProducts(false);
-
-          const preferredNetwork = window.localStorage.getItem("cupboard.firestoreNetwork");
-
-          if (preferredNetwork === "offline" || !navigator.onLine) {
-            setConnectionStatus("offline");
-            return;
-          }
-
-          if (metadata.hasPendingWrites || metadata.fromCache) {
-            setConnectionStatus("syncing");
-            return;
-          }
-
-          setConnectionStatus("connected");
+          if (!active) return;
+          workspaceProducts.set(workspaceId, data);
+          workspaceMetadata.set(workspaceId, metadata);
+          setProducts([...workspaceProducts.values()].flat());
+          setIsLoadingProducts(workspaceProducts.size < workspaces.length);
+          const states = [...workspaceMetadata.values()];
+          updateStatus({
+            fromCache: states.some((state) => state.fromCache),
+            hasPendingWrites: states.some((state) => state.hasPendingWrites),
+          });
         },
         (error) => {
-          console.error("Error escuchando el inventario:", error);
+          console.error("Error escuchando inventario de " + workspaceId + ":", error);
+          if (!active) return;
           setIsLoadingProducts(false);
           setConnectionStatus(navigator.onLine ? "error" : "offline");
         },
-      );
+        workspaceId,
+      ));
     };
 
     const handleOffline = () => setConnectionStatus("offline");
-
     const handleOnline = () => {
       if (window.localStorage.getItem("cupboard.firestoreNetwork") === "offline") {
         setConnectionStatus("offline");
         return;
       }
-
       setConnectionStatus("connecting");
       startListener();
     };
@@ -103,20 +120,21 @@ export default function useInventorySubscription(enabled = true) {
     window.addEventListener("cupboard:firestore-network", handleFirestoreNetwork);
 
     return () => {
-      unsubscribe();
+      active = false;
+      stopListeners();
       window.removeEventListener("offline", handleOffline);
       window.removeEventListener("online", handleOnline);
       window.removeEventListener("cupboard:firestore-network", handleFirestoreNetwork);
     };
-  }, [enabled]);
+  }, [enabled, userRole]);
 
   const canWriteInventory = canWriteInventoryRole(userRole);
   const roleKnown = Boolean(userRole);
 
-  const updateProductLocally = (productId, portions) => {
+  const updateProductLocally = (productId, portions, workspaceId) => {
     setProducts((current) =>
       current.map((product) =>
-        product.id === productId
+        product.id === productId && (!workspaceId || product.workspaceId === workspaceId)
           ? { ...product, portions }
           : product,
       ),
