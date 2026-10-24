@@ -106,6 +106,23 @@ test("architecture extraction keeps App focused on orchestration", async () => {
   assert.match(inventoryHook, /function useInventorySubscription/);
 });
 
+test("admin inventory view combines workspaces and keeps destination explicit", async () => {
+  const app = await read("../src/App.jsx");
+  const hook = await read("../src/hooks/useInventorySubscription.js");
+  const products = await read("../src/services/products.js");
+  const inventoryView = await read("../src/components/InventoryView.jsx");
+  const productForm = await read("../src/components/ProductForm.jsx");
+
+  assert.match(app, /const canManageProducts = userRole === "admin"/);
+  assert.match(app, /targetWorkspaceId/);
+  assert.match(hook, /\["home", "sandwichies"\]/);
+  assert.match(products, /saveProduct\(barcode, data = \{\}, movement = null, workspaceId\)/);
+  assert.match(products, /updatePortions\(barcode, newPortions, movement = null, workspaceId\)/);
+  assert.match(inventoryView, /showWorkspaceFilter/);
+  assert.match(inventoryView, /item\.workspaceId === "sandwichies"/);
+  assert.match(productForm, /product-destination/);
+});
+
 test("settings contracts remain local and bounded", async () => {
   const source = await read("../src/hooks/useCupboardSettings.js");
   const panel = await read("../src/components/SettingsPanel.jsx");
