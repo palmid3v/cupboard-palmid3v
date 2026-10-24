@@ -41,7 +41,7 @@ export async function getHouseholdMembers(householdId) {
 
 export async function setMemberWorkspaces(householdId, memberId, workspaces) {
   const allowed = [...new Set(workspaces)].filter((workspace) =>
-    ["home", "sandwichies"].includes(workspace),
+    workspace === "home",
   );
   await updateDoc(
     doc(db, "households", householdId, "members", memberId),
