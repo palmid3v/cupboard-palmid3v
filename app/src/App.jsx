@@ -177,6 +177,7 @@ function ConnectionStatus({ status, compact = false }) {
 export default function App() {
   const [view, setView] = useState("inventory");
   const [workspaceId, setWorkspaceId] = useState(getActiveWorkspaceId);
+  const [targetWorkspaceId, setTargetWorkspaceId] = useState("home");
   const [allowedWorkspaces, setAllowedWorkspaces] = useState([]);
   const [workspaceAccessReady, setWorkspaceAccessReady] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
@@ -257,6 +258,7 @@ export default function App() {
     roleKnown,
     updateProductLocally,
   } = useInventorySubscription(workspaceAccessReady && allowedWorkspaces.includes(workspaceId));
+  const canManageProducts = userRole === "admin";
 
 
   const openProduct = (item) => {
@@ -275,10 +277,10 @@ export default function App() {
     setInventoryActionError(null);
     setInventoryActionSuccess(null);
 
-    updateProductLocally(item.id, newPortions);
+    updateProductLocally(item.id, newPortions, item.workspaceId);
 
     setSelectedProduct((current) =>
-      current?.id === item.id
+      current?.id === item.id && current?.workspaceId === item.workspaceId
         ? { ...current, portions: newPortions }
         : current,
     );
@@ -289,7 +291,7 @@ type: newPortions < previousPortions ? "consume" : "add",
 quantity: Math.abs(newPortions - previousPortions),
 reason: newPortions < previousPortions ? "Consumo desde inventario" : "Entrada desde inventario",
 userId: auth.currentUser?.uid || null,
-});
+}, item.workspaceId);
 
       setInventoryActionSuccess({
         productId: item.id,
@@ -298,10 +300,10 @@ userId: auth.currentUser?.uid || null,
     } catch (error) {
       console.error("Error actualizando porciones:", error);
 
-      updateProductLocally(item.id, previousPortions);
+      updateProductLocally(item.id, previousPortions, item.workspaceId);
 
       setSelectedProduct((current) =>
-        current?.id === item.id
+        current?.id === item.id && current?.workspaceId === item.workspaceId
           ? { ...current, portions: previousPortions }
           : current,
       );
@@ -334,10 +336,11 @@ userId: auth.currentUser?.uid || null,
   setIsLookingUp(true);
 
   try {
-    const result = await findProductByBarcode(code);
+    const result = await findProductByBarcode(code, targetWorkspaceId);
 
     if (result.source === "inventory") {
       const product = result.product;
+      setTargetWorkspaceId(product.workspaceId || targetWorkspaceId);
       setStatus("found");
 
       setForm({
@@ -424,10 +427,10 @@ userId: auth.currentUser?.uid || null,
   setFormError("");
   setStatus("");
 
-  if (!canWriteInventory) {
+  if (!canManageProducts) {
     setSaveState("permission");
     setStatus("permission");
-    setFormError("Tu rol actual es de solo lectura. Un editor o propietario debe agregar o editar productos.");
+    setFormError("Solo el administrador puede registrar o editar productos y elegir su inventario de destino.");
     return;
   }
 
@@ -474,7 +477,7 @@ userId: auth.currentUser?.uid || null,
 }
 
 if (isManualEntry) {
-  const existingProduct = await getProduct(productCode);
+  const existingProduct = await getProduct(productCode, targetWorkspaceId);
 
   if (existingProduct) {
     setFormError(
@@ -510,6 +513,7 @@ setIsSaving(true);
             userId: auth.currentUser?.uid || null,
           }
         : null,
+      targetWorkspaceId,
     );
   } catch (error) {
     console.error("Error guardando producto:", error);
@@ -613,7 +617,7 @@ setIsSaving(true);
 
               <div className="flex shrink-0 items-center gap-2">
                 <label className="sr-only" htmlFor="cupboard-workspace">Espacio de inventario</label>
-                {workspaceAccessReady && allowedWorkspaces.length > 0 && (
+                {workspaceAccessReady && allowedWorkspaces.length > 0 && userRole !== "admin" && (
                   <select id="cupboard-workspace" value={workspaceId}
                     onChange={(event) => {
                       const nextWorkspace = event.target.value;
@@ -653,12 +657,14 @@ setIsSaving(true);
               <ProductDetail
                 product={selectedProduct}
                 canWriteInventory={canWriteInventory}
+                canEditProduct={canManageProducts}
                 updatingProductId={updatingProductId}
                 onConsume={handleConsume}
                 onAdd={handleAdd}
                 onBack={() => setSelectedProduct(null)}
                 onEdit={(product) => {
                   setBarcode(product.id || "");
+                  setTargetWorkspaceId(product.workspaceId || "home");
                   setForm({
                     name: product.name || "",
                     description: product.description || "",
@@ -689,7 +695,8 @@ setIsSaving(true);
                 updatingProductId={updatingProductId}
                 inventoryActionError={inventoryActionError}
                 inventoryActionSuccess={inventoryActionSuccess}
-                onAddProduct={() => setView("scanner")}
+                onAddProduct={() => { setTargetWorkspaceId("home"); setView("scanner"); }}
+                showWorkspaceFilter={canManageProducts}
                 initialSort={settings.inventorySort}
                 initialFilter={settings.inventoryFilter}
               />
@@ -720,7 +727,10 @@ setIsSaving(true);
                 formError={formError}
                 isSaving={isSaving}
                 saveState={saveState}
-                canWriteInventory={canWriteInventory}
+                canWriteInventory={canManageProducts}
+                targetWorkspaceId={targetWorkspaceId}
+                onTargetWorkspaceChange={setTargetWorkspaceId}
+                canChooseWorkspace={canManageProducts}
                 handleChange={handleChange}
                 handleSave={handleSave}
                 handleCancelEdit={handleCancelEdit}
