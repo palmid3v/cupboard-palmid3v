@@ -80,7 +80,8 @@ test("Firestore rules preserve verified-email and role boundaries", async () => 
 
   assert.match(rules, /request\.auth\.token\.email_verified == true/);
   assert.match(rules, /allow read: if canAccessWorkspace\(householdId, "home"\)/);
-  assert.match(rules, /allow create, update, delete: if canAccessWorkspace\(householdId, "home"\) && editor\(householdId\)/);
+  assert.match(rules, /allow create, delete: if owner\(householdId\)/);
+  assert.match(rules, /affectedKeys\(\)\.hasOnly\(\[\x27portions\x27, \x27updatedAt\x27\]\)/);
   assert.match(rules, /allow create: if owner\(request\.resource\.data\.householdId\)/);
   assert.match(rules, /request\.resource\.data\.role == 'member'/);
   assert.match(rules, /match \/productCatalog\/{barcode}/);
