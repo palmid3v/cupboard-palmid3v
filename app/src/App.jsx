@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import WorkspacePanel from "./components/WorkspacePanel";
 import InventoryView from "./components/InventoryView";
 import ScannerView from "./components/ScannerView";
@@ -14,6 +14,7 @@ import {
 } from "./services/products";
 import { auth } from "./services/auth";
 import { getActiveWorkspaceId, setActiveWorkspaceId } from "./services/workspaces";
+import { getActiveHouseholdId, getHousehold, getHouseholdMembers, getUserProfile } from "./services/households";
 import {
   getSaveErrorMessage,
   getSaveErrorState,
@@ -176,7 +177,46 @@ function ConnectionStatus({ status, compact = false }) {
 export default function App() {
   const [view, setView] = useState("inventory");
   const [workspaceId, setWorkspaceId] = useState(getActiveWorkspaceId);
+  const [allowedWorkspaces, setAllowedWorkspaces] = useState([]);
+  const [workspaceAccessReady, setWorkspaceAccessReady] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    const user = auth.currentUser;
+    const householdId = getActiveHouseholdId();
+    if (!user || !householdId) {
+      setAllowedWorkspaces([]);
+      setWorkspaceAccessReady(true);
+      return undefined;
+    }
+
+    Promise.all([
+      getUserProfile(user.uid),
+      getHousehold(householdId),
+      getHouseholdMembers(householdId),
+    ]).then(([profile, household, members]) => {
+      if (cancelled) return;
+      const owner = household?.ownerUid === user.uid;
+      const membership = members.find((member) => member.id === user.uid);
+      const assigned = Array.isArray(membership?.workspaces) ? membership.workspaces : [];
+      const nextAllowed = owner ? ["home", "sandwichies"] : assigned.filter((item) => ["home", "sandwichies"].includes(item));
+      setAllowedWorkspaces(nextAllowed);
+      if (nextAllowed.length && !nextAllowed.includes(getActiveWorkspaceId())) {
+        setActiveWorkspaceId(nextAllowed[0]);
+        setWorkspaceId(nextAllowed[0]);
+      }
+      setWorkspaceAccessReady(true);
+    }).catch((error) => {
+      console.error("No se pudieron cargar los permisos de espacios:", error);
+      if (!cancelled) {
+        setAllowedWorkspaces([]);
+        setWorkspaceAccessReady(true);
+      }
+    });
+
+    return () => { cancelled = true; };
+  }, []);
 
   const { settings, updateSetting } = useCupboardSettings();
 
@@ -571,17 +611,19 @@ setIsSaving(true);
 
               <div className="flex shrink-0 items-center gap-2">
                 <label className="sr-only" htmlFor="cupboard-workspace">Espacio de inventario</label>
-                <select id="cupboard-workspace" value={workspaceId}
-                  onChange={(event) => {
-                    const nextWorkspace = event.target.value;
-                    setActiveWorkspaceId(nextWorkspace);
-                    setWorkspaceId(nextWorkspace);
-                    window.location.reload();
-                  }}
-                  className="max-w-[155px] rounded-xl border border-[var(--cupboard-border)] bg-[var(--cupboard-surface)] px-2 py-2.5 text-xs font-bold text-[var(--cupboard-text)] sm:max-w-none sm:px-3">
-                  <option value="home">🏠 Hogar</option>
-                  <option value="sandwichies">🥪 Negocio · Sandwichies</option>
-                </select>
+                {workspaceAccessReady && allowedWorkspaces.length > 0 && (
+                  <select id="cupboard-workspace" value={workspaceId}
+                    onChange={(event) => {
+                      const nextWorkspace = event.target.value;
+                      setActiveWorkspaceId(nextWorkspace);
+                      setWorkspaceId(nextWorkspace);
+                      window.location.reload();
+                    }}
+                    className="max-w-[155px] rounded-xl border border-[var(--cupboard-border)] bg-[var(--cupboard-surface)] px-2 py-2.5 text-xs font-bold text-[var(--cupboard-text)] sm:max-w-none sm:px-3">
+                    {allowedWorkspaces.includes("home") && <option value="home">🏠 Hogar</option>}
+                    {allowedWorkspaces.includes("sandwichies") && <option value="sandwichies">🥪 Negocio · Sandwichies</option>}
+                  </select>
+                )}
                 <div className="hidden shrink-0 items-center gap-2 sm:flex">
                 <ConnectionStatus status={connectionStatus} compact />
                 <button type="button" onClick={() => setView("scanner")} className="rounded-2xl bg-[var(--cupboard-primary)] px-4 py-2.5 text-xs font-bold text-[#10140d] shadow-[0_8px_20px_rgb(120_168_91_/_0.14)] transition hover:-translate-y-0.5 hover:bg-[var(--cupboard-primary-hover)]">
