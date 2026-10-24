@@ -5,7 +5,7 @@ import { subscribeToProducts } from "../services/products";
 import { disconnectFirestore } from "../firebase";
 import { canWriteInventory as canWriteInventoryRole } from "../services/regressionContracts";
 
-export default function useInventorySubscription() {
+export default function useInventorySubscription(enabled = true) {
   const [products, setProducts] = useState([]);
   const [isLoadingProducts, setIsLoadingProducts] = useState(true);
   const [connectionStatus, setConnectionStatus] = useState("connecting");
@@ -35,6 +35,14 @@ export default function useInventorySubscription() {
   useEffect(() => {
     let unsubscribe = () => {};
 
+    if (!enabled) {
+      setProducts([]);
+      setIsLoadingProducts(false);
+      setConnectionStatus("connecting");
+      return undefined;
+    }
+
+    setIsLoadingProducts(true);
     const startListener = () => {
       unsubscribe();
 
@@ -104,7 +112,7 @@ export default function useInventorySubscription() {
       window.removeEventListener("online", handleOnline);
       window.removeEventListener("cupboard:firestore-network", handleFirestoreNetwork);
     };
-  }, []);
+  }, [enabled]);
 
   const canWriteInventory = canWriteInventoryRole(userRole);
   const roleKnown = Boolean(userRole);
