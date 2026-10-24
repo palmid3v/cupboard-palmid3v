@@ -370,16 +370,16 @@ export default function InventoryView({
                                 <button type="button" onClick={(event) => { event.stopPropagation(); onOpenProduct(item); }} className="rounded-xl px-2 py-1.5 text-xs font-bold text-[var(--cupboard-primary)] transition hover:bg-[var(--cupboard-primary-soft)]">Ver →</button>
                               </div>
 
-                              {inventoryActionError?.productId === item.id && (
+                              {inventoryActionError?.productId === item.id && inventoryActionError?.workspaceId === item.workspaceId && (
                                 <div role="alert" aria-live="assertive" className="mt-4 rounded-xl border border-[var(--cupboard-danger)]/25 bg-[var(--cupboard-danger)]/10 px-3 py-2 text-[11px] font-medium text-[var(--cupboard-danger)]">{inventoryActionError.message}</div>
                               )}
 
-                              {inventoryActionSuccess?.productId === item.id && (
+                              {inventoryActionSuccess?.productId === item.id && inventoryActionSuccess?.workspaceId === item.workspaceId && (
                                 <div role="status" aria-live="polite" className="mt-4 rounded-xl border border-[var(--cupboard-success)]/20 bg-[var(--cupboard-success)]/10 px-3 py-2 text-[11px] font-medium text-[var(--cupboard-success)]">{inventoryActionSuccess.message}</div>
                               )}
 
                               <div className="mt-4 grid grid-cols-2 gap-2">
-                                <button type="button" onClick={(event) => { event.stopPropagation(); onConsume(item); }} disabled={!canWriteInventory || portions <= 0 || updatingProductId === item.id} aria-label={"Consumir una porción de " + item.name} className="rounded-xl bg-[var(--cupboard-danger)]/10 px-3 py-2.5 text-xs font-bold text-[var(--cupboard-danger)] transition hover:bg-[var(--cupboard-danger)]/20 disabled:cursor-not-allowed disabled:opacity-30">
+                                <button type="button" onClick={(event) => { event.stopPropagation(); onConsume(item); }} disabled={!canWriteInventory || portions <= 0 || updatingProductId === `${item.workspaceId || "home"}:${item.id}`} aria-label={"Consumir una porción de " + item.name} className="rounded-xl bg-[var(--cupboard-danger)]/10 px-3 py-2.5 text-xs font-bold text-[var(--cupboard-danger)] transition hover:bg-[var(--cupboard-danger)]/20 disabled:cursor-not-allowed disabled:opacity-30">
                                   {updatingProductId === item.id ? "↻" : "− 1"}
                                 </button>
                                 <button type="button" onClick={(event) => { event.stopPropagation(); onAdd(item); }} disabled={!canWriteInventory || updatingProductId === item.id} aria-label={"Agregar una porción de " + item.name} className="rounded-xl bg-[var(--cupboard-primary-soft)] px-3 py-2.5 text-xs font-bold text-[var(--cupboard-primary)] transition hover:bg-[var(--cupboard-primary)]/20 disabled:cursor-not-allowed disabled:opacity-30">
