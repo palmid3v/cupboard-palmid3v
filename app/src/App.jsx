@@ -623,7 +623,7 @@ setIsSaving(true);
 
               <div className="flex shrink-0 items-center gap-2">
                 <label className="sr-only" htmlFor="cupboard-workspace">Espacio de inventario</label>
-                {workspaceAccessReady && allowedWorkspaces.length > 0 && userRole !== "admin" && (
+                {workspaceAccessReady && allowedWorkspaces.length > 0 && (
                   <select id="cupboard-workspace" value={workspaceId}
                     onChange={(event) => {
                       const nextWorkspace = event.target.value;
