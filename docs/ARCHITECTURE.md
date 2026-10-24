@@ -80,6 +80,10 @@ updatePortions(barcode, newPortions)
 
 Keep Firestore calls behind this boundary where practical.
 
+## Cross-project initialization
+
+Sandwichies retains its own application and a read model in `inventoryBalances` / `inventoryTransactions`. Its trusted Functions integration is designed to treat Cupboard's Sandwichies workspace as the authoritative business stock and mirror balances back to Sandwichies. Legacy balances and movements are imported with `app/scripts/import-sandwichies-inventory.mjs`, which defaults to dry-run and never overwrites existing Cupboard records. The initial import must be reviewed and applied with administrative credentials that can access both Firebase projects.
+
 ## Multi-workspace inventory boundary
 
 The administrator's inventory screen subscribes to both supported workspaces:
