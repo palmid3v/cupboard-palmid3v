@@ -74,6 +74,10 @@ Catalog updates preserve `createdBy` and are limited to metadata fields. Client-
 - users cannot access another household's inventory;
 - household state remains separate from shared catalog metadata.
 
+## Cross-project inventory import
+
+The initial import uses Firebase Admin SDK with Application Default Credentials and must be run by an operator authorized to read the Sandwichies project and write the Cupboard project. Credentials are never stored in source control. The command defaults to dry-run, does not overwrite existing Cupboard balances, and skips Sandwichies balances already marked as mirrored from Cupboard. Review the generated plan before using `--apply`.
+
 ## Movement security
 
 `households/{householdId}/movements/{movementId}`
