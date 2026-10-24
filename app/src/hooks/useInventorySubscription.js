@@ -36,13 +36,9 @@ export default function useInventorySubscription(enabled = true) {
     let unsubscribe = () => {};
 
     if (!enabled) {
-      setProducts([]);
-      setIsLoadingProducts(false);
-      setConnectionStatus("connecting");
       return undefined;
     }
 
-    setIsLoadingProducts(true);
     const startListener = () => {
       unsubscribe();
 
@@ -135,9 +131,9 @@ export default function useInventorySubscription(enabled = true) {
   }, [connectionStatus]);
 
   return {
-    products,
-    isLoadingProducts,
-    connectionStatus,
+    products: enabled ? products : [],
+    isLoadingProducts: enabled && isLoadingProducts,
+    connectionStatus: enabled ? connectionStatus : "connecting",
     userRole,
     canWriteInventory,
     roleKnown,
