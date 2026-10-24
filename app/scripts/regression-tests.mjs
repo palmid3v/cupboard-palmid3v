@@ -79,8 +79,8 @@ test("Firestore rules preserve verified-email and role boundaries", async () => 
   const rules = await read("../../firestore.rules");
 
   assert.match(rules, /request\.auth\.token\.email_verified == true/);
-  assert.match(rules, /allow read: if member\(householdId\)/);
-  assert.match(rules, /allow create, update, delete: if editor\(householdId\)/);
+  assert.match(rules, /allow read: if canAccessWorkspace\(householdId, "home"\)/);
+  assert.match(rules, /allow create, update, delete: if canAccessWorkspace\(householdId, "home"\) && editor\(householdId\)/);
   assert.match(rules, /allow create: if owner\(request\.resource\.data\.householdId\)/);
   assert.match(rules, /request\.resource\.data\.role == 'member'/);
   assert.match(rules, /match \/productCatalog\/{barcode}/);
@@ -161,9 +161,9 @@ test("Hogar retains legacy paths while Sandwichies uses isolated workspace paths
   assert.ok(features.includes('getActiveWorkspaceId() === "sandwichies"'));
 });
 
-test("Sandwichies workspace rules restrict access to household members and editors", async () => {
+test("Sandwichies inventory is owner-only and not assignable to members", async () => {
   const rules = await read("../../firestore.rules");
   assert.ok(rules.includes('match /workspaces/{workspaceId}/{document=**}'));
-  assert.ok(rules.includes('allow read: if workspaceId == "sandwichies" && member(householdId)'));
-  assert.ok(rules.includes('allow create, update, delete: if workspaceId == "sandwichies" && editor(householdId)'));
+  assert.match(rules, /allow read, write: if workspaceId == "sandwichies" && owner\(householdId\)/);
+  assert.ok(!rules.includes("allow create, update, delete: if workspaceId == \"sandwichies\" && editor(householdId)"));
 });
