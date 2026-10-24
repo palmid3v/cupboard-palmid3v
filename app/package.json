@@ -11,7 +11,8 @@
     "preview": "vite preview",
     "reset:data": "node scripts/reset-cupboard-data.mjs",
     "bootstrap:owner": "node scripts/bootstrap-cupboard-owner.mjs",
-    "test:rules": "node --test scripts/firestore-rules.test.mjs"
+    "test:rules": "node --test scripts/firestore-rules.test.mjs",
+    "cupboard:inventory-import": "node scripts/import-sandwichies-inventory.mjs"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.3",
