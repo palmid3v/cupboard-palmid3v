@@ -29,7 +29,8 @@ A user must also belong to the requested household.
 ### Roles
 
 - `admin` — household owner/general administrator.
-- `editor` — can modify household inventory/features where allowed.
+- `editor` — may adjust existing Home stock quantities and use other explicitly permitted household features; cannot create inventory products or edit product metadata/configuration.
+- Product creation and inventory configuration changes require the household owner/admin.
 - `member` — can read household data but does not receive owner/editor write privileges.
 
 ## Invitations
@@ -66,7 +67,10 @@ Catalog updates preserve `createdBy` and are limited to metadata fields. Client-
 `households/{householdId}/inventory/{barcode}`
 
 - reads require verified household membership;
-- writes require an editor-capable role;
+- reads require assigned workspace access;
+- creating or deleting inventory records requires the owner/admin;
+- owner/admin can edit inventory configuration;
+- an editor can update only `portions` and `updatedAt` on an existing Home inventory record;
 - users cannot access another household's inventory;
 - household state remains separate from shared catalog metadata.
 
