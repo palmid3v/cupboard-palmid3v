@@ -101,6 +101,17 @@ The old mixed household product model is retired.
 ### ✅ FASE 9 — Reset + migration
 ### ✅ FASE 10 — Cleanup
 
+## 🟢 FASE 12 — Central admin inventory: Cupboard + Sandwichies
+- ✅ Admin can view Home and Sandwichies inventory together with destination filters and labels.
+- ✅ New product registration has an explicit destination.
+- ✅ Existing items keep their destination during editing.
+- ✅ Firestore Rules restrict inventory creation/deletion and product metadata edits to the owner/admin; editors can adjust existing Home quantities only.
+- ✅ Non-destructive cross-project import command added with dry-run as the default.
+- 🟡 Run and review the import dry-run against the configured live Firebase projects.
+- 🟡 Apply the initial import only after verifying mapping, balances and historical movement counts.
+- 🟡 Confirm Sandwichies Functions IAM and deployed mapping point to the prefixed shared catalog IDs.
+- 🟡 Run emulator Rules tests, regression tests, lint and production build after these changes.
+
 # 4. New reliability/product phases
 
 ## 🟢 FASE 11 — Scanner startup reliability
