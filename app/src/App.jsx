@@ -270,11 +270,12 @@ export default function App() {
 
 
   const updateProductPortionsOptimistically = async (item, newPortions) => {
-    if (updatingProductId === item.id) return;
+    const operationKey = `${item.workspaceId || "home"}:${item.id}`;
+    if (updatingProductId === operationKey) return;
 
     const previousPortions = Number(item.portions) || 0;
 
-    setUpdatingProductId(item.id);
+    setUpdatingProductId(operationKey);
     setInventoryActionError(null);
     setInventoryActionSuccess(null);
 
@@ -296,6 +297,7 @@ userId: auth.currentUser?.uid || null,
 
       setInventoryActionSuccess({
         productId: item.id,
+        workspaceId: item.workspaceId,
         message: `Porciones actualizadas: ${newPortions}`,
       });
     } catch (error) {
@@ -311,6 +313,7 @@ userId: auth.currentUser?.uid || null,
 
       setInventoryActionError({
         productId: item.id,
+        workspaceId: item.workspaceId,
         message: "No pudimos actualizar las porciones. Inténtalo nuevamente.",
       });
     } finally {
