@@ -55,6 +55,15 @@ Diseñado y desarrollado bajo la identidad **PALMI-D3V**.
 - Solo el administrador puede crear productos o editar sus datos de catálogo y configuración de inventario. Los editores autorizados pueden ajustar cantidades de Hogar; Firestore Rules valida los permisos en el servidor.
 - El inventario de Cupboard/Hogar permanece intacto. Para inicializar el espacio comercial con existencias históricas de Sandwichies existe `npm run cupboard:inventory-import`; corre en modo `dry-run` por defecto, importa solo documentos faltantes y nunca sobrescribe balances existentes ni los que ya estén marcados como reflejados desde Cupboard. La importación real requiere credenciales administrativas con acceso a ambos proyectos Firebase.
 
+Ejecuta desde `app/` después de completar `.env` con los IDs de ambos proyectos y el hogar de Cupboard:
+
+```powershell
+npm run cupboard:inventory-import
+npm run cupboard:inventory-import -- --apply
+```
+
+La primera orden solo presenta el plan. Revisa cantidades, asociaciones y registros omitidos antes de ejecutar la segunda. Usa Application Default Credentials con permisos de lectura en Sandwichies y escritura en Cupboard; nunca guardes claves de servicio en Git.
+
 ## Espacios de inventario
 
 El selector de espacio sigue disponible para herramientas específicas. La vista de inventario del administrador reúne Hogar y Negocio · Sandwichies, pero las cantidades y movimientos se mantienen separados. El catálogo de identidad es compartido. Sandwichies conserva su aplicación y refleja el inventario comercial de Cupboard mediante una integración servidor-a-servidor; las existencias no se deben editar en una segunda fuente de verdad.
