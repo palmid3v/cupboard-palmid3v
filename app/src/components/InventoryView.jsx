@@ -308,7 +308,7 @@ export default function InventoryView({
 
                         return (
                           <article
-                            key={item.id}
+                            key={`${item.workspaceId || "home"}:${item.id}`}
                             onClick={() => onOpenProduct(item)}
                             onKeyDown={(event) => {
                               if (event.target !== event.currentTarget) return;
