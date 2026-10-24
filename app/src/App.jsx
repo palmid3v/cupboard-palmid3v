@@ -671,6 +671,7 @@ setIsSaving(true);
                 onEdit={(product) => {
                   setBarcode(product.id || "");
                   setTargetWorkspaceId(product.workspaceId || "home");
+                  setIsEditingExistingProduct(true);
                   setForm({
                     name: product.name || "",
                     description: product.description || "",
@@ -720,6 +721,7 @@ setIsSaving(true);
                   setStatus("");
                   setFormError("");
                   setIsEditing(true);
+                  setIsEditingExistingProduct(false);
                 }}
                 onRestartScanner={() => setScannerRestart((previous) => previous + 1)}
                 roleKnown={roleKnown}
@@ -736,7 +738,7 @@ setIsSaving(true);
                 canWriteInventory={canManageProducts}
                 targetWorkspaceId={targetWorkspaceId}
                 onTargetWorkspaceChange={setTargetWorkspaceId}
-                canChooseWorkspace={canManageProducts}
+                canChooseWorkspace={canManageProducts && !isEditingExistingProduct}
                 handleChange={handleChange}
                 handleSave={handleSave}
                 handleCancelEdit={handleCancelEdit}
