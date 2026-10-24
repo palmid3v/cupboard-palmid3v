@@ -195,7 +195,7 @@ export default function App() {
       getUserProfile(user.uid),
       getHousehold(householdId),
       getHouseholdMembers(householdId),
-    ]).then(([profile, household, members]) => {
+    ]).then(([, household, members]) => {
       if (cancelled) return;
       const owner = household?.ownerUid === user.uid;
       const membership = members.find((member) => member.id === user.uid);
