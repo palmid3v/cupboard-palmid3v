@@ -101,7 +101,13 @@ service cloud.firestore {
       // Product identity remains in productCatalog/{barcode}.
       match /inventory/{barcode} {
         allow read: if canAccessWorkspace(householdId, "home");
-        allow create, update, delete: if canAccessWorkspace(householdId, "home") && editor(householdId);
+        allow create, delete: if owner(householdId);
+        allow update: if owner(householdId)
+          || (
+            canAccessWorkspace(householdId, "home")
+            && editor(householdId)
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['portions', 'updatedAt'])
+          );
       }
 
       match /movements/{movementId} {
