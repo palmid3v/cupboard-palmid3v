@@ -116,7 +116,13 @@ export async function saveProduct(barcode, data = {}, movement = null, workspace
     throw new Error("BARCODE_REQUIRED");
   }
 
-  const existingCatalog = await getCatalogProduct(normalizedBarcode);\n  if (existingCatalog) {\n    await updateCatalogProduct(normalizedBarcode, data);\n  } else {\n    await createCatalogProductIfMissing(normalizedBarcode, data);\n  }\n  catalogCache.delete(normalizedBarcode);
+  const existingCatalog = await getCatalogProduct(normalizedBarcode);
+  if (existingCatalog) {
+    await updateCatalogProduct(normalizedBarcode, data);
+  } else {
+    await createCatalogProductIfMissing(normalizedBarcode, data);
+  }
+  catalogCache.delete(normalizedBarcode);
 
   await saveInventoryProductWithMovement(
     normalizedBarcode,
@@ -128,6 +134,7 @@ export async function saveProduct(barcode, data = {}, movement = null, workspace
       notes: data.notes,
     },
     movement,
+    workspaceId,
   );
 }
 
@@ -145,9 +152,10 @@ export function subscribeToProducts(onData, onError, workspaceId) {
         .catch(onError);
     },
     onError,
+    workspaceId,
   );
 }
 
-export async function updatePortions(barcode, newPortions, movement = null) {
-  return updateInventoryPortionsWithMovement(barcode, newPortions, movement);
+export async function updatePortions(barcode, newPortions, movement = null, workspaceId) {
+  return updateInventoryPortionsWithMovement(barcode, newPortions, movement, workspaceId);
 }
