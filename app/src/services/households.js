@@ -1,8 +1,11 @@
 import {
+  collection,
   doc,
   getDoc,
+  getDocs,
   serverTimestamp,
   setDoc,
+  updateDoc,
   writeBatch,
 } from "firebase/firestore";
 
@@ -23,6 +26,30 @@ export function getActiveHouseholdId() {
 export async function getUserProfile(uid) {
   const snapshot = await getDoc(doc(db, "users", uid));
   return snapshot.exists() ? { id: snapshot.id, ...snapshot.data() } : null;
+}
+
+export async function getHouseholdMembers(householdId) {
+  if (!householdId) return [];
+  const snapshot = await getDocs(
+    collection(db, "households", householdId, "members"),
+  );
+  return snapshot.docs.map((memberDoc) => ({
+    id: memberDoc.id,
+    ...memberDoc.data(),
+  }));
+}
+
+export async function setMemberWorkspaces(householdId, memberId, workspaces) {
+  const allowed = [...new Set(workspaces)].filter((workspace) =>
+    ["home", "sandwichies"].includes(workspace),
+  );
+  await updateDoc(
+    doc(db, "households", householdId, "members", memberId),
+    {
+      workspaces: allowed,
+      updatedAt: serverTimestamp(),
+    },
+  );
 }
 
 export async function getHousehold(householdId) {
