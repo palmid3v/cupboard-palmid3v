@@ -6,7 +6,7 @@ import {
   subscribeFeature,
   updateFeatureItem,
 } from "../services/features";
-import { createInvite, getActiveHouseholdId, getHousehold, getUserProfile } from "../services/households";
+import { createInvite, getActiveHouseholdId, getHousehold, getHouseholdMembers, getUserProfile, setMemberWorkspaces } from "../services/households";
 import { getAllProducts, saveProduct } from "../services/products";
 import { getAllCatalogProducts, seedCatalogFromProducts } from "../services/catalog";
 import { auth, logout } from "../services/auth";
@@ -69,6 +69,8 @@ export default function WorkspacePanel() {
   const [shopping, setShopping] = useState([]);
   const [recipes, setRecipes] = useState([]);
   const [household, setHousehold] = useState(null);
+  const [householdMembers, setHouseholdMembers] = useState([]);
+  const [savingMemberAccess, setSavingMemberAccess] = useState(null);
   const [profile, setProfile] = useState(null);
   const [error, setError] = useState("");
   const [inviteCode, setInviteCode] = useState("");
@@ -95,11 +97,13 @@ export default function WorkspacePanel() {
       getAllProducts(),
       auth.currentUser ? getUserProfile(auth.currentUser.uid) : null,
       householdId ? getHousehold(householdId) : null,
-    ]).then(([nextProducts, nextProfile, nextHousehold]) => {
+      householdId ? getHouseholdMembers(householdId) : [],
+    ]).then(([nextProducts, nextProfile, nextHousehold, nextMembers]) => {
       if (cancelled) return;
       setProducts(nextProducts);
       setProfile(nextProfile);
       setHousehold(nextHousehold);
+      setHouseholdMembers(nextMembers);
     }).catch((err) => {
       console.error(err);
       setError("No pudimos cargar el centro de operaciones.");
@@ -312,6 +316,27 @@ export default function WorkspacePanel() {
       );
     } finally {
       setCatalogSyncBusy(false);
+    }
+  };
+
+  const updateMemberAccess = async (member, workspaceId, enabled) => {
+    if (!isOwner || member.id === auth.currentUser?.uid) return;
+    const current = Array.isArray(member.workspaces) ? member.workspaces : [];
+    const next = enabled
+      ? [...new Set([...current, workspaceId])]
+      : current.filter((item) => item !== workspaceId);
+    setSavingMemberAccess(member.id);
+    setError("");
+    try {
+      await setMemberWorkspaces(householdId, member.id, next);
+      setHouseholdMembers((members) => members.map((item) =>
+        item.id === member.id ? { ...item, workspaces: next } : item
+      ));
+    } catch (err) {
+      console.error("No se pudieron guardar los permisos del miembro:", err);
+      setError("No pudimos guardar los permisos. Comprueba que las reglas nuevas estén publicadas.");
+    } finally {
+      setSavingMemberAccess(null);
     }
   };
 
@@ -631,6 +656,45 @@ export default function WorkspacePanel() {
                   <p className="mt-2 font-mono text-3xl font-black tracking-[0.2em]">{inviteCode}</p>
                   <p className="mt-2 text-xs leading-5 text-[var(--cupboard-text-muted)]">Compártelo con una persona de confianza. El registro con este código la conectará como miembro, nunca como administrador.</p>
                 </div>
+              )}
+            </div>
+          </PanelCard>
+
+          <PanelCard className="lg:col-span-2">
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--cupboard-primary)]">Permisos por espacio</p>
+            <h2 className="mt-2 text-2xl font-extrabold">Accesos del equipo</h2>
+            <p className="mt-2 text-sm leading-6 text-[var(--cupboard-text-muted)]">
+              Asigna a cada miembro acceso a Hogar, Negocio · Sandwichies o ambos. Sin asignación, el miembro no puede abrir ninguno de esos inventarios. El catálogo de productos es compartido.
+            </p>
+            <div className="mt-5 space-y-3">
+              {householdMembers.filter((member) => member.id !== auth.currentUser?.uid && member.role !== "admin").map((member) => {
+                const assigned = Array.isArray(member.workspaces) ? member.workspaces : [];
+                return (
+                  <div key={member.id} className="grid gap-3 rounded-2xl border border-[var(--cupboard-border)] p-4 sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:items-center">
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-bold">{member.displayName || member.email || member.id}</p>
+                      <p className="truncate text-xs text-[var(--cupboard-text-muted)]">{member.email || "Miembro"}</p>
+                    </div>
+                    {[
+                      ["home", "🏠 Hogar"],
+                      ["sandwichies", "🥪 Negocio · Sandwichies"],
+                    ].map(([workspaceId, label]) => (
+                      <label key={workspaceId} className="flex items-center gap-2 text-xs font-semibold">
+                        <input
+                          type="checkbox"
+                          checked={assigned.includes(workspaceId)}
+                          disabled={savingMemberAccess === member.id}
+                          onChange={(event) => updateMemberAccess(member, workspaceId, event.target.checked)}
+                          className="h-4 w-4 accent-[var(--cupboard-primary)]"
+                        />
+                        {label}
+                      </label>
+                    ))}
+                  </div>
+                );
+              })}
+              {householdMembers.filter((member) => member.id !== auth.currentUser?.uid && member.role !== "admin").length === 0 && (
+                <p className="rounded-xl bg-[var(--cupboard-surface-muted)] p-4 text-sm text-[var(--cupboard-text-muted)]">Aún no hay miembros invitados para asignar.</p>
               )}
             </div>
           </PanelCard>
