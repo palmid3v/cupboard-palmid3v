@@ -31,6 +31,10 @@ jobs:
       - name: Regression tests
         run: npm run test:regression
 
+      - name: Firestore rules tests
+        working-directory: .
+        run: npx --yes firebase-tools emulators:exec --only firestore --project demo-cupboard-rules "cd app && npm run test:rules"
+
       - name: Lint
         run: npm run lint
 
