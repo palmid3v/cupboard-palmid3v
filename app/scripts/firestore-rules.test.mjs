@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { after, before, test } from "node:test";
 import { assertFails, assertSucceeds, initializeTestEnvironment } from "@firebase/rules-unit-testing";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 
 const projectId = "demo-cupboard-rules";
 let env;
@@ -29,7 +29,7 @@ before(async () => {
     for (const [uid, role, workspaces] of members) {
       await setDoc(doc(db, "households", "household-a", "members", uid), { uid, role, workspaces });
     }
-    await setDoc(homeItem(db), { portions: 4 });
+    await setDoc(homeItem(db), { portions: 4, unit: "porciones" });
     await setDoc(businessItem(db), { portions: 8 });
     await setDoc(doc(db, "productCatalog", "shared-product"), { name: "Producto compartido", createdBy: "admin-user" });
   });
@@ -52,10 +52,12 @@ test("home-assigned member can read home inventory but remains read-only", async
   await assertFails(getDoc(businessItem(db)));
   await assertFails(setDoc(businessItem(db, "member-business-write"), { portions: 1 }));
 });
-test("editor can write home inventory only when assigned to home", async () => {
+test("editor can adjust home stock but cannot create products or edit product metadata", async () => {
   const db = user("editor-user");
   await assertSucceeds(getDoc(homeItem(db)));
-  await assertSucceeds(setDoc(homeItem(db, "editor-home-write"), { portions: 3 }));
+  await assertSucceeds(updateDoc(homeItem(db), { portions: 5 }));
+  await assertFails(updateDoc(homeItem(db), { unit: "cajas" }));
+  await assertFails(setDoc(homeItem(db, "editor-home-write"), { portions: 3 }));
   await assertFails(getDoc(businessItem(db)));
   await assertFails(setDoc(businessItem(db, "editor-business-write"), { portions: 3 }));
 });
