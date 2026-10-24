@@ -82,6 +82,7 @@ export default function ProductDetail({
   product,
   updatingProductId,
   canWriteInventory = true,
+  canEditProduct = false,
   onConsume,
   onAdd,
   onBack,
@@ -194,6 +195,7 @@ export default function ProductDetail({
 
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
               {[
+                ["Inventario", product.workspaceId === "sandwichies" ? "Sandwichies" : "Cupboard", "🏷️"],
                 ["Peso", product.weight ? `${product.weight} g` : "Sin registrar", "⚖️"],
                 ["Código", product.id || "—", "🏷️"],
                 ["Caducidad", formatExpiry(product.expiryDate), "📅"],
@@ -242,7 +244,7 @@ export default function ProductDetail({
             <button
               type="button"
               onClick={() => onEdit(product)}
-              disabled={!canWriteInventory}
+              disabled={!canEditProduct}
               className="mt-5 w-full rounded-2xl bg-[var(--cupboard-primary)] px-5 py-4 text-sm font-bold text-[#10140d] shadow-[0_10px_24px_rgb(120_168_91_/_0.12)] transition duration-300 hover:-translate-y-0.5 hover:bg-[var(--cupboard-primary-hover)] hover:shadow-[0_14px_30px_rgb(120_168_91_/_0.18)]"
             >
               Editar producto
