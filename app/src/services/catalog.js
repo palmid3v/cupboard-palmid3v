@@ -5,6 +5,7 @@ import {
   getDocs,
   serverTimestamp,
   setDoc,
+  updateDoc,
 } from "firebase/firestore";
 
 import { db } from "../firebase";
@@ -71,6 +72,29 @@ export async function createCatalogProductIfMissing(barcode, data) {
       updatedAt: serverTimestamp(),
     });
   }
+
+  return getCatalogProduct(normalizedBarcode);
+}
+
+export async function updateCatalogProduct(barcode, data = {}) {
+  const normalizedBarcode = String(barcode || "").trim();
+  if (!normalizedBarcode) throw new Error("BARCODE_REQUIRED");
+
+  const ref = catalogRef(normalizedBarcode);
+  const snapshot = await getDoc(ref);
+  if (!snapshot.exists()) {
+    return createCatalogProductIfMissing(normalizedBarcode, data);
+  }
+
+  await updateDoc(ref, {
+    name: data.name?.trim() ?? "",
+    description: data.description?.trim() ?? "",
+    brand: data.brand?.trim() ?? "",
+    weight: Number(data.weight) || 0,
+    imageUrl: data.imageUrl?.trim() ?? "",
+    category: data.category?.trim() ?? "",
+    updatedAt: serverTimestamp(),
+  });
 
   return getCatalogProduct(normalizedBarcode);
 }
