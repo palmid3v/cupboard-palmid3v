@@ -49,4 +49,4 @@ Diseñado y desarrollado bajo la identidad **PALMI-D3V**.
 
 ## Espacios de inventario
 
-El selector permite alternar entre **Hogar** y **Negocio · Sandwichies**. Hogar conserva las rutas actuales para proteger los datos existentes; el inventario comercial y sus movimientos usan el subárbol independiente `households/{householdId}/workspaces/sandwichies/`. El catálogo de identidad de productos sigue compartido, mientras las cantidades y operaciones se separan por espacio. La membresía y los roles del hogar se aplican también al espacio comercial.
+El selector permite alternar entre **Hogar** y **Negocio · Sandwichies**. Hogar conserva las rutas actuales para proteger los datos existentes; el inventario comercial y sus movimientos usan el subárbol independiente `households/{householdId}/workspaces/sandwichies/`. El catálogo de identidad de productos sigue compartido, mientras las cantidades y operaciones se separan por espacio. El inventario de Negocio · Sandwichies es privado del propietario y no aparece para miembros invitados. Los miembros solo pueden recibir acceso a Hogar. Las fichas del catálogo son compartidas; las existencias y movimientos nunca se mezclan.
