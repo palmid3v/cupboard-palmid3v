@@ -200,11 +200,13 @@ export default function App() {
       const owner = household?.ownerUid === user.uid;
       const membership = members.find((member) => member.id === user.uid);
       const assigned = Array.isArray(membership?.workspaces) ? membership.workspaces : [];
-      const nextAllowed = owner ? ["home", "sandwichies"] : assigned.filter((item) => ["home", "sandwichies"].includes(item));
+      const nextAllowed = owner ? ["home", "sandwichies"] : (assigned.includes("home") ? ["home"] : []);
       setAllowedWorkspaces(nextAllowed);
-      if (nextAllowed.length && !nextAllowed.includes(getActiveWorkspaceId())) {
-        setActiveWorkspaceId(nextAllowed[0]);
-        window.location.reload();
+      const activeWorkspace = getActiveWorkspaceId();
+      const safeWorkspace = nextAllowed.includes(activeWorkspace) ? activeWorkspace : "home";
+      if (activeWorkspace !== safeWorkspace) {
+        setActiveWorkspaceId(safeWorkspace);
+        setWorkspaceId(safeWorkspace);
       }
       setWorkspaceAccessReady(true);
     }).catch((error) => {
@@ -254,7 +256,7 @@ export default function App() {
     canWriteInventory,
     roleKnown,
     updateProductLocally,
-  } = useInventorySubscription();
+  } = useInventorySubscription(workspaceAccessReady && allowedWorkspaces.includes(workspaceId));
 
 
   const openProduct = (item) => {
@@ -637,9 +639,17 @@ setIsSaving(true);
               <ConnectionStatus status={connectionStatus} />
             </div>
 
-            {view === "workspace" && !selectedProduct && <WorkspacePanel />}
+            {workspaceAccessReady && allowedWorkspaces.length === 0 && (
+              <section role="alert" className="rounded-3xl border border-[var(--cupboard-border)] bg-[var(--cupboard-surface)] p-6 shadow-[var(--cupboard-shadow-sm)]">
+                <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--cupboard-warning)]">Acceso pendiente</p>
+                <h2 className="mt-2 text-xl font-extrabold">Este inventario no está asignado a tu cuenta.</h2>
+                <p className="mt-2 text-sm leading-6 text-[var(--cupboard-text-muted)]">Solicita al administrador acceso a Hogar. El inventario de Negocio · Sandwichies es privado del administrador.</p>
+              </section>
+            )}
 
-            {selectedProduct && (
+            {workspaceAccessReady && allowedWorkspaces.includes(workspaceId) && view === "workspace" && !selectedProduct && <WorkspacePanel />}
+
+            {workspaceAccessReady && allowedWorkspaces.includes(workspaceId) && selectedProduct && (
               <ProductDetail
                 product={selectedProduct}
                 canWriteInventory={canWriteInventory}
@@ -668,7 +678,7 @@ setIsSaving(true);
               />
             )}
 
-            {view === "inventory" && !selectedProduct && (
+            {workspaceAccessReady && allowedWorkspaces.includes(workspaceId) && view === "inventory" && !selectedProduct && (
               <InventoryView
                 products={products}
                 isLoadingProducts={isLoadingProducts}
@@ -685,7 +695,7 @@ setIsSaving(true);
               />
             )}
 
-            {view === "scanner" && (
+            {workspaceAccessReady && allowedWorkspaces.includes(workspaceId) && view === "scanner" && (
               <ScannerView
                 onScan={handleScan}
                 scannerRestart={scannerRestart}
