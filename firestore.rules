@@ -25,6 +25,21 @@ service cloud.firestore {
         && get(/databases/$(database)/documents/households/$(householdId)).data.ownerUid == request.auth.uid;
     }
 
+    // Access to each workspace is assigned by the household owner.
+    // The owner always has access to both workspaces.
+    function canAccessWorkspace(householdId, workspaceId) {
+      return owner(householdId)
+        || (
+          member(householdId)
+          && get(/databases/$(database)/documents/households/$(householdId)/members/$(request.auth.uid)).data.workspaces is list
+          && get(/databases/$(database)/documents/households/$(householdId)/members/$(request.auth.uid)).data.workspaces.hasAny([workspaceId])
+        );
+    }
+
+    function ownerLegacy(householdId) {
+      return owner(householdId);
+    }
+
     function appOwner() {
       return signedIn()
         && exists(/databases/$(database)/documents/users/$(request.auth.uid))
@@ -77,40 +92,45 @@ service cloud.firestore {
         allow read: if member(householdId);
         allow create: if owner(householdId) || invitedMember(householdId);
         allow update: if owner(householdId)
-          && request.resource.data.role != 'admin';
+          && request.resource.data.role == resource.data.role
+          && request.resource.data.uid == resource.data.uid
+          && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['workspaces', 'updatedAt'])
+          && request.resource.data.workspaces is list
+          && request.resource.data.workspaces.hasOnly(['home', 'sandwichies']);
         allow delete: if owner(householdId);
       }
 
       // Final household inventory boundary.
       // Product identity remains in productCatalog/{barcode}.
       match /inventory/{barcode} {
-        allow read: if member(householdId);
-        allow create, update, delete: if editor(householdId);
+        allow read: if canAccessWorkspace(householdId, "home");
+        allow create, update, delete: if canAccessWorkspace(householdId, "home") && editor(householdId);
       }
 
       match /movements/{movementId} {
-        allow read: if member(householdId);
-        allow create: if editor(householdId);
+        allow read: if canAccessWorkspace(householdId, "home");
+        allow create: if canAccessWorkspace(householdId, "home") && editor(householdId);
         allow update, delete: if owner(householdId);
       }
 
       match /shoppingItems/{itemId} {
-        allow read: if member(householdId);
-        allow create, update, delete: if editor(householdId);
+        allow read: if canAccessWorkspace(householdId, "home");
+        allow create, update, delete: if canAccessWorkspace(householdId, "home") && editor(householdId);
       }
 
       match /recipes/{recipeId} {
-        allow read: if member(householdId);
-        allow create, update, delete: if editor(householdId);
+        allow read: if canAccessWorkspace(householdId, "home");
+        allow create, update, delete: if canAccessWorkspace(householdId, "home") && editor(householdId);
       }
 
       match /expiryRules/{ruleId} {
-        allow read: if member(householdId);
-        allow create, update, delete: if editor(householdId);
+        allow read: if canAccessWorkspace(householdId, "home");
+        allow create, update, delete: if canAccessWorkspace(householdId, "home") && editor(householdId);
       }
 
       match /settings/{settingId} {
-        allow read: if member(householdId);
+        allow read: if canAccessWorkspace(householdId, "home");
         allow create, update, delete: if owner(householdId);
       }
 
@@ -118,8 +138,10 @@ service cloud.firestore {
       // Household membership grants visibility, but only the household owner
       // may change Sandwichies business data. UI workspace selection is not authorization.
       match /workspaces/{workspaceId}/{document=**} {
-        allow read: if workspaceId == "sandwichies" && member(householdId);
-        allow create, update, delete: if workspaceId == "sandwichies" && owner(householdId);
+        allow read: if workspaceId == "sandwichies"
+          && canAccessWorkspace(householdId, "sandwichies");
+        allow create, update, delete: if workspaceId == "sandwichies"
+          && owner(householdId);
       }
     }
 
