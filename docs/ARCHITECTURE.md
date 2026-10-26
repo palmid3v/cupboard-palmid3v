@@ -38,7 +38,7 @@ React owns the UI and interaction state.
 
 Most inventory orchestration remains in `src/App.jsx`, while focused UI such as the product detail experience now lives in `src/components/ProductDetail.jsx`.
 
-Tailwind CSS 4 provides component styling. Global variables and browser-level styles live in `src/index.css`.
+Tailwind CSS 4 provides component styling. Global variables and browser-level styles live in `src/index.css`. The shared PALMI-D3V Theme Engine is copied into `src/theme-engine/` for local consumption. `ThemeProvider` owns local visual preferences; `CupboardThemeAdapter.jsx` maps semantic tokens to existing `--cupboard-*` variables. This adapter is presentation-only and does not access Firestore or inventory services. Preferences use the separate `cupboard-theme` local-storage key.
 
 ## Scanner boundary
 
