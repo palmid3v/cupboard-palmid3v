@@ -14,6 +14,8 @@ Aplicación de inventario con espacios independientes para el hogar (Cupboard) y
 - Aumentar o consumir existencias y conservar la unidad de medida por producto
 - Actualizaciones optimistas con reversión ante error
 - Interfaz mobile-first y base PWA
+- Temas PALMI-D3V con modos oscuro, claro y sistema
+- Color principal personalizado con preferencias locales
 
 ## 🛠️ Tecnología
 
@@ -46,6 +48,10 @@ Diseñado y desarrollado bajo la identidad **PALMI-D3V**.
 ---
 
 *Build · Create · Improve · Validate*
+
+## Apariencia
+
+Cupboard integra el motor visual PALMI-D3V en `app/src/theme-engine`. Desde Ajustes puedes elegir una paleta, modo de apariencia y color principal. Las preferencias se guardan localmente y no alteran los datos, permisos ni movimientos del inventario. La fuente canónica de la librería es `palmid3v/bgc-changer-palmid3v/packages/theme-engine`.
 
 ## Administración central de inventario
 
