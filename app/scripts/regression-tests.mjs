@@ -37,8 +37,10 @@ test("theme engine remains presentation-only and app-scoped", async () => {
   const main = await read("../src/main.jsx");
   const settings = await read("../src/components/SettingsPanel.jsx");
   assert.match(provider, /storageKey = STORAGE_KEY/);
-  assert.match(provider, /--cupboard-primary/);
-  assert.match(provider, /--cupboard-bg/);
+  const adapter = await read("../src/theme-engine/CupboardThemeAdapter.jsx");
+  assert.match(adapter, /--cupboard-primary/);
+  assert.match(adapter, /--cupboard-bg/);
+  assert.match(main, /CupboardThemeAdapter/);
   assert.match(main, /storageKey="cupboard-theme"/);
   assert.match(settings, /useThemeEngine/);
   assert.match(settings, /setMode/);
