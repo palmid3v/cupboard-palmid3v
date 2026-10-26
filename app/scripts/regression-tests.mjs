@@ -13,6 +13,38 @@ import {
 
 const read = (path) => readFile(new URL(path, import.meta.url), "utf8");
 
+import { defaultThemeId, getThemeById, isValidThemeId, themes } from "../src/theme-engine/themes.js";
+
+test("shared theme catalog exposes valid unique semantic presets", () => {
+  assert.equal(defaultThemeId, "palmi");
+  assert.equal(isValidThemeId("cupboard"), true);
+  assert.equal(getThemeById("cupboard")?.colors.primary, "#78a85b");
+  assert.equal(isValidThemeId("unknown-theme"), false);
+  assert.equal(getThemeById("unknown-theme"), null);
+  const ids = themes.map((theme) => theme.id);
+  assert.equal(new Set(ids).size, ids.length);
+  for (const theme of themes) {
+    assert.ok(theme.name);
+    assert.match(theme.gradient, /linear-gradient/);
+    for (const token of ["background", "surface", "text", "muted", "primary", "secondary", "accent", "border"]) {
+      assert.match(theme.colors[token], /^#[0-9a-f]{6}$/i, `${theme.id} missing ${token}`);
+    }
+  }
+});
+
+test("theme engine remains presentation-only and app-scoped", async () => {
+  const provider = await read("../src/theme-engine/ThemeProvider.jsx");
+  const main = await read("../src/main.jsx");
+  const settings = await read("../src/components/SettingsPanel.jsx");
+  assert.match(provider, /storageKey = STORAGE_KEY/);
+  assert.match(provider, /--cupboard-primary/);
+  assert.match(provider, /--cupboard-bg/);
+  assert.match(main, /storageKey="cupboard-theme"/);
+  assert.match(settings, /useThemeEngine/);
+  assert.match(settings, /setMode/);
+  assert.match(settings, /setTheme/);
+});
+
 test("role matrix keeps members read-only", () => {
   assert.equal(canWriteInventory("admin"), true);
   assert.equal(canWriteInventory("editor"), true);
