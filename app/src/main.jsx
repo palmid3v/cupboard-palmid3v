@@ -4,13 +4,16 @@ import "./index.css";
 import App from "./App.jsx";
 import AuthGate from "./components/AuthGate.jsx";
 import { ThemeProvider } from "./theme-engine";
+import CupboardThemeAdapter from "./theme-engine/CupboardThemeAdapter.jsx";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <ThemeProvider storageKey="cupboard-theme" defaultTheme="cupboard">
-      <AuthGate>
-        <App />
-      </AuthGate>
+      <CupboardThemeAdapter>
+        <AuthGate>
+          <App />
+        </AuthGate>
+      </CupboardThemeAdapter>
     </ThemeProvider>
   </StrictMode>,
 );
