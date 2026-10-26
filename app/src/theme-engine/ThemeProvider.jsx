@@ -29,6 +29,7 @@ export function ThemeProvider({ children, storageKey = STORAGE_KEY, defaultTheme
     return { ...saved, themeId: isValidThemeId(saved.themeId) ? saved.themeId : (isValidThemeId(defaultTheme) ? defaultTheme : defaultThemeId) };
   });
   const theme = useMemo(() => themes.find((item) => item.id === settings.themeId) ?? themes[0], [settings.themeId]);
+  const resolvedMode = settings.mode === 'system' ? systemMode : settings.mode;
   const setTheme = useCallback((themeId) => { if (isValidThemeId(themeId)) setSettings((current) => ({ ...current, themeId })); }, []);
   const setMode = useCallback((mode) => { if (modes.has(mode)) setSettings((current) => ({ ...current, mode })); }, []);
   const setAccent = useCallback((accent) => {
@@ -63,9 +64,9 @@ export function ThemeProvider({ children, storageKey = STORAGE_KEY, defaultTheme
   }, []);
 
   const value = useMemo(() => ({
-    theme, themeId: settings.themeId, mode: settings.mode, accent: settings.accent, themes,
+    theme, themeId: settings.themeId, mode: settings.mode, resolvedMode, accent: settings.accent, themes,
     setTheme, setMode, setAccent, resetTheme,
-  }), [theme, settings, setTheme, setMode, setAccent, resetTheme]);
+  }), [theme, settings, resolvedMode, setTheme, setMode, setAccent, resetTheme]);
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }
 
