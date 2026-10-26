@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { auth, logout } from "../services/auth";
+import { useThemeEngine } from "../theme-engine";
 
 const APP_VERSION = "0.0.0";
 
@@ -32,6 +33,7 @@ function RetroSelect({ value, onChange, children, label }) {
 
 export default function SettingsPanel({ settings, updateSetting }) {
   const [logoutBusy, setLogoutBusy] = useState(false);
+  const { theme, themes, themeId, mode, accent, setTheme, setMode, setAccent, resetTheme } = useThemeEngine();
 
   const user = auth.currentUser;
   const displayName = user?.displayName || "Cuenta actual";
@@ -95,17 +97,45 @@ export default function SettingsPanel({ settings, updateSetting }) {
 
         <section className="cupboard-retro-panel p-5 sm:p-7">
           <p className="cupboard-retro-kicker">Apariencia</p>
-          <h2 className="mt-2 text-2xl font-black">Cupboard Dark.</h2>
+          <h2 className="mt-2 text-2xl font-black">Personaliza tu espacio.</h2>
           <p className="mt-2 text-sm leading-6 text-[var(--cupboard-text-muted)]">
-            El lenguaje visual Retro-Digital es fijo. No hay selector de tema falso.
+            Los cambios se guardan en este dispositivo y solo afectan la apariencia. El inventario y sus permisos no cambian.
           </p>
 
-          <div className="mt-6 cupboard-retro-status">
-            <span className="h-3 w-3 bg-[var(--cupboard-primary)]" aria-hidden="true" />
-            <div>
-              <p className="text-xs font-black uppercase tracking-[0.12em]">Tema activo</p>
-              <p className="mt-1 text-[10px] text-[var(--cupboard-text-muted)]">DARK / RETRO-DIGITAL</p>
+          <div className="mt-5 space-y-4">
+            <SettingRow label="Paleta de color" description="Elige uno de los temas compartidos de PALMI-D3V.">
+              <RetroSelect label="Paleta de color" value={themeId} onChange={setTheme}>
+                {themes.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
+              </RetroSelect>
+            </SettingRow>
+            <SettingRow label="Modo de apariencia" description="Usa modo oscuro, claro o sigue la preferencia del sistema.">
+              <RetroSelect label="Modo de apariencia" value={mode} onChange={setMode}>
+                <option value="dark">Oscuro</option>
+                <option value="light">Claro</option>
+                <option value="system">Sistema</option>
+              </RetroSelect>
+            </SettingRow>
+            <SettingRow label="Color principal" description="Opcional. Personaliza el color principal sin cambiar los datos.">
+              <input
+                aria-label="Color principal personalizado"
+                type="color"
+                value={accent || theme.colors.primary}
+                onChange={(event) => setAccent(event.target.value)}
+                className="h-11 w-16 cursor-pointer rounded-lg border border-[var(--cupboard-border)] bg-[var(--cupboard-surface)] p-1"
+              />
+            </SettingRow>
+          </div>
+          <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-[var(--cupboard-border)] pt-4">
+            <div className="flex items-center gap-2">
+              <span className="h-3 w-3 rounded-full" style={{ backgroundColor: accent || theme.colors.primary }} aria-hidden="true" />
+              <div>
+                <p className="text-xs font-black uppercase tracking-[0.12em]">Tema activo: {theme.name}</p>
+                <p className="mt-1 text-[10px] text-[var(--cupboard-text-muted)]">{mode.toUpperCase()} / PREFERENCIA LOCAL</p>
+              </div>
             </div>
+            <button type="button" onClick={resetTheme} className="cupboard-retro-button-secondary">
+              RESTABLECER
+            </button>
           </div>
         </section>
       </div>
