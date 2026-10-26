@@ -50,36 +50,7 @@ export function ThemeProvider({ children, storageKey = STORAGE_KEY, defaultTheme
     });
     root.style.setProperty('--theme-gradient', theme.gradient);
     root.style.setProperty('--theme-accent-override', settings.accent || theme.colors.primary);
-    root.style.colorScheme = resolvedMode;
-    const cup = {
-      background: resolvedMode === 'light' ? lightTokens.background : theme.colors.background,
-      surface: resolvedMode === 'light' ? lightTokens.surface : theme.colors.surface,
-      text: resolvedMode === 'light' ? lightTokens.text : theme.colors.text,
-      muted: resolvedMode === 'light' ? lightTokens.muted : theme.colors.muted,
-      border: resolvedMode === 'light' ? lightTokens.border : theme.colors.border,
-      primary: settings.accent || theme.colors.primary,
-      secondary: theme.colors.secondary,
-      accent: theme.colors.accent,
-    };
-    const cupboardTokens = {
-      '--cupboard-bg': cup.background,
-      '--cupboard-surface': cup.surface,
-      '--cupboard-surface-muted': cup.secondary,
-      '--cupboard-surface-raised': cup.border,
-      '--cupboard-text': cup.text,
-      '--cupboard-text-muted': cup.muted,
-      '--cupboard-text-subtle': cup.muted,
-      '--cupboard-primary': cup.primary,
-      '--cupboard-primary-hover': cup.accent,
-      '--cupboard-primary-soft': cup.secondary,
-      '--cupboard-accent': cup.accent,
-      '--cupboard-accent-soft': cup.secondary,
-      '--cupboard-border': cup.border,
-      '--cupboard-success': cup.primary,
-      '--cupboard-info': cup.secondary,
-    };
-    Object.entries(cupboardTokens).forEach(([name, value]) => root.style.setProperty(name, value));
-    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', cup.background);
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', resolvedMode === 'light' ? lightTokens.background : theme.colors.background);
     try { window.localStorage.setItem(storageKey, JSON.stringify(settings)); } catch { /* Current-session preferences still work. */ }
   }, [settings, storageKey, theme, systemMode]);
 
