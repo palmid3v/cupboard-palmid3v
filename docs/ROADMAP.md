@@ -54,11 +54,15 @@
 ## UI/UX
 - ✅ Responsive desktop/mobile layout.
 - ✅ Mobile bottom navigation.
-- ✅ Dark-only visual system.
+- ✅ Shared PALMI-D3V theme engine integrated.
+- ✅ Selectable theme palettes and custom primary accent.
+- ✅ Dark, light, and system appearance modes.
+- ✅ Device-local visual preferences isolated from inventory settings.
 - ✅ Product detail animation and feedback.
 - ✅ Fixed product image area.
 - ✅ Explicit scanner startup/error states.
 - ✅ False-success save-flow fix.
+- 🟡 Validate theme engine with regression tests, lint, production build, and browser QA.
 - 🟡 More real-device scanner refinement.
 - 🟡 More granular save/error feedback.
 - 🟡 Role-aware write guidance.
