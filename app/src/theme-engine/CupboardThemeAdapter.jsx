@@ -2,13 +2,10 @@ import { useEffect } from "react";
 import { useThemeEngine } from "./index.js";
 
 export default function CupboardThemeAdapter({ children }) {
-  const { theme, mode, accent } = useThemeEngine();
+  const { theme, resolvedMode, accent } = useThemeEngine();
 
   useEffect(() => {
     const root = document.documentElement;
-    const resolvedMode = mode === "system"
-      ? (window.matchMedia?.("(prefers-color-scheme: light)").matches ? "light" : "dark")
-      : mode;
     const light = {
       background: "#f4f6fa",
       surface: "#ffffff",
@@ -46,7 +43,7 @@ export default function CupboardThemeAdapter({ children }) {
     root.style.colorScheme = resolvedMode;
     Object.entries(tokens).forEach(([name, value]) => root.style.setProperty(name, value));
     document.querySelector('meta[name="theme-color"]')?.setAttribute("content", colors.background);
-  }, [theme, mode, accent]);
+  }, [theme, resolvedMode, accent]);
 
   return children;
 }
