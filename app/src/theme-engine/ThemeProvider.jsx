@@ -64,8 +64,8 @@ export function ThemeProvider({ children, storageKey = STORAGE_KEY, defaultTheme
     const cupboardTokens = {
       '--cupboard-bg': cup.background,
       '--cupboard-surface': cup.surface,
-      '--cupboard-surface-muted': cup.border,
-      '--cupboard-surface-raised': cup.secondary,
+      '--cupboard-surface-muted': cup.secondary,
+      '--cupboard-surface-raised': cup.border,
       '--cupboard-text': cup.text,
       '--cupboard-text-muted': cup.muted,
       '--cupboard-text-subtle': cup.muted,
