@@ -12,7 +12,7 @@ It is deliberately smaller and more human than a warehouse-management applicatio
 
 ## Current MVP promise
 
-Today Cupboard can authenticate verified users, connect invited users to households, register products by barcode/manual entry, recognize household or shared-catalog products, show inventory with search/filter/sort, identify low stock and expiry, add/consume portions optimistically, record movements, show product details, display remote product images, manage shopping items and simple recipes, expose basic analytics, persist to Firestore with local cache, and run as a configured PWA.
+Today Cupboard can authenticate verified users, connect invited users to households, register products by barcode/manual entry, recognize household or shared-catalog products, show inventory with search/filter/sort, identify low stock and expiry, add/consume portions optimistically, record movements, show product details, display remote product images, manage shopping items and simple recipes, expose basic analytics, persist to Firestore with local cache, run as a configured PWA, and customize the interface using shared theme palettes and dark/light/system appearance modes. Appearance preferences are local to the device and do not affect inventory data or authorization.
 
 ## Central inventory for two independent products
 
