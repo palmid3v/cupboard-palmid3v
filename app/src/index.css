@@ -73,7 +73,7 @@ body {
   margin: 0;
 
   background:
-    radial-gradient(circle at top right, rgb(120 168 91 / 0.07), transparent 34rem),
+    radial-gradient(circle at top right, color-mix(in srgb, var(--cupboard-primary) 7%, transparent), transparent 34rem),
     var(--cupboard-bg);
   color: var(--cupboard-text);
 
@@ -149,7 +149,7 @@ textarea::selection {
 @media (max-width: 1023px) {
   body {
     background:
-      radial-gradient(circle at 100% 0%, rgb(120 168 91 / 0.08), transparent 24rem),
+      radial-gradient(circle at 100% 0%, color-mix(in srgb, var(--cupboard-primary) 8%, transparent), transparent 24rem),
       var(--cupboard-bg);
   }
 }
