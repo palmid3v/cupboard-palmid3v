@@ -1,9 +1,6 @@
-// src/services/products.js
-
 import { createCatalogProductIfMissing, getCatalogProduct, updateCatalogProduct } from "./catalog";
 
-// Session-scoped catalog cache reduces duplicate catalog reads during
-// realtime inventory hydration while preserving the existing service boundary.
+// Session-scoped catalog cache reduces duplicate reads during realtime inventory hydration.
 const catalogCache = new Map();
 import {
   getAllInventory,
@@ -18,6 +15,10 @@ function normalizeProduct(id, catalog = {}, inventory = {}) {
     id,
     name: catalog.name ?? "",
     description: catalog.description ?? "",
+    brand: catalog.brand ?? "",
+    barcode: catalog.barcode ?? null,
+    workspaceId: catalog.workspaceId || (id.startsWith("N-") ? "sandwichies" : "home"),
+    ingredientId: catalog.ingredientId ?? null,
     weight: Number(catalog.weight) || 0,
     portions: Number(inventory.portions) || 0,
     unit: inventory.unit || "porciones",
@@ -31,101 +32,66 @@ function normalizeProduct(id, catalog = {}, inventory = {}) {
   };
 }
 
-async function getCachedCatalogProduct(barcode) {
-  const normalizedBarcode = String(barcode || "").trim();
-
-  if (!normalizedBarcode) return null;
-
-  if (catalogCache.has(normalizedBarcode)) {
-    return catalogCache.get(normalizedBarcode);
-  }
-
-  const catalog = await getCatalogProduct(normalizedBarcode);
-  catalogCache.set(normalizedBarcode, catalog);
-
+async function getCachedCatalogProduct(identifier) {
+  const normalized = String(identifier || "").trim();
+  if (!normalized) return null;
+  if (catalogCache.has(normalized)) return catalogCache.get(normalized);
+  const catalog = await getCatalogProduct(normalized);
+  catalogCache.set(normalized, catalog);
+  if (catalog) catalogCache.set(catalog.id, catalog);
   return catalog;
 }
 
 async function hydrateInventory(inventory, workspaceId) {
-  const products = await Promise.all(
-    inventory.map(async (item) => {
-      const catalog = await getCachedCatalogProduct(item.id);
-
-      if (!catalog) {
-        return { ...normalizeProduct(item.id, {}, item), workspaceId };
-      }
-
-      return { ...normalizeProduct(item.id, catalog, item), workspaceId };
-    }),
-  );
-
-  return products;
+  return Promise.all(inventory.map(async (item) => {
+    const catalog = await getCachedCatalogProduct(item.id);
+    return { ...normalizeProduct(item.id, catalog || {}, item), workspaceId };
+  }));
 }
 
-/**
- * Runtime product facade.
- *
- * The UI can keep its existing product-oriented API while persistence is now
- * split between the shared catalog and household inventory collections.
- */
-export async function getProduct(barcode, workspaceId) {
-  const normalizedBarcode = String(barcode || "").trim();
+export async function getProduct(identifier, workspaceId) {
+  const normalized = String(identifier || "").trim();
+  if (!normalized) return null;
 
-  if (!normalizedBarcode) return null;
+  let inventory = await getInventoryProduct(normalized, workspaceId);
+  let catalog = await getCachedCatalogProduct(normalized);
 
-  const inventory = await getInventoryProduct(normalizedBarcode, workspaceId);
+  if (!inventory && catalog) inventory = await getInventoryProduct(catalog.id, workspaceId);
+  if (!catalog && inventory) catalog = await getCachedCatalogProduct(inventory.id);
+  if (!inventory) return null;
 
-  if (!inventory) {
-    return null;
-  }
-
-  const catalog = await getCachedCatalogProduct(normalizedBarcode);
-
-  return { ...normalizeProduct(normalizedBarcode, catalog || {}, inventory), workspaceId };
+  return { ...normalizeProduct(inventory.id, catalog || {}, inventory), workspaceId };
 }
 
 export async function findProductByBarcode(barcode, workspaceId) {
-  const householdProduct = await getProduct(barcode, workspaceId);
+  const catalog = await getCachedCatalogProduct(barcode);
+  if (!catalog) return { source: "new", product: null };
 
-  if (householdProduct) {
+  const inventory = await getInventoryProduct(catalog.id, workspaceId || catalog.workspaceId);
+  if (inventory) {
     return {
       source: "inventory",
-      product: householdProduct,
+      product: { ...normalizeProduct(catalog.id, catalog, inventory), workspaceId: workspaceId || catalog.workspaceId },
     };
   }
 
-  const catalogProduct = await getCatalogProduct(barcode);
-
-  if (catalogProduct) {
-    return {
-      source: "catalog",
-      product: catalogProduct,
-    };
-  }
-
-  return {
-    source: "new",
-    product: null,
-  };
+  return { source: "catalog", product: catalog };
 }
 
-export async function saveProduct(barcode, data = {}, movement = null, workspaceId) {
+export async function saveProduct(barcode, data = {}, movement = null, workspaceId = "home") {
   const normalizedBarcode = String(barcode || "").trim();
-
-  if (!normalizedBarcode) {
-    throw new Error("BARCODE_REQUIRED");
-  }
+  if (!normalizedBarcode) throw new Error("BARCODE_REQUIRED");
 
   const existingCatalog = await getCatalogProduct(normalizedBarcode);
-  if (existingCatalog) {
-    await updateCatalogProduct(normalizedBarcode, data);
-  } else {
-    await createCatalogProductIfMissing(normalizedBarcode, data);
-  }
+  const catalog = existingCatalog
+    ? await updateCatalogProduct(existingCatalog.id, data)
+    : await createCatalogProductIfMissing(normalizedBarcode, { ...data, workspaceId });
+
   catalogCache.delete(normalizedBarcode);
+  catalogCache.set(catalog.id, catalog);
 
   await saveInventoryProductWithMovement(
-    normalizedBarcode,
+    catalog.id,
     {
       portions: data.portions,
       unit: data.unit,
@@ -136,26 +102,22 @@ export async function saveProduct(barcode, data = {}, movement = null, workspace
     movement,
     workspaceId,
   );
+
+  return { ...catalog, portions: Number(data.portions) || 0, workspaceId };
 }
 
 export async function getAllProducts(workspaceId) {
-  const inventory = await getAllInventory(workspaceId);
-
-  return hydrateInventory(inventory, workspaceId);
+  return hydrateInventory(await getAllInventory(workspaceId), workspaceId);
 }
 
 export function subscribeToProducts(onData, onError, workspaceId) {
-  return subscribeToInventory(
-    (inventory, metadata) => {
-      hydrateInventory(inventory, workspaceId)
-        .then((products) => onData(products, metadata))
-        .catch(onError);
-    },
-    onError,
-    workspaceId,
-  );
+  return subscribeToInventory((inventory, metadata) => {
+    hydrateInventory(inventory, workspaceId)
+      .then((products) => onData(products, metadata))
+      .catch(onError);
+  }, onError, workspaceId);
 }
 
-export async function updatePortions(barcode, newPortions, movement = null, workspaceId) {
-  return updateInventoryPortionsWithMovement(barcode, newPortions, movement, workspaceId);
+export async function updatePortions(productId, newPortions, movement = null, workspaceId) {
+  return updateInventoryPortionsWithMovement(productId, newPortions, movement, workspaceId);
 }
