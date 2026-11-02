@@ -235,3 +235,21 @@ Next phases: scanner hardening, role-aware save UX, save-state taxonomy, perform
 README.md actualizado para MVP de inventario doméstico. Prioridad vigente: endurecer el flujo escaneo → reconocimiento → registro → inventario en móviles reales y comprobar rollback ante errores Firestore. No afirmar validación completa en dispositivos reales sin evidencia.
 
 Public README states the product scope and release limits. Use the source code, tests and latest audit reports to decide whether a milestone is actually complete.
+
+## Ecosystem handoff — 2026-11-01
+
+Cupboard is one of four independent PALMI-D3V repositories started by [PALMI-D3V Connected Workspace](https://github.com/palmid3v/PALMI-D3V-Connected-Workspace). Local URL: `https://127.0.0.1:5181`; app directory: `app/`; workspace root: `D:\\PALMI-D3V\\projects`. The other apps are DayFlow (5180), Sandwichies (5182) and Financial-D3v (5183).
+
+**Domain ownership:** Cupboard is the inventory source of truth. Shared product identity is separate from workspace-specific stock and movements. Household and Sandwichies business balances must never be merged accidentally. Sandwichies owns order lifecycle; Cupboard owns authoritative inventory.
+
+**Current stack (package/context):** React 19, Vite 8, Tailwind CSS 4, Firebase 12 / Firestore, Firebase Admin 14.5 for trusted tooling/integration, @zxing/browser, html5-qrcode, vite-plugin-pwa, ESLint 9 and Firebase Rules unit testing. Confirm current `app/package.json` before changing versions.
+
+**Current model:** `productCatalog/{barcode}`; household inventory at `households/{householdId}/inventory/{barcode}`; household movement history at `households/{householdId}/movements/{movementId}`. Business inventory remains a distinct workspace. Admin chooses Home or Sandwichies destination explicitly. Household editors do not gain access to business inventory; Sandwichies inventory is owner-only.
+
+**Implemented foundations documented:** multi-user households/invitations, verified-email access, role-based Firestore Rules, offline persistence, connection status, expiry, movement history, shopping lists, recipes, basic analytics, barcode scanning, product registration/detail, central admin view and theme engine. Verify source and Rules before assuming every subflow is production-ready.
+
+**Important scripts:** `npm run lint`, `npm run build`, `npm run test:regression`, `npm run test:rules`, `npm run cupboard:inventory-import`. Import is dry-run by default; `--apply` mutates real data and requires explicit authorization. Never run `reset:data` or apply import without an approved plan.
+
+**Pending cross-app gate:** verify `CUPBOARD_PROJECT_ID`, `CUPBOARD_HOUSEHOLD_ID`, `CUPBOARD_INGREDIENT_MAP_JSON`, ingredient mapping and least-privilege cross-project access. A previous preflight found 11 unmapped ingredients; re-run current preflight to establish current status. Do not state the stock integration is live until import, mappings, permissions and end-to-end tests are verified.
+
+For all four app responsibilities, launch scripts, safety rules and continuation priorities, read the [PALMI-D3V AI handoff](https://github.com/palmid3v/PALMI-D3V-Connected-Workspace/blob/main/AI-HANDOFF-2026-11-01.md).
