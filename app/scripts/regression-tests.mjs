@@ -162,7 +162,7 @@ test("admin inventory view combines workspaces and keeps destination explicit", 
   assert.match(app, /targetWorkspaceId/);
   assert.match(hook, /\["home", "sandwichies"\]/);
   assert.match(products, /saveProduct\(barcode, data = \{\}, movement = null, workspaceId = "home"\)/);
-  assert.match(products, /updatePortions\(barcode, newPortions, movement = null, workspaceId\)/);
+  assert.match(products, /updatePortions\(productId, newPortions, movement = null, workspaceId\)/);
   assert.match(inventoryView, /showWorkspaceFilter/);
   assert.match(inventoryView, /item\.workspaceId === "sandwichies"/);
   assert.match(productForm, /product-destination/);
