@@ -1,7 +1,7 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { defaultThemeId, isValidThemeId, themes } from './themes.js';
+import { ThemeContext } from './theme-context.js';
 
-const ThemeContext = createContext(null);
 const STORAGE_KEY = 'palmi-theme-engine:v1';
 const modes = new Set(['dark', 'light', 'system']);
 
@@ -70,8 +70,3 @@ export function ThemeProvider({ children, storageKey = STORAGE_KEY, defaultTheme
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }
 
-export function useThemeEngine() {
-  const context = useContext(ThemeContext);
-  if (!context) throw new Error('useThemeEngine must be used within a ThemeProvider.');
-  return context;
-}
