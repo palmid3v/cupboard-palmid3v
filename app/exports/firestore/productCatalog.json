@@ -1,0 +1,634 @@
+{
+  "projectId": "cupboard-app-ce528",
+  "collection": "productCatalog",
+  "total": 44,
+  "documents": [
+    {
+      "id": "75916565",
+      "path": "productCatalog/75916565",
+      "data": {
+        "name": "Vaporub",
+        "description": "",
+        "brand": "",
+        "weight": 12,
+        "imageUrl": "",
+        "category": "",
+        "createdBy": "S6kGMhyAALcGKtiSV2k1ol51kbS2",
+        "createdAt": "2026-10-04T22:12:23.657Z",
+        "updatedAt": "2026-10-04T22:12:23.657Z"
+      }
+    },
+    {
+      "id": "7700304032389",
+      "path": "productCatalog/7700304032389",
+      "data": {
+        "name": "Kedeli",
+        "description": "Limonada de coco",
+        "brand": "",
+        "weight": 200,
+        "imageUrl": "https://i.imgur.com/HRHOLVt.png",
+        "category": "",
+        "createdBy": "VABl73addleYNZqAHdn31HzoiEF2",
+        "createdAt": "2026-10-04T19:53:52.438Z",
+        "updatedAt": "2026-10-04T19:53:52.438Z"
+      }
+    },
+    {
+      "id": "7700304083527",
+      "path": "productCatalog/7700304083527",
+      "data": {
+        "name": "Jamón",
+        "description": "Jamón de cerdo",
+        "brand": "",
+        "weight": 400,
+        "imageUrl": "",
+        "category": "",
+        "createdBy": "VABl73addleYNZqAHdn31HzoiEF2",
+        "createdAt": "2026-10-04T19:53:53.077Z",
+        "updatedAt": "2026-10-04T19:53:53.077Z"
+      }
+    },
+    {
+      "id": "7700304091546",
+      "path": "productCatalog/7700304091546",
+      "data": {
+        "name": "Brandy",
+        "description": "Papel higiénico - 8-25-2026\n9unit",
+        "brand": "",
+        "weight": 238,
+        "imageUrl": "",
+        "category": "",
+        "createdBy": "VABl73addleYNZqAHdn31HzoiEF2",
+        "createdAt": "2026-10-04T19:53:53.642Z",
+        "updatedAt": "2026-10-04T19:53:53.642Z"
+      }
+    },
+    {
+      "id": "7700304110445",
+      "path": "productCatalog/7700304110445",
+      "data": {
+        "name": "Meel",
+        "description": "Miel de abeja",
+        "brand": "",
+        "weight": 350,
+        "imageUrl": "",
+        "category": "",
+        "createdBy": "VABl73addleYNZqAHdn31HzoiEF2",
+        "createdAt": "2026-10-04T19:53:54.174Z",
+        "updatedAt": "2026-10-04T19:53:54.174Z"
+      }
+    },
+    {
+      "id": "7700304229604",
+      "path": "productCatalog/7700304229604",
+      "data": {
+        "name": "Tidy house",
+        "description": "Bolsas con sello hermético",
+        "brand": "",
+        "weight": 0,
+        "imageUrl": "",
+        "category": "",
+        "createdBy": "VABl73addleYNZqAHdn31HzoiEF2",
+        "createdAt": "2026-10-04T19:53:54.718Z",
+        "updatedAt": "2026-10-04T19:53:54.718Z"
+      }
+    },
+    {
+      "id": "7700304275793",
+      "path": "productCatalog/7700304275793",
+      "data": {
+        "name": "Salchichón cervecero",
+        "description": "Salchichón cervecero",
+        "brand": "",
+        "weight": 900,
+        "imageUrl": "https://d1tiendas.vtexassets.com/arquivos/ids/204531-1200-1200?v=639190864400470000&width=1200&height=1200&aspect=true",
+        "category": "",
+        "createdBy": "VABl73addleYNZqAHdn31HzoiEF2",
+        "createdAt": "2026-10-04T19:53:55.213Z",
+        "updatedAt": "2026-10-04T19:53:55.213Z"
+      }
+    },
+    {
+      "id": "7700304322046",
+      "path": "productCatalog/7700304322046",
+      "data": {
+        "name": "Saltisimas",
+        "description": "Tacos de galleta x4",
+        "brand": "",
+        "weight": 324,
+        "imageUrl": "",
+        "category": "",
+        "createdBy": "VABl73addleYNZqAHdn31HzoiEF2",
+        "createdAt": "2026-10-04T19:53:55.722Z",
+        "updatedAt": "2026-10-04T19:53:55.722Z"
+      }
+    },
+    {
+      "id": "7700304340934",
+      "path": "productCatalog/7700304340934",
+      "data": {
+        "name": "Albar",
+        "description": "",
+        "brand": "",
+        "weight": 0,
+        "imageUrl": "",
+        "category": "",
+        "createdBy": "VABl73addleYNZqAHdn31HzoiEF2",
+        "createdAt": "2026-10-04T19:53:56.330Z",
+        "updatedAt": "2026-10-04T19:53:56.330Z"
+      }
+    },
+    {
+      "id": "7700304387458",
+      "path": "productCatalog/7700304387458",
+      "data": {
+        "name": "Mantequilla don olio",
+        "description": "Mantequilla pequeña temporal",
+        "brand": "",
+        "weight": 250,
+        "imageUrl": "",
+        "category": "",
+        "createdBy": "VABl73addleYNZqAHdn31HzoiEF2",
+        "createdAt": "2026-10-04T19:53:56.850Z",
+        "updatedAt": "2026-10-04T19:53:56.850Z"
+      }
+    },
+    {
+      "id": "7700304452071",
+      "path": "productCatalog/7700304452071",
+      "data": {
+        "name": "Rendy",
+        "description": "Papel de cocina",
+        "brand": "",
+        "weight": 0,
+        "imageUrl": "",
+        "category": "",
+        "createdBy": "VABl73addleYNZqAHdn31HzoiEF2",
+        "createdAt": "2026-10-04T19:53:57.337Z",
+        "updatedAt": "2026-10-04T19:53:57.337Z"
+      }
+    },
+    {
+      "id": "7700304515660",
+      "path": "productCatalog/7700304515660",
+      "data": {
+        "name": "Mash búfalo",
+        "description": "Salsa picante",
+        "brand": "",
+        "weight": 170,
+        "imageUrl": "",
+        "category": "",
+        "createdBy": "VABl73addleYNZqAHdn31HzoiEF2",
+        "createdAt": "2026-10-04T19:53:57.860Z",
+        "updatedAt": "2026-10-04T19:53:57.860Z"
+      }
+    },
+    {
+      "id": "7700304549061",
+      "path": "productCatalog/7700304549061",
+      "data": {
+        "name": "Salsa de carnes",
+        "description": "Salsa para carnes",
+        "brand": "",
+        "weight": 185,
+        "imageUrl": "",
+        "category": "",
+        "createdBy": "VABl73addleYNZqAHdn31HzoiEF2",
+        "createdAt": "2026-10-04T19:53:58.348Z",
+        "updatedAt": "2026-10-04T19:53:58.348Z"
+      }
+    },
+    {
+      "id": "7700304570119",
+      "path": "productCatalog/7700304570119",
+      "data": {
+        "name": "Salsa negra",
+        "description": "Salsa negra",
+        "brand": "",
+        "weight": 185,
+        "imageUrl": "",
+        "category": "",
+        "createdBy": "VABl73addleYNZqAHdn31HzoiEF2",
+        "createdAt": "2026-10-04T19:53:58.851Z",
+        "updatedAt": "2026-10-04T19:53:58.851Z"
+      }
+    },
+    {
+      "id": "7700304573721",
+      "path": "productCatalog/7700304573721",
+      "data": {
+        "name": "Maíz Pira El Estio",
+        "description": "Maíz Pira",
+        "brand": "",
+        "weight": 500,
+        "imageUrl": "",
+        "category": "",
+        "createdBy": "VABl73addleYNZqAHdn31HzoiEF2",
+        "createdAt": "2026-10-04T19:53:59.353Z",
+        "updatedAt": "2026-10-04T19:53:59.353Z"
+      }
+    },
+    {
+      "id": "7700304640843",
+      "path": "productCatalog/7700304640843",
+      "data": {
+        "name": "Delizare",
+        "description": "Spaguetti",
+        "brand": "",
+        "weight": 500,
+        "imageUrl": "",
+        "category": "",
+        "createdBy": "VABl73addleYNZqAHdn31HzoiEF2",
+        "createdAt": "2026-10-04T19:53:59.878Z",
+        "updatedAt": "2026-10-04T19:53:59.878Z"
+      }
+    },
+    {
+      "id": "7700304714643",
+      "path": "productCatalog/7700304714643",
+      "data": {
+        "name": "Mantequilla Don Olio",
+        "description": "Mantequilla",
+        "brand": "",
+        "weight": 500,
+        "imageUrl": "",
+        "category": "",
+        "createdBy": "VABl73addleYNZqAHdn31HzoiEF2",
+        "createdAt": "2026-10-04T19:54:00.376Z",
+        "updatedAt": "2026-10-04T19:54:00.376Z"
+      }
+    },
+    {
+      "id": "7700304751891",
+      "path": "productCatalog/7700304751891",
+      "data": {
+        "name": "Leche descremada",
+        "description": "Leche 0 grasa descremada",
+        "brand": "",
+        "weight": 900,
+        "imageUrl": "",
+        "category": "",
+        "createdBy": "VABl73addleYNZqAHdn31HzoiEF2",
+        "createdAt": "2026-10-04T19:54:00.867Z",
+        "updatedAt": "2026-10-04T19:54:00.867Z"
+      }
+    },
+    {
+      "id": "7700304797981",
+      "path": "productCatalog/7700304797981",
+      "data": {
+        "name": "Salsa soya",
+        "description": "Salsa de soya",
+        "brand": "",
+        "weight": 185,
+        "imageUrl": "",
+        "category": "",
+        "createdBy": "VABl73addleYNZqAHdn31HzoiEF2",
+        "createdAt": "2026-10-04T19:54:01.372Z",
+        "updatedAt": "2026-10-04T19:54:01.372Z"
+      }
+    },
+    {
+      "id": "7700304839186",
+      "path": "productCatalog/7700304839186",
+      "data": {
+        "name": "Salsa teriyaki",
+        "description": "Salsa dulce teriyaki",
+        "brand": "",
+        "weight": 165,
+        "imageUrl": "",
+        "category": "",
+        "createdBy": "VABl73addleYNZqAHdn31HzoiEF2",
+        "createdAt": "2026-10-04T19:54:01.902Z",
+        "updatedAt": "2026-10-04T19:54:01.902Z"
+      }
+    },
+    {
+      "id": "7700304865635",
+      "path": "productCatalog/7700304865635",
+      "data": {
+        "name": "Salchichón tradicional",
+        "description": "Salchichón tradicional",
+        "brand": "",
+        "weight": 500,
+        "imageUrl": "",
+        "category": "",
+        "createdBy": "VABl73addleYNZqAHdn31HzoiEF2",
+        "createdAt": "2026-10-04T19:54:02.414Z",
+        "updatedAt": "2026-10-04T19:54:02.414Z"
+      }
+    },
+    {
+      "id": "7700304912971",
+      "path": "productCatalog/7700304912971",
+      "data": {
+        "name": "Copitos",
+        "description": "Copitos para los oidos\n100x1(porcion)",
+        "brand": "",
+        "weight": 0,
+        "imageUrl": "",
+        "category": "",
+        "createdBy": "vn51aCf4O8bMNPndax72bODswDY2",
+        "createdAt": "2026-10-04T22:07:36.771Z",
+        "updatedAt": "2026-10-04T22:07:36.771Z"
+      }
+    },
+    {
+      "id": "7700304970872",
+      "path": "productCatalog/7700304970872",
+      "data": {
+        "name": "Cabello de angel",
+        "description": "Palitos para arroz",
+        "brand": "",
+        "weight": 250,
+        "imageUrl": "https://d1tiendas.vtexassets.com/arquivos/ids/206548-1200-1200?v=639244715783500000&width=1200&height=1200&aspect=true",
+        "category": "",
+        "createdBy": "VABl73addleYNZqAHdn31HzoiEF2",
+        "createdAt": "2026-10-04T19:54:02.946Z",
+        "updatedAt": "2026-10-04T19:54:02.946Z"
+      }
+    },
+    {
+      "id": "7702005917712",
+      "path": "productCatalog/7702005917712",
+      "data": {
+        "name": "Cigarrillos",
+        "description": "",
+        "brand": "",
+        "weight": 0,
+        "imageUrl": "",
+        "category": "",
+        "createdBy": "S6kGMhyAALcGKtiSV2k1ol51kbS2",
+        "createdAt": "2026-10-04T22:23:13.778Z",
+        "updatedAt": "2026-10-04T22:23:13.778Z"
+      }
+    },
+    {
+      "id": "7702024537182",
+      "path": "productCatalog/7702024537182",
+      "data": {
+        "name": "Milo",
+        "description": "Milo",
+        "brand": "",
+        "weight": 150,
+        "imageUrl": "",
+        "category": "",
+        "createdBy": "VABl73addleYNZqAHdn31HzoiEF2",
+        "createdAt": "2026-10-04T19:54:03.458Z",
+        "updatedAt": "2026-10-04T19:54:03.458Z"
+      }
+    },
+    {
+      "id": "7702084127330",
+      "path": "productCatalog/7702084127330",
+      "data": {
+        "name": "Harina Pan",
+        "description": "",
+        "brand": "",
+        "weight": 500,
+        "imageUrl": "",
+        "category": "",
+        "createdBy": "S6kGMhyAALcGKtiSV2k1ol51kbS2",
+        "createdAt": "2026-10-04T21:15:49.101Z",
+        "updatedAt": "2026-10-04T21:15:49.101Z"
+      }
+    },
+    {
+      "id": "7702084138046",
+      "path": "productCatalog/7702084138046",
+      "data": {
+        "name": "Harina pan",
+        "description": "Harina de maíz amarilla",
+        "brand": "",
+        "weight": 800,
+        "imageUrl": "",
+        "category": "",
+        "createdBy": "VABl73addleYNZqAHdn31HzoiEF2",
+        "createdAt": "2026-10-04T19:54:03.950Z",
+        "updatedAt": "2026-10-04T19:54:03.950Z"
+      }
+    },
+    {
+      "id": "7702535001530",
+      "path": "productCatalog/7702535001530",
+      "data": {
+        "name": "Coca-Cola",
+        "description": "Bebida cocacola",
+        "brand": "",
+        "weight": 2,
+        "imageUrl": "",
+        "category": "",
+        "createdBy": "VABl73addleYNZqAHdn31HzoiEF2",
+        "createdAt": "2026-10-04T19:54:04.461Z",
+        "updatedAt": "2026-10-04T19:54:04.461Z"
+      }
+    },
+    {
+      "id": "7702993053027",
+      "path": "productCatalog/7702993053027",
+      "data": {
+        "name": "Way Galletas",
+        "description": "Mecato Pola",
+        "brand": "",
+        "weight": 20,
+        "imageUrl": "",
+        "category": "",
+        "createdBy": "S6kGMhyAALcGKtiSV2k1ol51kbS2",
+        "createdAt": "2026-10-04T23:39:09.680Z",
+        "updatedAt": "2026-10-04T23:39:09.680Z"
+      }
+    },
+    {
+      "id": "7704269490369",
+      "path": "productCatalog/7704269490369",
+      "data": {
+        "name": "Mr Congelo",
+        "description": "Papas Francesas ARA",
+        "brand": "",
+        "weight": 500,
+        "imageUrl": "",
+        "category": "",
+        "createdBy": "VABl73addleYNZqAHdn31HzoiEF2",
+        "createdAt": "2026-10-04T19:54:04.978Z",
+        "updatedAt": "2026-10-04T19:54:04.978Z"
+      }
+    },
+    {
+      "id": "7707822758944",
+      "path": "productCatalog/7707822758944",
+      "data": {
+        "name": "Pilas Alkalina FUTURA",
+        "description": "Baterías AA",
+        "brand": "",
+        "weight": 0,
+        "imageUrl": "",
+        "category": "",
+        "createdBy": "VABl73addleYNZqAHdn31HzoiEF2",
+        "createdAt": "2026-10-04T19:54:05.449Z",
+        "updatedAt": "2026-10-04T19:54:05.449Z"
+      }
+    },
+    {
+      "id": "7709990460162",
+      "path": "productCatalog/7709990460162",
+      "data": {
+        "name": "Arepas",
+        "description": "Arepas de maíz precocidas",
+        "brand": "",
+        "weight": 680,
+        "imageUrl": "",
+        "category": "",
+        "createdBy": "VABl73addleYNZqAHdn31HzoiEF2",
+        "createdAt": "2026-10-04T19:54:05.980Z",
+        "updatedAt": "2026-10-04T19:54:05.980Z"
+      }
+    },
+    {
+      "id": "828018889086",
+      "path": "productCatalog/828018889086",
+      "data": {
+        "name": "Papel aluminio",
+        "description": "Papel aluminio",
+        "brand": "",
+        "weight": 0,
+        "imageUrl": "",
+        "category": "",
+        "createdBy": "VABl73addleYNZqAHdn31HzoiEF2",
+        "createdAt": "2026-10-04T19:54:06.476Z",
+        "updatedAt": "2026-10-04T19:54:06.476Z"
+      }
+    },
+    {
+      "id": "sandwichies-base",
+      "path": "productCatalog/sandwichies-base",
+      "data": {
+        "name": "Base (lechuga + cebolla)",
+        "description": "Ingrediente de Sandwichies. Unidad operativa inicial: porción.",
+        "category": "ingrediente",
+        "createdBy": "vn51aCf4O8bMNPndax72bODswDY2",
+        "createdAt": "2026-10-24T15:49:26.067Z",
+        "updatedAt": "2026-10-24T15:49:26.067Z"
+      }
+    },
+    {
+      "id": "sandwichies-chorizo",
+      "path": "productCatalog/sandwichies-chorizo",
+      "data": {
+        "name": "Chorizo Vela Valdecava",
+        "description": "Ingrediente de Sandwichies. Unidad operativa inicial: unidad.",
+        "category": "protein",
+        "createdBy": "vn51aCf4O8bMNPndax72bODswDY2",
+        "createdAt": "2026-10-24T15:49:26.067Z",
+        "updatedAt": "2026-10-24T15:49:26.067Z"
+      }
+    },
+    {
+      "id": "sandwichies-jamon-serrano",
+      "path": "productCatalog/sandwichies-jamon-serrano",
+      "data": {
+        "name": "Jamón serrano Valdecava",
+        "description": "Ingrediente de Sandwichies. Unidad operativa inicial: unidad.",
+        "category": "protein",
+        "createdBy": "vn51aCf4O8bMNPndax72bODswDY2",
+        "createdAt": "2026-10-24T15:49:26.067Z",
+        "updatedAt": "2026-10-24T15:49:26.067Z"
+      }
+    },
+    {
+      "id": "sandwichies-mozzarella",
+      "path": "productCatalog/sandwichies-mozzarella",
+      "data": {
+        "name": "Queso mozzarella incluido",
+        "description": "Ingrediente de Sandwichies. Unidad operativa inicial: unidad.",
+        "category": "ingrediente",
+        "createdBy": "vn51aCf4O8bMNPndax72bODswDY2",
+        "createdAt": "2026-10-24T15:49:26.067Z",
+        "updatedAt": "2026-10-24T15:49:26.067Z"
+      }
+    },
+    {
+      "id": "sandwichies-pavo-finas-hierbas",
+      "path": "productCatalog/sandwichies-pavo-finas-hierbas",
+      "data": {
+        "name": "Jamón de Pavo Finas Hierbas White Holland",
+        "description": "Ingrediente de Sandwichies. Unidad operativa inicial: unidad.",
+        "category": "protein",
+        "createdBy": "vn51aCf4O8bMNPndax72bODswDY2",
+        "createdAt": "2026-10-24T15:49:26.067Z",
+        "updatedAt": "2026-10-24T15:49:26.067Z"
+      }
+    },
+    {
+      "id": "sandwichies-pechuga-pavo",
+      "path": "productCatalog/sandwichies-pechuga-pavo",
+      "data": {
+        "name": "Jamón pechuga de pavo White Holland",
+        "description": "Ingrediente de Sandwichies. Unidad operativa inicial: unidad.",
+        "category": "protein",
+        "createdBy": "vn51aCf4O8bMNPndax72bODswDY2",
+        "createdAt": "2026-10-24T15:49:26.067Z",
+        "updatedAt": "2026-10-24T15:49:26.067Z"
+      }
+    },
+    {
+      "id": "sandwichies-pepperoni",
+      "path": "productCatalog/sandwichies-pepperoni",
+      "data": {
+        "name": "Pepperoni tajado Valdecava",
+        "description": "Ingrediente de Sandwichies. Unidad operativa inicial: unidad.",
+        "category": "protein",
+        "createdBy": "vn51aCf4O8bMNPndax72bODswDY2",
+        "createdAt": "2026-10-24T15:49:26.067Z",
+        "updatedAt": "2026-10-24T15:49:26.067Z"
+      }
+    },
+    {
+      "id": "sandwichies-pimenton-asado",
+      "path": "productCatalog/sandwichies-pimenton-asado",
+      "data": {
+        "name": "Pimentón asado",
+        "description": "Ingrediente de Sandwichies. Unidad operativa inicial: g.",
+        "category": "ingrediente",
+        "createdBy": "vn51aCf4O8bMNPndax72bODswDY2",
+        "createdAt": "2026-10-24T15:49:26.067Z",
+        "updatedAt": "2026-10-24T15:49:26.067Z"
+      }
+    },
+    {
+      "id": "sandwichies-prosciutto",
+      "path": "productCatalog/sandwichies-prosciutto",
+      "data": {
+        "name": "Prosciutto Valdecava",
+        "description": "Ingrediente de Sandwichies. Unidad operativa inicial: unidad.",
+        "category": "protein",
+        "createdBy": "vn51aCf4O8bMNPndax72bODswDY2",
+        "createdAt": "2026-10-24T15:49:26.067Z",
+        "updatedAt": "2026-10-24T15:49:26.067Z"
+      }
+    },
+    {
+      "id": "sandwichies-queso-tajado",
+      "path": "productCatalog/sandwichies-queso-tajado",
+      "data": {
+        "name": "Queso tajado Vita Latti",
+        "description": "Ingrediente de Sandwichies. Unidad operativa inicial: unidad.",
+        "category": "ingrediente",
+        "createdBy": "vn51aCf4O8bMNPndax72bODswDY2",
+        "createdAt": "2026-10-24T15:49:26.067Z",
+        "updatedAt": "2026-10-24T15:49:26.067Z"
+      }
+    },
+    {
+      "id": "sandwichies-salami",
+      "path": "productCatalog/sandwichies-salami",
+      "data": {
+        "name": "Chorizo Salami Valdecava",
+        "description": "Ingrediente de Sandwichies. Unidad operativa inicial: unidad.",
+        "category": "protein",
+        "createdBy": "vn51aCf4O8bMNPndax72bODswDY2",
+        "createdAt": "2026-10-24T15:49:26.067Z",
+        "updatedAt": "2026-10-24T15:49:26.067Z"
+      }
+    }
+  ]
+}

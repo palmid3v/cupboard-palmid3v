@@ -1,0 +1,31 @@
+{
+  "projectId": "cupboard-app-ce528",
+  "collection": "households/e68b4d69-ef73-4a21-913a-ee1ad3b8a14b/inventory",
+  "total": 2,
+  "documents": [
+    {
+      "id": "7700304912971",
+      "path": "households/e68b4d69-ef73-4a21-913a-ee1ad3b8a14b/inventory/7700304912971",
+      "data": {
+        "minStock": 3,
+        "notes": "",
+        "createdAt": "2026-10-04T22:07:37.290Z",
+        "portions": 6,
+        "expiryDate": "2027-02-01",
+        "updatedAt": "2026-10-19T04:36:59.627Z"
+      }
+    },
+    {
+      "id": "7702084127330",
+      "path": "households/e68b4d69-ef73-4a21-913a-ee1ad3b8a14b/inventory/7702084127330",
+      "data": {
+        "expiryDate": "2027-08-24",
+        "minStock": 5,
+        "notes": "",
+        "createdAt": "2026-10-04T22:04:46.843Z",
+        "portions": 1,
+        "updatedAt": "2026-10-05T08:18:55.636Z"
+      }
+    }
+  ]
+}

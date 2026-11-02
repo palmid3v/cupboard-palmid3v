@@ -1,0 +1,436 @@
+{
+  "projectId": "cupboard-app-ce528",
+  "collection": "households/e68b4d69-ef73-4a21-913a-ee1ad3b8a14b/movements",
+  "total": 33,
+  "documents": [
+    {
+      "id": "1Heat7EpIYDsVlrlTxSZ",
+      "path": "households/e68b4d69-ef73-4a21-913a-ee1ad3b8a14b/movements/1Heat7EpIYDsVlrlTxSZ",
+      "data": {
+        "productId": "7702084127330",
+        "type": "consume",
+        "quantity": 1,
+        "reason": "Consumo desde inventario",
+        "userId": "vn51aCf4O8bMNPndax72bODswDY2",
+        "createdAt": "2026-10-05T08:18:52.958Z",
+        "updatedAt": "2026-10-05T08:18:52.958Z"
+      }
+    },
+    {
+      "id": "1M2TsVhaOOE692cQ14Vj",
+      "path": "households/e68b4d69-ef73-4a21-913a-ee1ad3b8a14b/movements/1M2TsVhaOOE692cQ14Vj",
+      "data": {
+        "productId": "7702084127330",
+        "type": "consume",
+        "quantity": 1,
+        "reason": "Consumo desde inventario",
+        "userId": "vn51aCf4O8bMNPndax72bODswDY2",
+        "createdAt": "2026-10-05T08:18:53.220Z",
+        "updatedAt": "2026-10-05T08:18:53.220Z"
+      }
+    },
+    {
+      "id": "2ZQV5euYSVGsUUf3ls2u",
+      "path": "households/e68b4d69-ef73-4a21-913a-ee1ad3b8a14b/movements/2ZQV5euYSVGsUUf3ls2u",
+      "data": {
+        "productId": "7702084127330",
+        "type": "consume",
+        "quantity": 1,
+        "reason": "Consumo desde inventario",
+        "userId": "vn51aCf4O8bMNPndax72bODswDY2",
+        "createdAt": "2026-10-05T08:18:49.286Z",
+        "updatedAt": "2026-10-05T08:18:49.286Z"
+      }
+    },
+    {
+      "id": "3q9O8wDI3PdXw0DIBVdH",
+      "path": "households/e68b4d69-ef73-4a21-913a-ee1ad3b8a14b/movements/3q9O8wDI3PdXw0DIBVdH",
+      "data": {
+        "productId": "7702084127330",
+        "type": "add",
+        "quantity": 1,
+        "reason": "Entrada desde inventario",
+        "userId": "vn51aCf4O8bMNPndax72bODswDY2",
+        "createdAt": "2026-10-05T08:18:55.636Z",
+        "updatedAt": "2026-10-05T08:18:55.636Z"
+      }
+    },
+    {
+      "id": "5XtycId1I6NaDMjNPqmP",
+      "path": "households/e68b4d69-ef73-4a21-913a-ee1ad3b8a14b/movements/5XtycId1I6NaDMjNPqmP",
+      "data": {
+        "productId": "7702084127330",
+        "type": "add",
+        "quantity": 1,
+        "reason": "Entrada desde inventario",
+        "userId": "vn51aCf4O8bMNPndax72bODswDY2",
+        "createdAt": "2026-10-04T22:04:56.805Z",
+        "updatedAt": "2026-10-04T22:04:56.805Z"
+      }
+    },
+    {
+      "id": "7RIMpCNRoQzgB4iaKxYw",
+      "path": "households/e68b4d69-ef73-4a21-913a-ee1ad3b8a14b/movements/7RIMpCNRoQzgB4iaKxYw",
+      "data": {
+        "productId": "7702084127330",
+        "type": "consume",
+        "quantity": 1,
+        "reason": "Consumo desde inventario",
+        "userId": "vn51aCf4O8bMNPndax72bODswDY2",
+        "createdAt": "2026-10-05T08:18:51.267Z",
+        "updatedAt": "2026-10-05T08:18:51.267Z"
+      }
+    },
+    {
+      "id": "8t0RKvPI7gzxN5Ro11XW",
+      "path": "households/e68b4d69-ef73-4a21-913a-ee1ad3b8a14b/movements/8t0RKvPI7gzxN5Ro11XW",
+      "data": {
+        "productId": "7700304912971",
+        "type": "add",
+        "quantity": 1,
+        "reason": "Entrada desde inventario",
+        "userId": "vn51aCf4O8bMNPndax72bODswDY2",
+        "createdAt": "2026-10-05T08:17:55.504Z",
+        "updatedAt": "2026-10-05T08:17:55.504Z"
+      }
+    },
+    {
+      "id": "DByyId16n5FIzbEcsPTT",
+      "path": "households/e68b4d69-ef73-4a21-913a-ee1ad3b8a14b/movements/DByyId16n5FIzbEcsPTT",
+      "data": {
+        "productId": "7702084127330",
+        "type": "consume",
+        "quantity": 1,
+        "reason": "Consumo desde inventario",
+        "userId": "vn51aCf4O8bMNPndax72bODswDY2",
+        "createdAt": "2026-10-05T08:18:52.517Z",
+        "updatedAt": "2026-10-05T08:18:52.517Z"
+      }
+    },
+    {
+      "id": "EiaHZgf5dxx06uTbQPHb",
+      "path": "households/e68b4d69-ef73-4a21-913a-ee1ad3b8a14b/movements/EiaHZgf5dxx06uTbQPHb",
+      "data": {
+        "productId": "7700304912971",
+        "type": "add",
+        "quantity": 1,
+        "reason": "Entrada desde inventario",
+        "userId": "vn51aCf4O8bMNPndax72bODswDY2",
+        "createdAt": "2026-10-05T08:17:55.403Z",
+        "updatedAt": "2026-10-05T08:17:55.403Z"
+      }
+    },
+    {
+      "id": "GaNV0CiCHGl4UGfVNiUr",
+      "path": "households/e68b4d69-ef73-4a21-913a-ee1ad3b8a14b/movements/GaNV0CiCHGl4UGfVNiUr",
+      "data": {
+        "productId": "7702084127330",
+        "type": "consume",
+        "quantity": 1,
+        "reason": "Consumo desde inventario",
+        "userId": "vn51aCf4O8bMNPndax72bODswDY2",
+        "createdAt": "2026-10-05T08:18:53.742Z",
+        "updatedAt": "2026-10-05T08:18:53.742Z"
+      }
+    },
+    {
+      "id": "HAQYJ9mfkTRU7JBULz0D",
+      "path": "households/e68b4d69-ef73-4a21-913a-ee1ad3b8a14b/movements/HAQYJ9mfkTRU7JBULz0D",
+      "data": {
+        "productId": "7702084127330",
+        "type": "add",
+        "quantity": 1,
+        "reason": "Entrada desde inventario",
+        "userId": "vn51aCf4O8bMNPndax72bODswDY2",
+        "createdAt": "2026-10-05T08:17:55.127Z",
+        "updatedAt": "2026-10-05T08:17:55.127Z"
+      }
+    },
+    {
+      "id": "IwVwMvpucpn31oO107Ij",
+      "path": "households/e68b4d69-ef73-4a21-913a-ee1ad3b8a14b/movements/IwVwMvpucpn31oO107Ij",
+      "data": {
+        "productId": "7702084127330",
+        "type": "add",
+        "quantity": 1,
+        "reason": "Entrada desde inventario",
+        "userId": "vn51aCf4O8bMNPndax72bODswDY2",
+        "createdAt": "2026-10-05T08:17:55.320Z",
+        "updatedAt": "2026-10-05T08:17:55.320Z"
+      }
+    },
+    {
+      "id": "KCeve9pCnc33FvWCkMw6",
+      "path": "households/e68b4d69-ef73-4a21-913a-ee1ad3b8a14b/movements/KCeve9pCnc33FvWCkMw6",
+      "data": {
+        "productId": "7702084127330",
+        "type": "consume",
+        "quantity": 1,
+        "reason": "Consumo desde inventario",
+        "userId": "vn51aCf4O8bMNPndax72bODswDY2",
+        "createdAt": "2026-10-05T08:18:54.372Z",
+        "updatedAt": "2026-10-05T08:18:54.372Z"
+      }
+    },
+    {
+      "id": "NBlqjGFfho9aYFkB5dAH",
+      "path": "households/e68b4d69-ef73-4a21-913a-ee1ad3b8a14b/movements/NBlqjGFfho9aYFkB5dAH",
+      "data": {
+        "productId": "7702084127330",
+        "type": "add",
+        "quantity": 1,
+        "reason": "Entrada desde inventario",
+        "userId": "vn51aCf4O8bMNPndax72bODswDY2",
+        "createdAt": "2026-10-05T08:17:59.504Z",
+        "updatedAt": "2026-10-05T08:17:59.504Z"
+      }
+    },
+    {
+      "id": "OxV5INpJezPkWEEVFoKI",
+      "path": "households/e68b4d69-ef73-4a21-913a-ee1ad3b8a14b/movements/OxV5INpJezPkWEEVFoKI",
+      "data": {
+        "productId": "7702084127330",
+        "type": "add",
+        "quantity": 1,
+        "reason": "Entrada desde inventario",
+        "userId": "vn51aCf4O8bMNPndax72bODswDY2",
+        "createdAt": "2026-10-05T08:17:58.714Z",
+        "updatedAt": "2026-10-05T08:17:58.714Z"
+      }
+    },
+    {
+      "id": "PGaVOHRbk71O3o8RdHaf",
+      "path": "households/e68b4d69-ef73-4a21-913a-ee1ad3b8a14b/movements/PGaVOHRbk71O3o8RdHaf",
+      "data": {
+        "productId": "7700304912971",
+        "type": "add",
+        "quantity": 1,
+        "reason": "Entrada desde inventario",
+        "userId": "vn51aCf4O8bMNPndax72bODswDY2",
+        "createdAt": "2026-10-05T08:18:00.120Z",
+        "updatedAt": "2026-10-05T08:18:00.120Z"
+      }
+    },
+    {
+      "id": "UU491iS7lPo7DqrnzJlq",
+      "path": "households/e68b4d69-ef73-4a21-913a-ee1ad3b8a14b/movements/UU491iS7lPo7DqrnzJlq",
+      "data": {
+        "productId": "7700304912971",
+        "type": "consume",
+        "quantity": 1,
+        "reason": "Consumo desde inventario",
+        "userId": "vn51aCf4O8bMNPndax72bODswDY2",
+        "createdAt": "2026-10-19T04:35:08.892Z",
+        "updatedAt": "2026-10-19T04:35:08.892Z"
+      }
+    },
+    {
+      "id": "WIidvYROu3Uf3ylShBju",
+      "path": "households/e68b4d69-ef73-4a21-913a-ee1ad3b8a14b/movements/WIidvYROu3Uf3ylShBju",
+      "data": {
+        "productId": "7700304912971",
+        "type": "add",
+        "quantity": 1,
+        "reason": "Entrada desde inventario",
+        "userId": "vn51aCf4O8bMNPndax72bODswDY2",
+        "createdAt": "2026-10-05T08:18:00.891Z",
+        "updatedAt": "2026-10-05T08:18:00.891Z"
+      }
+    },
+    {
+      "id": "brpYeWFasZrpe0FyWKbU",
+      "path": "households/e68b4d69-ef73-4a21-913a-ee1ad3b8a14b/movements/brpYeWFasZrpe0FyWKbU",
+      "data": {
+        "productId": "7700304912971",
+        "type": "consume",
+        "quantity": 1,
+        "reason": "Consumo desde inventario",
+        "userId": "vn51aCf4O8bMNPndax72bODswDY2",
+        "createdAt": "2026-10-19T04:35:08.326Z",
+        "updatedAt": "2026-10-19T04:35:08.326Z"
+      }
+    },
+    {
+      "id": "ecKFRnIcaEbLmzivkm8a",
+      "path": "households/e68b4d69-ef73-4a21-913a-ee1ad3b8a14b/movements/ecKFRnIcaEbLmzivkm8a",
+      "data": {
+        "productId": "7700304912971",
+        "type": "add",
+        "quantity": 1,
+        "reason": "Entrada desde inventario",
+        "userId": "vn51aCf4O8bMNPndax72bODswDY2",
+        "createdAt": "2026-10-19T04:35:05.473Z",
+        "updatedAt": "2026-10-19T04:35:05.473Z"
+      }
+    },
+    {
+      "id": "fDxHzixBgilcb8uC1RBE",
+      "path": "households/e68b4d69-ef73-4a21-913a-ee1ad3b8a14b/movements/fDxHzixBgilcb8uC1RBE",
+      "data": {
+        "productId": "7702084127330",
+        "type": "add",
+        "quantity": 1,
+        "reason": "Entrada desde inventario",
+        "userId": "vn51aCf4O8bMNPndax72bODswDY2",
+        "createdAt": "2026-10-05T08:17:55.190Z",
+        "updatedAt": "2026-10-05T08:17:55.190Z"
+      }
+    },
+    {
+      "id": "fSgSFrblUcO0ILeOxh0x",
+      "path": "households/e68b4d69-ef73-4a21-913a-ee1ad3b8a14b/movements/fSgSFrblUcO0ILeOxh0x",
+      "data": {
+        "productId": "7702084127330",
+        "type": "add",
+        "quantity": 1,
+        "reason": "Entrada desde inventario",
+        "userId": "vn51aCf4O8bMNPndax72bODswDY2",
+        "createdAt": "2026-10-05T08:17:55.466Z",
+        "updatedAt": "2026-10-05T08:17:55.466Z"
+      }
+    },
+    {
+      "id": "fixDn9uHz0se01HUNkDN",
+      "path": "households/e68b4d69-ef73-4a21-913a-ee1ad3b8a14b/movements/fixDn9uHz0se01HUNkDN",
+      "data": {
+        "productId": "7702084127330",
+        "type": "add",
+        "quantity": 1,
+        "reason": "Entrada desde inventario",
+        "userId": "vn51aCf4O8bMNPndax72bODswDY2",
+        "createdAt": "2026-10-05T08:17:55.539Z",
+        "updatedAt": "2026-10-05T08:17:55.539Z"
+      }
+    },
+    {
+      "id": "g8toHSkr76CnN9l9RP3j",
+      "path": "households/e68b4d69-ef73-4a21-913a-ee1ad3b8a14b/movements/g8toHSkr76CnN9l9RP3j",
+      "data": {
+        "productId": "7700304912971",
+        "type": "add",
+        "quantity": 1,
+        "reason": "Entrada desde inventario",
+        "userId": "vn51aCf4O8bMNPndax72bODswDY2",
+        "createdAt": "2026-10-19T04:35:06.200Z",
+        "updatedAt": "2026-10-19T04:35:06.200Z"
+      }
+    },
+    {
+      "id": "hlFQlMbXvlIPRNPWGv5z",
+      "path": "households/e68b4d69-ef73-4a21-913a-ee1ad3b8a14b/movements/hlFQlMbXvlIPRNPWGv5z",
+      "data": {
+        "productId": "7702084127330",
+        "type": "add",
+        "quantity": 1,
+        "reason": "Agregado desde catálogo",
+        "userId": "vn51aCf4O8bMNPndax72bODswDY2",
+        "createdAt": "2026-10-04T22:04:46.843Z",
+        "updatedAt": "2026-10-04T22:04:46.843Z"
+      }
+    },
+    {
+      "id": "kMpyxNT6xRKWazGruYpg",
+      "path": "households/e68b4d69-ef73-4a21-913a-ee1ad3b8a14b/movements/kMpyxNT6xRKWazGruYpg",
+      "data": {
+        "productId": "7702084127330",
+        "type": "consume",
+        "quantity": 1,
+        "reason": "Consumo desde inventario",
+        "userId": "vn51aCf4O8bMNPndax72bODswDY2",
+        "createdAt": "2026-10-05T08:18:50.618Z",
+        "updatedAt": "2026-10-05T08:18:50.618Z"
+      }
+    },
+    {
+      "id": "kqnHIyYkcp8qN9IbZb4I",
+      "path": "households/e68b4d69-ef73-4a21-913a-ee1ad3b8a14b/movements/kqnHIyYkcp8qN9IbZb4I",
+      "data": {
+        "productId": "7700304912971",
+        "type": "add",
+        "quantity": 1,
+        "reason": "Entrada desde inventario",
+        "userId": "vn51aCf4O8bMNPndax72bODswDY2",
+        "createdAt": "2026-10-19T04:35:04.411Z",
+        "updatedAt": "2026-10-19T04:35:04.411Z"
+      }
+    },
+    {
+      "id": "nkILOw7HOXGEJTZiCe8O",
+      "path": "households/e68b4d69-ef73-4a21-913a-ee1ad3b8a14b/movements/nkILOw7HOXGEJTZiCe8O",
+      "data": {
+        "productId": "7700304912971",
+        "type": "add",
+        "quantity": 1,
+        "reason": "Entrada desde inventario",
+        "userId": "vn51aCf4O8bMNPndax72bODswDY2",
+        "createdAt": "2026-10-05T08:17:55.256Z",
+        "updatedAt": "2026-10-05T08:17:55.256Z"
+      }
+    },
+    {
+      "id": "oHerAZedZJgyQ4eDomp5",
+      "path": "households/e68b4d69-ef73-4a21-913a-ee1ad3b8a14b/movements/oHerAZedZJgyQ4eDomp5",
+      "data": {
+        "productId": "7700304912971",
+        "type": "consume",
+        "quantity": 1,
+        "reason": "Consumo desde inventario",
+        "userId": "vn51aCf4O8bMNPndax72bODswDY2",
+        "createdAt": "2026-10-19T04:35:07.861Z",
+        "updatedAt": "2026-10-19T04:35:07.861Z"
+      }
+    },
+    {
+      "id": "qSaCbzV3ucIqyyZYOk5s",
+      "path": "households/e68b4d69-ef73-4a21-913a-ee1ad3b8a14b/movements/qSaCbzV3ucIqyyZYOk5s",
+      "data": {
+        "productId": "7700304912971",
+        "type": "consume",
+        "quantity": 1,
+        "reason": "Consumo desde inventario",
+        "userId": "vn51aCf4O8bMNPndax72bODswDY2",
+        "createdAt": "2026-10-19T04:35:09.389Z",
+        "updatedAt": "2026-10-19T04:35:09.389Z"
+      }
+    },
+    {
+      "id": "s3n3ll80p3lixXDXQyd3",
+      "path": "households/e68b4d69-ef73-4a21-913a-ee1ad3b8a14b/movements/s3n3ll80p3lixXDXQyd3",
+      "data": {
+        "productId": "7700304912971",
+        "type": "add",
+        "quantity": 1,
+        "reason": "Registro de producto",
+        "userId": "vn51aCf4O8bMNPndax72bODswDY2",
+        "createdAt": "2026-10-04T22:07:37.290Z",
+        "updatedAt": "2026-10-04T22:07:37.290Z"
+      }
+    },
+    {
+      "id": "tDtK9x1Bqd8Rt37QCSb4",
+      "path": "households/e68b4d69-ef73-4a21-913a-ee1ad3b8a14b/movements/tDtK9x1Bqd8Rt37QCSb4",
+      "data": {
+        "productId": "7702084127330",
+        "type": "consume",
+        "quantity": 1,
+        "reason": "Consumo desde inventario",
+        "userId": "vn51aCf4O8bMNPndax72bODswDY2",
+        "createdAt": "2026-10-05T08:18:51.967Z",
+        "updatedAt": "2026-10-05T08:18:51.967Z"
+      }
+    },
+    {
+      "id": "vRHp2BfFzpoXThBFCjw8",
+      "path": "households/e68b4d69-ef73-4a21-913a-ee1ad3b8a14b/movements/vRHp2BfFzpoXThBFCjw8",
+      "data": {
+        "productId": "7700304912971",
+        "type": "add",
+        "quantity": 1,
+        "reason": "Entrada desde inventario",
+        "userId": "vn51aCf4O8bMNPndax72bODswDY2",
+        "createdAt": "2026-10-19T04:35:06.856Z",
+        "updatedAt": "2026-10-19T04:35:06.856Z"
+      }
+    }
+  ]
+}
