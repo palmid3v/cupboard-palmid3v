@@ -83,9 +83,10 @@ export async function saveProduct(barcode, data = {}, movement = null, workspace
   if (!normalizedBarcode) throw new Error("BARCODE_REQUIRED");
 
   const existingCatalog = await getCatalogProduct(normalizedBarcode);
+  const effectiveWorkspaceId = existingCatalog?.workspaceId || workspaceId;
   const catalog = existingCatalog
     ? await updateCatalogProduct(existingCatalog.id, data)
-    : await createCatalogProductIfMissing(normalizedBarcode, { ...data, workspaceId });
+    : await createCatalogProductIfMissing(normalizedBarcode, { ...data, workspaceId: effectiveWorkspaceId });
 
   catalogCache.delete(normalizedBarcode);
   catalogCache.set(catalog.id, catalog);
@@ -100,10 +101,10 @@ export async function saveProduct(barcode, data = {}, movement = null, workspace
       notes: data.notes,
     },
     movement,
-    workspaceId,
+    effectiveWorkspaceId,
   );
 
-  return { ...catalog, portions: Number(data.portions) || 0, workspaceId };
+  return { ...catalog, portions: Number(data.portions) || 0, workspaceId: effectiveWorkspaceId };
 }
 
 export async function getAllProducts(workspaceId) {
