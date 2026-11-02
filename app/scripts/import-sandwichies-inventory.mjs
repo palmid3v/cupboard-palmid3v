@@ -63,11 +63,20 @@ async function main() {
   }
 
   const manifest = JSON.parse(await readFile(new URL("../data/product-identity-map.v2.json", import.meta.url), "utf8"));
+  if (manifest.sourceProject !== cupboardProjectId || manifest.householdId !== cupboardHouseholdId) {
+    throw new Error("CUPBOARD_PROJECT_ID o CUPBOARD_HOUSEHOLD_ID no coincide con la extracción validada de identidades.");
+  }
   const defaults = Object.fromEntries(manifest.records
     .filter((item) => item.ingredientId)
     .map((item) => [item.ingredientId, item.productId]));
   const mapping = parseMapping(rawMapping, defaults);
-  const mappedIds = Object.values(mapping);
+  const requiredIngredientIds = Object.keys(defaults);
+  const missingMappings = requiredIngredientIds.filter((id) => !mapping[id]);
+  const invalidMappings = requiredIngredientIds.filter((id) => !/^N-[0-9]{7}$/.test(mapping[id] || ""));
+  const mappedIds = requiredIngredientIds.map((id) => mapping[id]).filter(Boolean);
+  if (missingMappings.length || invalidMappings.length) {
+    throw new Error("Mapeo incompleto o inválido. Faltantes: " + missingMappings.join(", ") + ". IDs N- inválidos: " + invalidMappings.join(", ") + ".");
+  }
   if (new Set(mappedIds).size !== mappedIds.length) {
     throw new Error("CUPBOARD_INGREDIENT_MAP_JSON asigna más de un ingrediente al mismo producto.");
   }
@@ -114,6 +123,10 @@ async function main() {
     const ingredientId = String(balance.ingredientId || balanceDoc.id).trim();
     const productId = destinationProductId(ingredientId, mapping);
     const quantity = Number(balance.quantity);
+    if (!productId) {
+      balanceStats.invalid.push({ ingredientId, reason: "ingrediente sin producto N- asociado" });
+      continue;
+    }
     const destinationRef = cupboardDb.doc(destinationCollection + "/inventory/" + productId);
     const catalogRef = cupboardDb.doc("productCatalog/" + productId);
 
@@ -174,6 +187,10 @@ async function main() {
     }
 
     const productId = destinationProductId(ingredientId, mapping);
+    if (!productId) {
+      movementStats.invalid.push({ movementId: movementDoc.id, ingredientId, reason: "ingrediente sin producto N- asociado" });
+      continue;
+    }
     const deltaValue = Number(movement.quantityDelta);
     const fallbackQuantity = Number(movement.quantity);
     const delta = Number.isFinite(deltaValue) && deltaValue !== 0
