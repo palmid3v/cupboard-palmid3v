@@ -159,6 +159,13 @@ service cloud.firestore {
           'weight',
           'imageUrl',
           'category',
+          'barcode',
+          'workspaceId',
+          'ingredientId',
+          'unit',
+          'identityVersion',
+          'legacyIds',
+          'sourceApp',
           'createdBy',
           'createdAt',
           'updatedAt'
@@ -174,6 +181,10 @@ service cloud.firestore {
           'weight',
           'imageUrl',
           'category',
+          'barcode',
+          'workspaceId',
+          'ingredientId',
+          'unit',
           'updatedAt'
         ]);
 

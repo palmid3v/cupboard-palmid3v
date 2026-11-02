@@ -1,0 +1,359 @@
+{
+  "version": 2,
+  "sourceProject": "cupboard-app-ce528",
+  "records": [
+    {
+      "legacyId": "75916565",
+      "productId": "HD-1000001",
+      "workspaceId": "home",
+      "barcode": "75916565",
+      "ingredientId": null,
+      "unit": null
+    },
+    {
+      "legacyId": "7700304032389",
+      "productId": "HD-1000002",
+      "workspaceId": "home",
+      "barcode": "7700304032389",
+      "ingredientId": null,
+      "unit": null
+    },
+    {
+      "legacyId": "7700304083527",
+      "productId": "HD-1000003",
+      "workspaceId": "home",
+      "barcode": "7700304083527",
+      "ingredientId": null,
+      "unit": null
+    },
+    {
+      "legacyId": "7700304091546",
+      "productId": "HD-1000004",
+      "workspaceId": "home",
+      "barcode": "7700304091546",
+      "ingredientId": null,
+      "unit": null
+    },
+    {
+      "legacyId": "7700304110445",
+      "productId": "HD-1000005",
+      "workspaceId": "home",
+      "barcode": "7700304110445",
+      "ingredientId": null,
+      "unit": null
+    },
+    {
+      "legacyId": "7700304229604",
+      "productId": "HD-1000006",
+      "workspaceId": "home",
+      "barcode": "7700304229604",
+      "ingredientId": null,
+      "unit": null
+    },
+    {
+      "legacyId": "7700304275793",
+      "productId": "HD-1000007",
+      "workspaceId": "home",
+      "barcode": "7700304275793",
+      "ingredientId": null,
+      "unit": null
+    },
+    {
+      "legacyId": "7700304322046",
+      "productId": "HD-1000008",
+      "workspaceId": "home",
+      "barcode": "7700304322046",
+      "ingredientId": null,
+      "unit": null
+    },
+    {
+      "legacyId": "7700304340934",
+      "productId": "HD-1000009",
+      "workspaceId": "home",
+      "barcode": "7700304340934",
+      "ingredientId": null,
+      "unit": null
+    },
+    {
+      "legacyId": "7700304387458",
+      "productId": "HD-1000010",
+      "workspaceId": "home",
+      "barcode": "7700304387458",
+      "ingredientId": null,
+      "unit": null
+    },
+    {
+      "legacyId": "7700304452071",
+      "productId": "HD-1000011",
+      "workspaceId": "home",
+      "barcode": "7700304452071",
+      "ingredientId": null,
+      "unit": null
+    },
+    {
+      "legacyId": "7700304515660",
+      "productId": "HD-1000012",
+      "workspaceId": "home",
+      "barcode": "7700304515660",
+      "ingredientId": null,
+      "unit": null
+    },
+    {
+      "legacyId": "7700304549061",
+      "productId": "HD-1000013",
+      "workspaceId": "home",
+      "barcode": "7700304549061",
+      "ingredientId": null,
+      "unit": null
+    },
+    {
+      "legacyId": "7700304570119",
+      "productId": "HD-1000014",
+      "workspaceId": "home",
+      "barcode": "7700304570119",
+      "ingredientId": null,
+      "unit": null
+    },
+    {
+      "legacyId": "7700304573721",
+      "productId": "HD-1000015",
+      "workspaceId": "home",
+      "barcode": "7700304573721",
+      "ingredientId": null,
+      "unit": null
+    },
+    {
+      "legacyId": "7700304640843",
+      "productId": "HD-1000016",
+      "workspaceId": "home",
+      "barcode": "7700304640843",
+      "ingredientId": null,
+      "unit": null
+    },
+    {
+      "legacyId": "7700304714643",
+      "productId": "HD-1000017",
+      "workspaceId": "home",
+      "barcode": "7700304714643",
+      "ingredientId": null,
+      "unit": null
+    },
+    {
+      "legacyId": "7700304751891",
+      "productId": "HD-1000018",
+      "workspaceId": "home",
+      "barcode": "7700304751891",
+      "ingredientId": null,
+      "unit": null
+    },
+    {
+      "legacyId": "7700304797981",
+      "productId": "HD-1000019",
+      "workspaceId": "home",
+      "barcode": "7700304797981",
+      "ingredientId": null,
+      "unit": null
+    },
+    {
+      "legacyId": "7700304839186",
+      "productId": "HD-1000020",
+      "workspaceId": "home",
+      "barcode": "7700304839186",
+      "ingredientId": null,
+      "unit": null
+    },
+    {
+      "legacyId": "7700304865635",
+      "productId": "HD-1000021",
+      "workspaceId": "home",
+      "barcode": "7700304865635",
+      "ingredientId": null,
+      "unit": null
+    },
+    {
+      "legacyId": "7700304912971",
+      "productId": "HD-1000022",
+      "workspaceId": "home",
+      "barcode": "7700304912971",
+      "ingredientId": null,
+      "unit": null
+    },
+    {
+      "legacyId": "7700304970872",
+      "productId": "HD-1000023",
+      "workspaceId": "home",
+      "barcode": "7700304970872",
+      "ingredientId": null,
+      "unit": null
+    },
+    {
+      "legacyId": "7702005917712",
+      "productId": "HD-1000024",
+      "workspaceId": "home",
+      "barcode": "7702005917712",
+      "ingredientId": null,
+      "unit": null
+    },
+    {
+      "legacyId": "7702024537182",
+      "productId": "HD-1000025",
+      "workspaceId": "home",
+      "barcode": "7702024537182",
+      "ingredientId": null,
+      "unit": null
+    },
+    {
+      "legacyId": "7702084127330",
+      "productId": "HD-1000026",
+      "workspaceId": "home",
+      "barcode": "7702084127330",
+      "ingredientId": null,
+      "unit": null
+    },
+    {
+      "legacyId": "7702084138046",
+      "productId": "HD-1000027",
+      "workspaceId": "home",
+      "barcode": "7702084138046",
+      "ingredientId": null,
+      "unit": null
+    },
+    {
+      "legacyId": "7702535001530",
+      "productId": "HD-1000028",
+      "workspaceId": "home",
+      "barcode": "7702535001530",
+      "ingredientId": null,
+      "unit": null
+    },
+    {
+      "legacyId": "7702993053027",
+      "productId": "HD-1000029",
+      "workspaceId": "home",
+      "barcode": "7702993053027",
+      "ingredientId": null,
+      "unit": null
+    },
+    {
+      "legacyId": "7704269490369",
+      "productId": "HD-1000030",
+      "workspaceId": "home",
+      "barcode": "7704269490369",
+      "ingredientId": null,
+      "unit": null
+    },
+    {
+      "legacyId": "7707822758944",
+      "productId": "HD-1000031",
+      "workspaceId": "home",
+      "barcode": "7707822758944",
+      "ingredientId": null,
+      "unit": null
+    },
+    {
+      "legacyId": "7709990460162",
+      "productId": "HD-1000032",
+      "workspaceId": "home",
+      "barcode": "7709990460162",
+      "ingredientId": null,
+      "unit": null
+    },
+    {
+      "legacyId": "828018889086",
+      "productId": "HD-1000033",
+      "workspaceId": "home",
+      "barcode": "828018889086",
+      "ingredientId": null,
+      "unit": null
+    },
+    {
+      "legacyId": "sandwichies-base",
+      "productId": "N-2000001",
+      "workspaceId": "sandwichies",
+      "barcode": null,
+      "ingredientId": "base",
+      "unit": "porción"
+    },
+    {
+      "legacyId": "sandwichies-chorizo",
+      "productId": "N-2000002",
+      "workspaceId": "sandwichies",
+      "barcode": null,
+      "ingredientId": "chorizo",
+      "unit": "unidad"
+    },
+    {
+      "legacyId": "sandwichies-jamon-serrano",
+      "productId": "N-2000003",
+      "workspaceId": "sandwichies",
+      "barcode": null,
+      "ingredientId": "jamon-serrano",
+      "unit": "unidad"
+    },
+    {
+      "legacyId": "sandwichies-mozzarella",
+      "productId": "N-2000004",
+      "workspaceId": "sandwichies",
+      "barcode": null,
+      "ingredientId": "mozzarella",
+      "unit": "unidad"
+    },
+    {
+      "legacyId": "sandwichies-pavo-finas-hierbas",
+      "productId": "N-2000005",
+      "workspaceId": "sandwichies",
+      "barcode": null,
+      "ingredientId": "pavo-finas-hierbas",
+      "unit": "unidad"
+    },
+    {
+      "legacyId": "sandwichies-pechuga-pavo",
+      "productId": "N-2000006",
+      "workspaceId": "sandwichies",
+      "barcode": null,
+      "ingredientId": "pechuga-pavo",
+      "unit": "unidad"
+    },
+    {
+      "legacyId": "sandwichies-pepperoni",
+      "productId": "N-2000007",
+      "workspaceId": "sandwichies",
+      "barcode": null,
+      "ingredientId": "pepperoni",
+      "unit": "unidad"
+    },
+    {
+      "legacyId": "sandwichies-pimenton-asado",
+      "productId": "N-2000008",
+      "workspaceId": "sandwichies",
+      "barcode": null,
+      "ingredientId": "pimenton-asado",
+      "unit": "g"
+    },
+    {
+      "legacyId": "sandwichies-prosciutto",
+      "productId": "N-2000009",
+      "workspaceId": "sandwichies",
+      "barcode": null,
+      "ingredientId": "prosciutto",
+      "unit": "unidad"
+    },
+    {
+      "legacyId": "sandwichies-queso-tajado",
+      "productId": "N-2000010",
+      "workspaceId": "sandwichies",
+      "barcode": null,
+      "ingredientId": "queso-tajado",
+      "unit": "unidad"
+    },
+    {
+      "legacyId": "sandwichies-salami",
+      "productId": "N-2000011",
+      "workspaceId": "sandwichies",
+      "barcode": null,
+      "ingredientId": "salami",
+      "unit": "unidad"
+    }
+  ],
+  "householdId": "e68b4d69-ef73-4a21-913a-ee1ad3b8a14b"
+}
