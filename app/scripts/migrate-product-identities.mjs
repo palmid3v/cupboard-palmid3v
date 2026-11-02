@@ -27,6 +27,8 @@ async function main() {
   assert(projectId && householdId, "Define CUPBOARD_PROJECT_ID y CUPBOARD_HOUSEHOLD_ID en app/.env.");
   assert(!householdId.includes("/"), "CUPBOARD_HOUSEHOLD_ID no puede contener '/'.");
   const manifest = JSON.parse(await readFile(manifestUrl, "utf8"));
+  assert(manifest.householdId === householdId, "CUPBOARD_HOUSEHOLD_ID no coincide con el hogar de la extracción: " + manifest.householdId);
+  assert(manifest.sourceProject === projectId, "CUPBOARD_PROJECT_ID no coincide con el proyecto de la extracción: " + manifest.sourceProject);
   const records = manifest.records;
   assert(records.length === 44, "El manifiesto debe contener los 44 productos extraídos.");
   assert(new Set(records.map((item) => item.legacyId)).size === records.length, "Hay IDs legacy duplicados.");
