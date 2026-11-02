@@ -73,3 +73,7 @@ La primera orden solo presenta el plan. Revisa cantidades, asociaciones y regist
 ## Espacios de inventario
 
 El selector de espacio sigue disponible para herramientas específicas. La vista de inventario del administrador reúne Hogar y Negocio · Sandwichies, pero las cantidades y movimientos se mantienen separados. El catálogo de identidad es compartido. Sandwichies conserva su aplicación y refleja el inventario comercial de Cupboard mediante una integración servidor-a-servidor; las existencias no se deben editar en una segunda fuente de verdad.
+
+## PALMI-D3V Connected Workspace
+
+Cupboard runs alongside DayFlow, Cupboard, Sandwichies and Financial-D3v through [PALMI-D3V Connected Workspace](https://github.com/palmid3v/PALMI-D3V-Connected-Workspace). For shared runtime ports, cross-project ownership, implementation status, technology map, safety constraints and AI continuation instructions, see the [ecosystem AI handoff](https://github.com/palmid3v/PALMI-D3V-Connected-Workspace/blob/main/AI-HANDOFF-2026-11-01.md).
