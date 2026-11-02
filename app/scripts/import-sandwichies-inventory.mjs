@@ -1,6 +1,7 @@
 import { existsSync } from "node:fs";
 import { applicationDefault, getApps, initializeApp } from "firebase-admin/app";
 import { FieldValue, getFirestore } from "firebase-admin/firestore";
+import { CATALOG } from "../shared/catalog.js";
 
 if (existsSync(".env")) process.loadEnvFile(".env");
 
@@ -18,12 +19,15 @@ function parseMapping(raw) {
     throw new Error("CUPBOARD_INGREDIENT_MAP_JSON debe ser un objeto JSON.");
   }
 
-  return Object.fromEntries(Object.entries(parsed).map(([ingredientId, productId]) => {
+  const defaults = Object.fromEntries(CATALOG.ingredients
+    .filter((ingredient) => ingredient.active !== false && ingredient.cupboardProductId)
+    .map((ingredient) => [ingredient.id, ingredient.cupboardProductId]));
+  return { ...defaults, ...Object.fromEntries(Object.entries(parsed).map(([ingredientId, productId]) => {
     if (!ingredientId.trim() || typeof productId !== "string" || !productId.trim() || productId.includes("/")) {
       throw new Error("Cada asociación debe contener IDs no vacíos y sin '/'.");
     }
     return [ingredientId.trim(), productId.trim()];
-  }));
+  })) };
 }
 
 function safeId(value) {
@@ -31,7 +35,7 @@ function safeId(value) {
 }
 
 function destinationProductId(ingredientId, mapping) {
-  return mapping[ingredientId] || "sandwichies-" + ingredientId;
+  return mapping[ingredientId] || CATALOG.ingredients.find((item) => item.id === ingredientId)?.cupboardProductId || "";
 }
 
 function normalizeMovementType(sourceMovement, delta) {
