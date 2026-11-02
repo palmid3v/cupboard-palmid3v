@@ -60,11 +60,19 @@ async function main() {
   ]);
 
   const catalogByLegacy = new Map(records.map((item, index) => [item.legacyId, catalogSnapshots[index]]));
-  const stockByLegacy = new Map([...homeStocks.docs, ...businessStocks.docs].map((doc) => [doc.id, doc]));
+  const homeStockByLegacy = new Map(homeStocks.docs.map((doc) => [doc.id, doc]));
+  const businessStockByLegacy = new Map(businessStocks.docs.map((doc) => [doc.id, doc]));
   const operations = [];
   const stats = {
     catalog: { expected: records.length, present: 0, create: 0, aliases: 0 },
-    inventory: { existingHome: homeStocks.size, existingBusiness: businessStocks.size, create: 0, rekey: 0 },
+    inventory: {
+      existingHome: homeStocks.size,
+      existingBusiness: businessStocks.size,
+      create: 0,
+      rekey: 0,
+      homeProductsWithSourceStock: 0,
+      businessProductsWithSourceStock: 0,
+    },
     movements: { home: homeHistory.size, business: businessHistory.size, relink: 0 },
   };
 
@@ -94,11 +102,23 @@ async function main() {
       stats.catalog.present += 1;
     }
 
-    const sourceStock = stockByLegacy.get(item.legacyId);
+    const expectedSourceStocks = item.workspaceId === "sandwichies"
+      ? businessStockByLegacy
+      : homeStockByLegacy;
+    const unexpectedSourceStocks = item.workspaceId === "sandwichies"
+      ? homeStockByLegacy
+      : businessStockByLegacy;
+    assert(!unexpectedSourceStocks.has(item.legacyId),
+      "El producto " + item.legacyId + " tiene existencias en el espacio incorrecto; requiere conciliación manual.");
+    const sourceStock = expectedSourceStocks.get(item.legacyId);
     const destinationCollection = item.workspaceId === "sandwichies" ? businessInventory : homeInventory;
     const destinationRef = destinationCollection.doc(item.productId);
     const destination = await destinationRef.get();
     assert(!sourceStock || !destination.exists, "Conflicto: existen simultáneamente inventario legacy y nuevo para " + item.legacyId);
+    if (sourceStock) {
+      if (item.workspaceId === "sandwichies") stats.inventory.businessProductsWithSourceStock += 1;
+      else stats.inventory.homeProductsWithSourceStock += 1;
+    }
     const sourceData = sourceStock?.data() || {};
     const inventoryData = {
       portions: sourceStock ? Math.max(0, Number(sourceData.portions) || 0) : 0,
