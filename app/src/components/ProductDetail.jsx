@@ -197,7 +197,8 @@ export default function ProductDetail({
               {[
                 ["Inventario", product.workspaceId === "sandwichies" ? "Sandwichies" : "Cupboard", "🏷️"],
                 ["Peso", product.weight ? `${product.weight} g` : "Sin registrar", "⚖️"],
-                ["Código", product.id || "—", "🏷️"],
+                ["Código de barras", product.barcode || "Sin código", "🏷️"],
+                ["ID Cupboard", product.id || "—", "🆔"],
                 ["Caducidad", formatExpiry(product.expiryDate), "📅"],
                 ["Stock mínimo", `${minStock} ${unit}`, "📦"],
               ].map(([label, value, icon]) => (
