@@ -161,7 +161,7 @@ test("admin inventory view combines workspaces and keeps destination explicit", 
   assert.match(app, /const canManageProducts = userRole === "admin"/);
   assert.match(app, /targetWorkspaceId/);
   assert.match(hook, /\["home", "sandwichies"\]/);
-  assert.match(products, /saveProduct\(barcode, data = \{\}, movement = null, workspaceId\)/);
+  assert.match(products, /saveProduct\(barcode, data = \{\}, movement = null, workspaceId = "home"\)/);
   assert.match(products, /updatePortions\(barcode, newPortions, movement = null, workspaceId\)/);
   assert.match(inventoryView, /showWorkspaceFilter/);
   assert.match(inventoryView, /item\.workspaceId === "sandwichies"/);
@@ -172,6 +172,7 @@ test("settings contracts remain local and bounded", async () => {
   const source = await read("../src/hooks/useCupboardSettings.js");
   const panel = await read("../src/components/SettingsPanel.jsx");
   const app = await read("../src/App.jsx");
+  const themeCatalog = await read("../src/theme-engine/themes.js");
 
   assert.match(source, /cupboard\.settings/);
   assert.match(source, /minStockDefault/);
@@ -181,7 +182,8 @@ test("settings contracts remain local and bounded", async () => {
 
   assert.match(panel, /auth\.currentUser/);
   assert.match(panel, /logout/);
-  assert.match(panel, /Cupboard Dark/);
+  assert.match(panel, /themes\.map/);
+  assert.match(themeCatalog, /name: .Cupboard./);
   assert.match(panel, /v\{APP_VERSION\}/);
 
   assert.match(app, /useCupboardSettings/);
