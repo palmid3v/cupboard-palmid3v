@@ -68,5 +68,5 @@ export function getScannerErrorState(error = {}) {
 export function movementIsAtomic(source) {
   return source.includes("writeBatch") &&
     source.includes("batch.commit()") &&
-    source.includes("movementRef()");
+    source.includes("movementRef(workspaceId)");
 }
