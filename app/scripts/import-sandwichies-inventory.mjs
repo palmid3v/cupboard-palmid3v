@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs";
+import { readFile } from "node:fs/promises";
 import { applicationDefault, getApps, initializeApp } from "firebase-admin/app";
 import { FieldValue, getFirestore } from "firebase-admin/firestore";
-import { CATALOG } from "../shared/catalog.js";
 
 if (existsSync(".env")) process.loadEnvFile(".env");
 
@@ -12,16 +12,13 @@ const rawMapping = String(process.env.CUPBOARD_INGREDIENT_MAP_JSON || "").trim()
 const applyChanges = process.argv.includes("--apply");
 const batchLimit = 400;
 
-function parseMapping(raw) {
-  if (!raw) return {};
+function parseMapping(raw, defaults = {}) {
+  if (!raw) return { ...defaults };
   const parsed = JSON.parse(raw);
   if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
     throw new Error("CUPBOARD_INGREDIENT_MAP_JSON debe ser un objeto JSON.");
   }
 
-  const defaults = Object.fromEntries(CATALOG.ingredients
-    .filter((ingredient) => ingredient.active !== false && ingredient.cupboardProductId)
-    .map((ingredient) => [ingredient.id, ingredient.cupboardProductId]));
   return { ...defaults, ...Object.fromEntries(Object.entries(parsed).map(([ingredientId, productId]) => {
     if (!ingredientId.trim() || typeof productId !== "string" || !productId.trim() || productId.includes("/")) {
       throw new Error("Cada asociación debe contener IDs no vacíos y sin '/'.");
@@ -35,7 +32,7 @@ function safeId(value) {
 }
 
 function destinationProductId(ingredientId, mapping) {
-  return mapping[ingredientId] || CATALOG.ingredients.find((item) => item.id === ingredientId)?.cupboardProductId || "";
+  return mapping[ingredientId] || "";
 }
 
 function normalizeMovementType(sourceMovement, delta) {
@@ -65,7 +62,11 @@ async function main() {
     throw new Error("CUPBOARD_HOUSEHOLD_ID no puede contener '/'.");
   }
 
-  const mapping = parseMapping(rawMapping);
+  const manifest = JSON.parse(await readFile(new URL("../data/product-identity-map.v2.json", import.meta.url), "utf8"));
+  const defaults = Object.fromEntries(manifest.records
+    .filter((item) => item.ingredientId)
+    .map((item) => [item.ingredientId, item.productId]));
+  const mapping = parseMapping(rawMapping, defaults);
   const mappedIds = Object.values(mapping);
   if (new Set(mappedIds).size !== mappedIds.length) {
     throw new Error("CUPBOARD_INGREDIENT_MAP_JSON asigna más de un ingrediente al mismo producto.");
