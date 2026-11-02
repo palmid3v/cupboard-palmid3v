@@ -58,7 +58,7 @@ function normalizeInventory(id, data = {}) {
  * Final household inventory boundary.
  *
  * This collection stores household-specific stock state only.
- * Product identity belongs to productCatalog/{barcode}.
+ * Product identity belongs to productCatalog/{productId}; barcode is a separate attribute.
  */
 export async function getInventoryProduct(barcode, workspaceId = getActiveWorkspaceId()) {
   const normalizedBarcode = String(barcode || "").trim();

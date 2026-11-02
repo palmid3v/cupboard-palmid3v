@@ -70,6 +70,26 @@ npm run cupboard:inventory-import -- --apply
 
 La primera orden solo presenta el plan. Revisa cantidades, asociaciones y registros omitidos antes de ejecutar la segunda. Usa Application Default Credentials con permisos de lectura en Sandwichies y escritura en Cupboard; nunca guardes claves de servicio en Git.
 
+## Identidad única de productos (v2)
+
+El catálogo `productCatalog` es la fuente central de identidad para Hogar y Negocio · Sandwichies. Un producto tiene un solo ID interno; el código de barras es un atributo independiente y puede estar ausente.
+
+- Hogar: `HD-#######`.
+- Negocio · Sandwichies: `N-#######`.
+- Los ingredientes de Sandwichies no son una clase de producto diferente: son productos del catálogo central cuyo `ingredientId` conserva la referencia semántica usada por recetas y pedidos.
+- Las existencias y movimientos permanecen separados por espacio: `households/{householdId}/inventory` y `households/{householdId}/workspaces/sandwichies/inventory`.
+- Los IDs anteriores se conservan en `legacyIds`; los documentos antiguos de catálogo permanecen como alias con `migratedTo`. Los movimientos conservan su ID y guardan `legacyProductId` al actualizar su referencia.
+- Los productos sin saldo registrado se inicializan con cero; nunca se derivan existencias de datos de receta, compras o catálogo.
+
+La migración usa el manifiesto validado contra la extracción de 44 productos y el hogar exportado. Configura `CUPBOARD_PROJECT_ID=cupboard-app-ce528` y `CUPBOARD_HOUSEHOLD_ID=e68b4d69-ef73-4a21-913a-ee1ad3b8a14b` en `app/.env`, autentica Application Default Credentials con permisos de lectura/escritura y ejecuta desde `app/`:
+
+```powershell
+npm run cupboard:migrate-identities
+npm run cupboard:migrate-identities -- --apply
+```
+
+La primera ejecución valida y presenta el plan sin escribir. La segunda aplica la migración de forma idempotente. El script no despliega reglas ni servicios. Antes de ejecutarlo, conserva una copia de seguridad de Firestore. Después verifica los 44 documentos canónicos, los 44 saldos de espacio, las 33 referencias de movimientos y los alias legacy. Las reglas actualizadas están en `firestore.rules`; el propietario debe desplegarlas manualmente.
+
 ## Espacios de inventario
 
 El selector de espacio sigue disponible para herramientas específicas. La vista de inventario del administrador reúne Hogar y Negocio · Sandwichies, pero las cantidades y movimientos se mantienen separados. El catálogo de identidad es compartido. Sandwichies conserva su aplicación y refleja el inventario comercial de Cupboard mediante una integración servidor-a-servidor; las existencias no se deben editar en una segunda fuente de verdad.
