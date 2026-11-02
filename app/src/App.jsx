@@ -362,6 +362,7 @@ userId: auth.currentUser?.uid || null,
       });
     } else if (result.source === "catalog") {
       const product = result.product;
+      setTargetWorkspaceId(product.workspaceId || targetWorkspaceId);
       setIsEditingExistingProduct(false);
       setStatus("catalog");
 
@@ -370,7 +371,7 @@ userId: auth.currentUser?.uid || null,
         description: product.description || "",
         weight: product.weight || "",
         portions: 0,
-        unit: "porciones",
+        unit: product.unit || "porciones",
         imageUrl: product.imageUrl || "",
         category: product.category || "",
         expiryDate: "",
