@@ -88,7 +88,7 @@ npm run cupboard:migrate-identities
 npm run cupboard:migrate-identities -- --apply
 ```
 
-La primera ejecución valida y presenta el plan sin escribir. La segunda aplica la migración de forma idempotente. El script no despliega reglas ni servicios. Antes de ejecutarlo, conserva una copia de seguridad de Firestore. Después verifica los 44 documentos canónicos, los 44 saldos de espacio, las 33 referencias de movimientos y los alias legacy. Las reglas actualizadas están en `firestore.rules`; el propietario debe desplegarlas manualmente.
+La primera ejecución valida y presenta el plan sin escribir. La segunda aplica la migración de forma idempotente. La migración ahora separa explícitamente las colecciones de origen Hogar y Negocio y se detiene si encuentra un producto en el espacio contrario; no intenta trasladar ese saldo automáticamente. El script no despliega reglas ni servicios. Antes de ejecutarlo, conserva una copia de seguridad de Firestore. Después verifica los 44 documentos canónicos, los saldos por espacio, las referencias de movimientos y los alias legacy. Para recuperar saldos y movimientos históricos del proyecto Sandwichies, ejecuta primero `npm run cupboard:inventory-import` en modo dry-run y revisa el resultado; solo aplica con `--apply` tras confirmar asociaciones y cantidades. El importador valida que proyecto, hogar y todos los IDs `N-#######` correspondan al manifiesto. Las reglas actualizadas están en `firestore.rules`; el propietario debe desplegarlas manualmente.
 
 ## Espacios de inventario
 
