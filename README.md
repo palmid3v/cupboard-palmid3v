@@ -1,99 +1,72 @@
-# 🗄️ Cupboard — Inventario central de Cupboard y Sandwichies
+# 🗄️ 𝐂𝐮𝐩𝐛𝐨𝐚𝐫𝐝 — Inventario central
 
-> **by PALMI-D3V** · Producto digital en desarrollo continuo.
+> **PALMI-D3V** · Inventario de Hogar y Negocio → Sandwichies.
 
-Aplicación de inventario con espacios independientes para el hogar (Cupboard) y el negocio (Sandwichies). El administrador puede consultar ambos desde una vista central, sin mezclar sus existencias ni sus movimientos.
+## 🎯 Producto
+Cupboard mantiene identidad de productos compartida y existencias separadas por espacio. El administrador puede consultar Hogar y Negocio desde una experiencia central, sin mezclar balances, vencimientos ni movimientos.
 
-## ✨ Funcionalidades
+## ✨ Capacidades y base técnica
+- Inventario Firestore, búsqueda por nombre/código de barras y filtros por disponibilidad/stock bajo.
+- Registro con cámara o código manual; detalle, vencimiento y stock mínimo.
+- Entradas, consumos, historial de movimientos y unidades por producto.
+- Lista de compras, recetas, analítica básica y enriquecimiento de catálogo.
+- Espacios separados: **Hogar** y **Negocio → Sandwichies**.
+- Catálogo compartido: identidad de producto común; cantidades, caducidad y movimientos permanecen aislados.
+- Roles de hogar, invitaciones, verificación de correo y permisos aplicados por Firestore Rules.
+- Interfaz responsive/PWA, temas PALMI-D3V.
+- **Stack declarado en app/package.json:** React 19, Vite 8, Tailwind CSS 4, Firebase 12, Firebase Admin 14 (herramientas), ZXing, html5-qrcode y vite-plugin-pwa.
 
-- Inventario sincronizado con Firestore
-- Búsqueda por nombre o código de barras
-- Filtros por stock bajo y disponibilidad
-- Registro con cámara o código manual
-- Detalles de producto, vencimiento y stock mínimo
-- Aumentar o consumir existencias y conservar la unidad de medida por producto
-- Actualizaciones optimistas con reversión ante error
-- Interfaz mobile-first y base PWA
-- Temas PALMI-D3V con modos oscuro, claro y sistema
-- Color principal personalizado con preferencias locales
+## 📊 Estado del proyecto
+**Avance estimado de fases de arquitectura/producto: 85%.** La base de inventario y separación de espacios está implementada; quedan validaciones de importación histórica, operación en dispositivos, despliegue y endurecimiento de integraciones.
 
-## 🛠️ Tecnología
+- Fases de catálogo compartido, modelo de datos, inventario, runtime, movimientos, Rules, migración y regresión: documentadas como implementadas.
+- Administración central Hogar + Sandwichies: implementada.
+- Importación inicial no destructiva desde Sandwichies: herramienta disponible en dry-run; aplicación real pendiente de revisión explícita.
+- Validación de CI, dispositivos, sincronización y permisos reales debe distinguirse de pruebas locales.
 
-React · Vite · Firebase/Firestore · @zxing/browser · PWA
+Este porcentaje es una estimación por hitos documentados, no una certificación de producción.
 
-## 🚀 Ejecutar el proyecto
+## 🧭 Evolución de producto
+1. Catálogo de identidad compartida.
+2. Separación de inventario Hogar y Negocio.
+3. Consolidación de movimientos, vencimientos, stock bajo y lista de compras.
+4. Integración con Sandwichies: el pedido confirmado solicita consumo idempotente; Cupboard conserva autoridad sobre balances.
+5. Exponer señales de stock bajo/vencimientos a DayFlow mediante un contrato de eventos, sin trasladar la propiedad del inventario.
 
-```bash
+## 🔒 Seguridad y límite de release
+- Firestore es la persistencia del inventario; Rules aplican autenticación, verificación de correo, membresía y roles.
+- El inventario Sandwichies es de acceso del propietario/administrador; no asignarlo a miembros domésticos.
+- Hogar y Negocio no comparten balances ni movimientos.
+- Importación `cupboard:inventory-import` funciona en dry-run por defecto; `--apply` modifica datos y requiere revisión/autorización explícita.
+- No ejecutar `reset:data`, migraciones destructivas ni importación real sin backup, mapeo revisado y autorización.
+- La presencia de una integración en código no prueba que IAM/configuración remota estén operativos.
+
+## 🧪 Desarrollo local
+Desde el repositorio:
+
+```powershell
 cd app
 npm install
 npm run dev
+npm run lint
+npm run build
+npm run test:regression
+npm run test:rules
 ```
 
-Consulta los documentos del proyecto antes de configurar servicios, credenciales o despliegues. Los comandos pueden variar según el entorno y las dependencias instaladas.
+Herramientas de inventario:
+- `npm run cupboard:inventory-import` — dry-run por defecto; revisar ayuda/script antes de aplicar.
+- `npm run cupboard:migrate-identities` — migración de identidades; no ejecutar sin revisar el alcance.
 
-## 📍 Estado del proyecto
+## 📚 Documentación clave
+- `CONTEXT.md` — estado y límites del sistema.
+- `docs/PRODUCT.md` — producto.
+- `docs/ARCHITECTURE.md` — arquitectura y modelo de datos.
+- `docs/SECURITY.md` — autenticación, roles y Rules.
+- `docs/ROADMAP.md` — fases, hitos y pendientes.
+- [PALMI-D3V ecosystem handoff](https://github.com/palmid3v/PALMI-D3V-Connected-Workspace/blob/main/AI-HANDOFF-2026-11-01.md).
 
-MVP funcional en desarrollo; la prioridad documentada es endurecer el flujo de escaneo, reconocimiento, registro e inventario en dispositivos reales.
+## 🤝 Identidad
+**Cupboard · PALMI-D3V** — *Build · Create · Improve · Validate.*
 
-## 📚 Documentación
-
-`docs/PRODUCT.md`, `docs/ARCHITECTURE.md`, `docs/SECURITY.md`, `docs/ROADMAP.md`
-
-La documentación técnica describe la arquitectura, las decisiones, las pruebas y el trabajo pendiente. Las funcionalidades futuras no se consideran implementadas hasta que exista evidencia en el código y validación correspondiente.
-
-## 🤝 Créditos
-
-Diseñado y desarrollado bajo la identidad **PALMI-D3V**.
-
----
-
-*Build · Create · Improve · Validate*
-
-## Apariencia
-
-Cupboard integra el motor visual PALMI-D3V en `app/src/theme-engine`. Desde Ajustes puedes elegir una paleta, modo de apariencia y color principal. Las preferencias se guardan localmente y no alteran los datos, permisos ni movimientos del inventario. La fuente canónica de la librería es `palmid3v/bgc-changer-palmid3v/packages/theme-engine`.
-
-## Administración central de inventario
-
-- El administrador ve en una sola vista los inventarios de **Cupboard** y **Sandwichies**, con filtros y etiquetas que indican el destino de cada producto.
-- Al registrar un producto, el administrador elige el destino. La identidad del producto vive en el catálogo compartido; cantidades, caducidad, stock mínimo y movimientos siguen separados por espacio.
-- Desde el detalle se puede revisar el destino del producto y editar su información. Los productos existentes conservan su destino durante la edición; un traslado entre inventarios requiere una operación explícita, no se hace silenciosamente.
-- Solo el administrador puede crear productos o editar sus datos de catálogo y configuración de inventario. Los editores autorizados pueden ajustar cantidades de Hogar; Firestore Rules valida los permisos en el servidor.
-- El inventario de Cupboard/Hogar permanece intacto. Para inicializar el espacio comercial con existencias históricas de Sandwichies existe `npm run cupboard:inventory-import`; corre en modo `dry-run` por defecto, importa solo documentos faltantes y nunca sobrescribe balances existentes ni los que ya estén marcados como reflejados desde Cupboard. La importación real requiere credenciales administrativas con acceso a ambos proyectos Firebase.
-
-Ejecuta desde `app/` después de completar `.env` con los IDs de ambos proyectos y el hogar de Cupboard:
-
-```powershell
-npm run cupboard:inventory-import
-npm run cupboard:inventory-import -- --apply
-```
-
-La primera orden solo presenta el plan. Revisa cantidades, asociaciones y registros omitidos antes de ejecutar la segunda. Usa Application Default Credentials con permisos de lectura en Sandwichies y escritura en Cupboard; nunca guardes claves de servicio en Git.
-
-## Identidad única de productos (v2)
-
-El catálogo `productCatalog` es la fuente central de identidad para Hogar y Negocio · Sandwichies. Un producto tiene un solo ID interno; el código de barras es un atributo independiente y puede estar ausente.
-
-- Hogar: `HD-#######`.
-- Negocio · Sandwichies: `N-#######`.
-- Los ingredientes de Sandwichies no son una clase de producto diferente: son productos del catálogo central cuyo `ingredientId` conserva la referencia semántica usada por recetas y pedidos.
-- Las existencias y movimientos permanecen separados por espacio: `households/{householdId}/inventory` y `households/{householdId}/workspaces/sandwichies/inventory`.
-- Los IDs anteriores se conservan en `legacyIds`; los documentos antiguos de catálogo permanecen como alias con `migratedTo`. Los movimientos conservan su ID y guardan `legacyProductId` al actualizar su referencia.
-- Los productos sin saldo registrado se inicializan con cero; nunca se derivan existencias de datos de receta, compras o catálogo.
-
-La migración usa el manifiesto validado contra la extracción de 44 productos y el hogar exportado. Configura `CUPBOARD_PROJECT_ID=cupboard-app-ce528` y `CUPBOARD_HOUSEHOLD_ID=e68b4d69-ef73-4a21-913a-ee1ad3b8a14b` en `app/.env`, autentica Application Default Credentials con permisos de lectura/escritura y ejecuta desde `app/`:
-
-```powershell
-npm run cupboard:migrate-identities
-npm run cupboard:migrate-identities -- --apply
-```
-
-La primera ejecución valida y presenta el plan sin escribir. La segunda aplica la migración de forma idempotente. La migración ahora separa explícitamente las colecciones de origen Hogar y Negocio y se detiene si encuentra un producto en el espacio contrario; no intenta trasladar ese saldo automáticamente. El script no despliega reglas ni servicios. Antes de ejecutarlo, conserva una copia de seguridad de Firestore. Después verifica los 44 documentos canónicos, los saldos por espacio, las referencias de movimientos y los alias legacy. Para recuperar saldos y movimientos históricos del proyecto Sandwichies, ejecuta primero `npm run cupboard:inventory-import` en modo dry-run y revisa el resultado; solo aplica con `--apply` tras confirmar asociaciones y cantidades. El importador valida que proyecto, hogar y todos los IDs `N-#######` correspondan al manifiesto. Las reglas actualizadas están en `firestore.rules`; el propietario debe desplegarlas manualmente.
-
-## Espacios de inventario
-
-El selector de espacio sigue disponible para herramientas específicas. La vista de inventario del administrador reúne Hogar y Negocio · Sandwichies, pero las cantidades y movimientos se mantienen separados. El catálogo de identidad es compartido. Sandwichies conserva su aplicación y refleja el inventario comercial de Cupboard mediante una integración servidor-a-servidor; las existencias no se deben editar en una segunda fuente de verdad.
-
-## PALMI-D3V Connected Workspace
-
-Cupboard runs alongside DayFlow, Cupboard, Sandwichies and Financial-D3v through [PALMI-D3V Connected Workspace](https://github.com/palmid3v/PALMI-D3V-Connected-Workspace). For shared runtime ports, cross-project ownership, implementation status, technology map, safety constraints and AI continuation instructions, see the [ecosystem AI handoff](https://github.com/palmid3v/PALMI-D3V-Connected-Workspace/blob/main/AI-HANDOFF-2026-11-01.md).
+Cupboard es propietario del catálogo compartido y de los balances/movimientos de inventario. Sandwichies solicita consumos; DayFlow consume alertas; ninguno sustituye la autoridad de Cupboard.
