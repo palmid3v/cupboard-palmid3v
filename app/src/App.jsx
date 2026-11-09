@@ -258,7 +258,7 @@ export default function App() {
     canWriteInventory,
     roleKnown,
     updateProductLocally,
-  } = useInventorySubscription(workspaceAccessReady && allowedWorkspaces.includes(workspaceId));
+  } = useInventorySubscription(workspaceAccessReady && allowedWorkspaces.includes(workspaceId), workspaceId);
   const canManageProducts = userRole === "admin";
 
 
@@ -633,7 +633,10 @@ setIsSaving(true);
                       const nextWorkspace = event.target.value;
                       setActiveWorkspaceId(nextWorkspace);
                       setWorkspaceId(nextWorkspace);
-                      window.location.reload();
+                      setTargetWorkspaceId(nextWorkspace);
+                      setSelectedProduct(null);
+                      setInventoryActionError(null);
+                      setInventoryActionSuccess(null);
                     }}
                     className="max-w-[155px] rounded-xl border border-[var(--cupboard-border)] bg-[var(--cupboard-surface)] px-2 py-2.5 text-xs font-bold text-[var(--cupboard-text)] sm:max-w-none sm:px-3">
                     {allowedWorkspaces.includes("home") && <option value="home">🏠 Hogar</option>}
@@ -706,7 +709,7 @@ setIsSaving(true);
                 updatingProductId={updatingProductId}
                 inventoryActionError={inventoryActionError}
                 inventoryActionSuccess={inventoryActionSuccess}
-                onAddProduct={() => { setTargetWorkspaceId("home"); setView("scanner"); }}
+                onAddProduct={() => { setTargetWorkspaceId(workspaceId); setView("scanner"); }}
                 showWorkspaceFilter={canManageProducts}
                 initialSort={settings.inventorySort}
                 initialFilter={settings.inventoryFilter}
