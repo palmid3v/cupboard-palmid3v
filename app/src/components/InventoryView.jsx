@@ -333,7 +333,6 @@ export default function InventoryView({
                                 aria-hidden="true"
                               >📦</div>
                               <span className={["absolute left-3 top-3 rounded-full px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.12em]", cardStatus[1]].join(" ")}>{cardStatus[0]}</span>
-                              {showWorkspaceFilter && <span className="absolute right-3 top-3 rounded-full border border-[var(--cupboard-border)] bg-[var(--cupboard-bg)]/90 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.1em] text-[var(--cupboard-text)]">{item.workspaceId === "sandwichies" ? "Sandwichies" : "Cupboard"}</span>}
                             </div>
 
                             <div className="p-4">
