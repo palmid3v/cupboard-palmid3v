@@ -5,7 +5,7 @@ import { subscribeToProducts } from "../services/products";
 import { disconnectFirestore } from "../firebase";
 import { canWriteInventory as canWriteInventoryRole } from "../services/regressionContracts";
 
-export default function useInventorySubscription(enabled = true) {
+export default function useInventorySubscription(enabled = true, activeWorkspaceId = "home") {
   const [products, setProducts] = useState([]);
   const [isLoadingProducts, setIsLoadingProducts] = useState(true);
   const [connectionStatus, setConnectionStatus] = useState("connecting");
@@ -58,9 +58,11 @@ export default function useInventorySubscription(enabled = true) {
       stopListeners();
       setIsLoadingProducts(true);
 
-      const workspaces = userRole === "admin"
-        ? ["home", "sandwichies"]
-        : [window.localStorage.getItem("cupboard.workspaceId") === "sandwichies" ? "sandwichies" : "home"];
+      // The top-level workspace selector is the single source of truth.
+      // Never subscribe to both inventories in the same view.
+      const workspaces = [
+        activeWorkspaceId === "sandwichies" ? "sandwichies" : "home",
+      ];
 
       const workspaceProducts = new Map();
       const workspaceMetadata = new Map();
@@ -126,7 +128,7 @@ export default function useInventorySubscription(enabled = true) {
       window.removeEventListener("online", handleOnline);
       window.removeEventListener("cupboard:firestore-network", handleFirestoreNetwork);
     };
-  }, [enabled, userRole]);
+  }, [enabled, userRole, activeWorkspaceId]);
 
   const canWriteInventory = canWriteInventoryRole(userRole);
   const roleKnown = Boolean(userRole);
