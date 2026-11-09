@@ -13,12 +13,10 @@ export default function InventoryView({
   onAddProduct,
   initialSort = "name",
   initialFilter = "all",
-  showWorkspaceFilter = false,
 }) {
   const [search, setSearch] = useState("");
   const [inventoryFilter, setInventoryFilter] = useState(initialFilter);
   const [inventorySort, setInventorySort] = useState(initialSort);
-  const [workspaceFilter, setWorkspaceFilter] = useState("all");
   const [isSortOpen, setIsSortOpen] = useState(false);
   const sortMenuRef = useRef(null);
 
@@ -64,9 +62,7 @@ export default function InventoryView({
               ? portions <= minStock
               : portions > 0;
 
-        const matchesWorkspace = !showWorkspaceFilter || workspaceFilter === "all" || item.workspaceId === workspaceFilter;
-
-        return matchesSearch && matchesFilter && matchesWorkspace;
+        return matchesSearch && matchesFilter;
       })
       .sort((a, b) => {
         if (inventorySort === "name") {
@@ -100,7 +96,7 @@ export default function InventoryView({
 
         return 0;
       })
-  ), [products, search, inventoryFilter, inventorySort, showWorkspaceFilter, workspaceFilter]);
+  ), [products, search, inventoryFilter, inventorySort]);
 
   return (
 <>
@@ -151,8 +147,7 @@ export default function InventoryView({
                         <input type="text" placeholder="Busca por nombre o código..." aria-label="Buscar productos" value={search} onChange={(event) => setSearch(event.target.value)} className="w-full rounded-2xl border border-[var(--cupboard-border)] bg-[var(--cupboard-bg)] px-11 py-3.5 text-sm font-medium outline-none transition placeholder:text-[var(--cupboard-text-subtle)] focus:border-[var(--cupboard-primary)] focus:ring-4 focus:ring-[var(--cupboard-primary)]/10" />
                       </div>
 
-                      {showWorkspaceFilter && (
-                        <div className="flex gap-2 overflow-x-auto pb-0.5">
+                      <div className="flex gap-2 overflow-x-auto pb-0.5">
                           {[
                             ["all", "Todos los destinos"],
                             ["home", "Cupboard"],
