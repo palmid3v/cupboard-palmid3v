@@ -147,19 +147,7 @@ export default function InventoryView({
                         <input type="text" placeholder="Busca por nombre o código..." aria-label="Buscar productos" value={search} onChange={(event) => setSearch(event.target.value)} className="w-full rounded-2xl border border-[var(--cupboard-border)] bg-[var(--cupboard-bg)] px-11 py-3.5 text-sm font-medium outline-none transition placeholder:text-[var(--cupboard-text-subtle)] focus:border-[var(--cupboard-primary)] focus:ring-4 focus:ring-[var(--cupboard-primary)]/10" />
                       </div>
 
-                      <div className="flex gap-2 overflow-x-auto pb-0.5">
-                          {[
-                            ["all", "Todos los destinos"],
-                            ["home", "Cupboard"],
-                            ["sandwichies", "Sandwichies"],
-                          ].map(([value, label]) => (
-                            <button key={value} type="button" onClick={() => setWorkspaceFilter(value)} aria-pressed={workspaceFilter === value} className={[
-                              "shrink-0 rounded-2xl px-3 py-3 text-xs font-bold transition",
-                              workspaceFilter === value ? "bg-[var(--cupboard-info)]/15 text-[var(--cupboard-info)]" : "border border-[var(--cupboard-border)] bg-[var(--cupboard-surface-muted)] text-[var(--cupboard-text-muted)]",
-                            ].join(" ")}>{label}</button>
-                          ))}
-                        </div>
-                      )}
+
 
                       <div className="flex gap-2 overflow-x-auto pb-0.5">
                         {[
