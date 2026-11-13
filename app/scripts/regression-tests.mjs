@@ -160,7 +160,8 @@ test("admin inventory view combines workspaces and keeps destination explicit", 
 
   assert.match(app, /const canManageProducts = userRole === "admin"/);
   assert.match(app, /targetWorkspaceId/);
-  assert.match(hook, /\["home", "sandwichies"\]/);
+  assert.match(hook, /activeWorkspaceId === "sandwichies" \? "sandwichies" : "home"/);
+  assert.match(hook, /Never subscribe to both inventories in the same view/);
   assert.match(products, /saveProduct\(barcode, data = \{\}, movement = null, workspaceId = "home"\)/);
   assert.match(products, /updatePortions\(productId, newPortions, movement = null, workspaceId\)/);
   assert.match(inventoryView, /showWorkspaceFilter/);
