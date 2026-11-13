@@ -102,12 +102,13 @@ The current UI is dark-only. There is no active light/system theme selector in t
 
 ## Central admin inventory — October 2026
 
-- Admin sees Home/Cupboard and Sandwichies inventory together, with per-workspace filters and visible destination labels.
-- Product registration requires an explicit destination choice: `home` or `sandwichies`.
+- The top-level workspace selector switches the main inventory screen between Home/Cupboard and Sandwichies.
+- The main inventory subscription listens only to the selected workspace; it does not subscribe to both inventories in the same view.
+- New product registration exposes an explicit `home` or `sandwichies` destination to administrators. Existing products retain their destination while editing.
 - Existing products retain their current destination during editing. Moving stock between workspaces is not implicit and needs a dedicated transfer operation.
 - Shared product identity remains in `productCatalog/{barcode}`; stock and movements remain in their existing workspace-specific collections.
 - Only the admin/household owner can create inventory records or edit product metadata and inventory configuration. Editors may adjust Home quantities only; Firestore Rules restrict their inventory updates to `portions` and `updatedAt`.
-- The admin UI listens to both inventory collections. Non-admin access remains scoped to the workspace granted to that account.
+- The main inventory UI listens only to the selected workspace. The separate Centro operations panel can load cross-workspace product data for authorized admin workflows. Non-admin access remains scoped to the workspace granted to that account.
 
 ### Initial Sandwichies inventory import
 
