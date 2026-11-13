@@ -16,11 +16,12 @@
 - PR #11 — https://github.com/palmid3v/cupboard-palmid3v/pull/11
 - The test now checks the active-workspace conditional, the single-subscription invariant, the current admin-only destination selector guard and the selected inventory view's own search/filter behavior.
 - CI passed on commit c386e32: regression 19/19, Firestore Rules 8/8, lint and production build. The separate theme-engine validation job also passed.
-- npm ci reports 25 dependency vulnerabilities in the full tree: 5 low, 10 moderate, 9 high and 1 critical. The workflows previously did not print the package-level advisory report; a non-blocking JSON report step has now been added so the affected packages and available fixes can be reviewed.
+- npm audit reports 25 dependency vulnerabilities in the full tree: 5 low, 10 moderate, 9 high and 1 critical. The critical advisory is websocket-driver, pulled through faye-websocket by @firebase/database. High findings include @grpc/grpc-js, brace-expansion, fast-uri, js-yaml, nanoid, postcss, source-map-js, vite and zod. npm audit marks fixes as available for these high/critical findings.
+- CI now prints the package-level advisory report and has a blocking npm audit --audit-level=high gate. Functional regression/Rules/lint/build checks passed, but the security gate intentionally blocks this PR until dependency remediation is complete.
 
 ## Validation status
 - Previous failing run: https://github.com/palmid3v/cupboard-palmid3v/actions/runs/42540534363
-- Functional CI is green on the tested maintenance commit. Dependency security is not green: the critical/high findings must be triaged and fixed before a production release.
+- Functional checks passed on commit c386e32. The security gate is intentionally red on the current dependency tree; remediate the high/critical advisories and rerun the full workflow before merging or releasing.
 - No Firebase production data, Rules deployment or import was changed.
 
 ## Next gates
