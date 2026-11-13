@@ -15,7 +15,7 @@
 ## Change prepared
 - PR #11 — https://github.com/palmid3v/cupboard-palmid3v/pull/11
 - The test now checks the active-workspace conditional, the single-subscription invariant, the current admin-only destination selector guard and the selected inventory view's own search/filter behavior.
-- CI passed on commit c386e32: regression 19/19, Firestore Rules 8/8, lint and production build. The separate theme-engine validation job also passed.
+- Latest functional workflow: https://github.com/palmid3v/cupboard-palmid3v/actions/runs/43360731865. Regression 19/19, Firestore Rules 8/8, lint and production build all passed; the separate theme-engine validation job also passed. The final high/critical npm audit gate failed as intended.
 - npm audit reports 25 vulnerabilities in the full dependency tree: 5 low, 10 moderate, 9 high and 1 critical. Production-only audit narrows this to 6: 5 high and 1 critical.
 - Production high findings: @grpc/grpc-js, nanoid, postcss, source-map-js and vite. The critical finding is websocket-driver, reached through @firebase/database → faye-websocket → websocket-driver. The full-tree report also flags brace-expansion, fast-uri, js-yaml and zod among high-severity packages.
 - npm audit reports fixes available for the high/critical packages. CI prints full and production-only advisory reports and has a blocking npm audit --audit-level=high gate. Functional regression/Rules/lint/build checks passed, but the security gate intentionally blocks this PR until dependency remediation is complete.
