@@ -151,7 +151,7 @@ test("Sandwichies import defaults to dry-run and preserves authoritative Cupboar
   assert.match(source, /sandwichies-import-/);
 });
 
-test("admin inventory view combines workspaces and keeps destination explicit", async () => {
+test("workspace selector scopes inventory and admin destination remains explicit", async () => {
   const app = await read("../src/App.jsx");
   const hook = await read("../src/hooks/useInventorySubscription.js");
   const products = await read("../src/services/products.js");
@@ -162,10 +162,11 @@ test("admin inventory view combines workspaces and keeps destination explicit", 
   assert.match(app, /targetWorkspaceId/);
   assert.match(hook, /activeWorkspaceId === "sandwichies" \? "sandwichies" : "home"/);
   assert.match(hook, /Never subscribe to both inventories in the same view/);
+  assert.match(app, /canChooseWorkspace=\{canManageProducts\}/);
   assert.match(products, /saveProduct\(barcode, data = \{\}, movement = null, workspaceId = "home"\)/);
   assert.match(products, /updatePortions\(productId, newPortions, movement = null, workspaceId\)/);
-  assert.match(inventoryView, /showWorkspaceFilter/);
-  assert.match(inventoryView, /item\.workspaceId === "sandwichies"/);
+  assert.match(inventoryView, /inventoryFilter/);
+  assert.match(inventoryView, /filteredProducts/);
   assert.match(productForm, /product-destination/);
 });
 
