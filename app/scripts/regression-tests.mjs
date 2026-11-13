@@ -162,7 +162,7 @@ test("workspace selector scopes inventory and admin destination remains explicit
   assert.match(app, /targetWorkspaceId/);
   assert.match(hook, /activeWorkspaceId === "sandwichies" \? "sandwichies" : "home"/);
   assert.match(hook, /Never subscribe to both inventories in the same view/);
-  assert.match(app, /canChooseWorkspace=\{canManageProducts\}/);
+  assert.match(app, /canChooseWorkspace=\{canManageProducts && !isEditingExistingProduct\}/);
   assert.match(products, /saveProduct\(barcode, data = \{\}, movement = null, workspaceId = "home"\)/);
   assert.match(products, /updatePortions\(productId, newPortions, movement = null, workspaceId\)/);
   assert.match(inventoryView, /inventoryFilter/);
