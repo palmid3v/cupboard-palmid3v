@@ -253,3 +253,11 @@ Cupboard is one of four independent PALMI-D3V repositories started by [PALMI-D3V
 **Pending cross-app gate:** verify `CUPBOARD_PROJECT_ID`, `CUPBOARD_HOUSEHOLD_ID`, `CUPBOARD_INGREDIENT_MAP_JSON`, ingredient mapping and least-privilege cross-project access. A previous preflight found 11 unmapped ingredients; re-run current preflight to establish current status. Do not state the stock integration is live until import, mappings, permissions and end-to-end tests are verified.
 
 For all four app responsibilities, launch scripts, safety rules and continuation priorities, read the [PALMI-D3V AI handoff](https://github.com/palmid3v/PALMI-D3V-Connected-Workspace/blob/main/AI-HANDOFF-2026-11-01.md).
+
+## Maintenance handoff — 2026-11-12
+
+- Current branch: maintenance/ci-recovery-2026-11.
+- Open PR: https://github.com/palmid3v/cupboard-palmid3v/pull/11.
+- The active workspace selector now scopes inventory subscriptions to one workspace. The regression suite had multiple outdated assumptions about the previous combined inventory UI; the tests are being aligned with the current selector and admin-only destination selection.
+- Do not change the inventory implementation solely to satisfy stale source-string assertions. Validate the selected-workspace behavior and owner-only Sandwichies access.
+- Latest detailed evidence and pending CI gates: QUALITY-CHECKPOINT-2026-11-12.md.
