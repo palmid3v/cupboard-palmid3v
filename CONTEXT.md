@@ -262,3 +262,4 @@ For all four app responsibilities, launch scripts, safety rules and continuation
 - The active workspace selector now scopes inventory subscriptions to one workspace. The regression suite had multiple outdated assumptions about the previous combined inventory UI; the tests are being aligned with the current selector and admin-only destination selection.
 - Do not change the inventory implementation solely to satisfy stale source-string assertions. Validate the selected-workspace behavior and owner-only Sandwichies access.
 - Latest detailed evidence and pending CI gates: QUALITY-CHECKPOINT-2026-11-12.md.
+- Dependency risk: the full app dependency tree reports 25 npm vulnerabilities (5 low, 10 moderate, 9 high, 1 critical). CI now prints a package-level JSON advisory summary. Treat dependency triage as a release blocker; do not assume the passing build clears security risk.
