@@ -33,6 +33,9 @@ jobs:
           npm audit --json > /tmp/npm-audit.json || true
           node -e 'try { const fs = require("node:fs"); const report = JSON.parse(fs.readFileSync("/tmp/npm-audit.json", "utf8")); const vulnerabilities = Object.entries(report.vulnerabilities || {}).map(([name, item]) => ({ name, severity: item.severity, direct: item.isDirect, range: item.range, fixAvailable: item.fixAvailable, via: item.via.map((entry) => typeof entry === "string" ? entry : entry.title) })); console.log(JSON.stringify({ totals: report.metadata?.vulnerabilities, vulnerabilities }, null, 2)); } catch (error) { console.log("Dependency audit report unavailable:", error.message); }'
 
+      - name: Block high and critical dependency vulnerabilities
+        run: npm audit --audit-level=high
+
       - name: Regression tests
         run: npm run test:regression
 
