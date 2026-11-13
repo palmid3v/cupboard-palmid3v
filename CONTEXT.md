@@ -102,12 +102,13 @@ The current UI is dark-only. There is no active light/system theme selector in t
 
 ## Central admin inventory — October 2026
 
-- Admin sees Home/Cupboard and Sandwichies inventory together, with per-workspace filters and visible destination labels.
-- Product registration requires an explicit destination choice: `home` or `sandwichies`.
+- The top-level workspace selector switches the main inventory screen between Home/Cupboard and Sandwichies.
+- The main inventory subscription listens only to the selected workspace; it does not subscribe to both inventories in the same view.
+- New product registration exposes an explicit `home` or `sandwichies` destination to administrators. Existing products retain their destination while editing.
 - Existing products retain their current destination during editing. Moving stock between workspaces is not implicit and needs a dedicated transfer operation.
 - Shared product identity remains in `productCatalog/{barcode}`; stock and movements remain in their existing workspace-specific collections.
 - Only the admin/household owner can create inventory records or edit product metadata and inventory configuration. Editors may adjust Home quantities only; Firestore Rules restrict their inventory updates to `portions` and `updatedAt`.
-- The admin UI listens to both inventory collections. Non-admin access remains scoped to the workspace granted to that account.
+- The main inventory UI listens only to the selected workspace. The separate Centro operations panel can load cross-workspace product data for authorized admin workflows. Non-admin access remains scoped to the workspace granted to that account.
 
 ### Initial Sandwichies inventory import
 
@@ -253,3 +254,12 @@ Cupboard is one of four independent PALMI-D3V repositories started by [PALMI-D3V
 **Pending cross-app gate:** verify `CUPBOARD_PROJECT_ID`, `CUPBOARD_HOUSEHOLD_ID`, `CUPBOARD_INGREDIENT_MAP_JSON`, ingredient mapping and least-privilege cross-project access. A previous preflight found 11 unmapped ingredients; re-run current preflight to establish current status. Do not state the stock integration is live until import, mappings, permissions and end-to-end tests are verified.
 
 For all four app responsibilities, launch scripts, safety rules and continuation priorities, read the [PALMI-D3V AI handoff](https://github.com/palmid3v/PALMI-D3V-Connected-Workspace/blob/main/AI-HANDOFF-2026-11-01.md).
+
+## Maintenance handoff — 2026-11-12
+
+- Current branch: maintenance/ci-recovery-2026-11.
+- Open PR: https://github.com/palmid3v/cupboard-palmid3v/pull/11.
+- The active workspace selector now scopes inventory subscriptions to one workspace. The regression suite had multiple outdated assumptions about the previous combined inventory UI; the tests are being aligned with the current selector and admin-only destination selection.
+- Do not change the inventory implementation solely to satisfy stale source-string assertions. Validate the selected-workspace behavior and owner-only Sandwichies access.
+- Latest detailed evidence and pending CI gates: QUALITY-CHECKPOINT-2026-11-12.md.
+- Dependency risk: the full app dependency tree reports 25 npm vulnerabilities (5 low, 10 moderate, 9 high, 1 critical); production-only audit reports 6 (5 high, 1 critical). The critical websocket-driver issue is transitive through @firebase/database → faye-websocket. CI prints full and production-only JSON advisory summaries and blocks high/critical findings. Treat dependency triage as a release blocker; do not assume a passing build clears security risk.

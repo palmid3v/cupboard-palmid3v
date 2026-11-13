@@ -16,6 +16,10 @@ Cupboard mantiene identidad de productos compartida y existencias separadas por 
 - Interfaz responsive/PWA, temas PALMI-D3V.
 - **Stack declarado en app/package.json:** React 19, Vite 8, Tailwind CSS 4, Firebase 12, Firebase Admin 14 (herramientas), ZXing, html5-qrcode y vite-plugin-pwa.
 
+## 🔎 Quality checkpoint — 2026-11-12
+
+Functional regression, Firestore Rules, lint and build checks pass on the maintenance branch; however, the full dependency tree reports 25 vulnerabilities (1 critical, 9 high), and the new high-severity audit gate blocks merge until remediation. See [QUALITY-CHECKPOINT-2026-11-12.md](QUALITY-CHECKPOINT-2026-11-12.md) for evidence and release gates.
+
 ## 📊 Estado del proyecto
 **Avance estimado de fases de arquitectura/producto: 85%.** La base de inventario y separación de espacios está implementada; quedan validaciones de importación histórica, operación en dispositivos, despliegue y endurecimiento de integraciones.
 

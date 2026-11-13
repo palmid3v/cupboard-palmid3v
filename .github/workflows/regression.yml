@@ -28,6 +28,14 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Dependency audit report
+        run: |
+          npm audit --json > /tmp/npm-audit.json || true
+          node -e 'try { const fs = require("node:fs"); const report = JSON.parse(fs.readFileSync("/tmp/npm-audit.json", "utf8")); const vulnerabilities = Object.entries(report.vulnerabilities || {}).map(([name, item]) => ({ name, severity: item.severity, direct: item.isDirect, range: item.range, fixAvailable: item.fixAvailable, via: item.via.map((entry) => typeof entry === "string" ? entry : entry.title) })); console.log(JSON.stringify({ totals: report.metadata?.vulnerabilities, vulnerabilities }, null, 2)); } catch (error) { console.log("Dependency audit report unavailable:", error.message); }'
+          npm audit --omit=dev --json > /tmp/npm-audit-production.json || true
+          node -e 'try { const fs = require("node:fs"); const report = JSON.parse(fs.readFileSync("/tmp/npm-audit-production.json", "utf8")); const vulnerabilities = Object.entries(report.vulnerabilities || {}).map(([name, item]) => ({ name, severity: item.severity, direct: item.isDirect, range: item.range, fixAvailable: item.fixAvailable, via: item.via.map((entry) => typeof entry === "string" ? entry : entry.title) })); console.log("PRODUCTION-ONLY AUDIT"); console.log(JSON.stringify({ totals: report.metadata?.vulnerabilities, vulnerabilities }, null, 2)); } catch (error) { console.log("Production dependency audit report unavailable:", error.message); }'
+
+
       - name: Regression tests
         run: npm run test:regression
 
@@ -40,3 +48,6 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      - name: Block high and critical dependency vulnerabilities
+        run: npm audit --audit-level=high
