@@ -7,14 +7,15 @@
 
 ## Findings
 - The application now subscribes to exactly one inventory workspace at a time, selected by activeWorkspaceId.
-- The regression suite contained two stale assertions: one expected subscriptions to both home and sandwichies; after correcting it, the next run exposed an outdated assertion expecting a workspace filter inside InventoryView. The current UI scopes inventory at the top-level workspace selector, and InventoryView only filters/sorts the selected workspace.
+- The regression suite contained multiple stale UI assumptions: it expected simultaneous subscriptions to both workspaces, a workspace filter inside InventoryView, and a broader destination-selection condition than the current admin-only/new-product guard. The current UI scopes the main inventory at the top-level workspace selector, while InventoryView filters/sorts only the selected workspace.
 - The workflow stopped after the regression failure, so Firestore Rules, lint and build were skipped in that run.
 - The inventory import remains dry-run by default. Applying it still requires a reviewed mapping, backup and explicit authorization.
 - The public README's architecture/security boundaries remain valid; CI status needed to be made explicit.
 
 ## Change prepared
 - PR #11 — https://github.com/palmid3v/cupboard-palmid3v/pull/11
-- The test now checks the active-workspace conditional, the single-subscription invariant, the top-level admin destination selector and the selected inventory view's own search/filter behavior. A follow-up CI run is required.
+- The test now checks the active-workspace conditional, the single-subscription invariant, the current admin-only destination selector guard and the selected inventory view's own search/filter behavior.
+- The updated regression and theme-engine validation jobs have passed on commit 5c1427f; Firestore Rules, lint and build were still running at the last check.
 
 ## Validation status
 - Previous failing run: https://github.com/palmid3v/cupboard-palmid3v/actions/runs/42540534363
