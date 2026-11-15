@@ -2,6 +2,19 @@
 
 > **PALMI-D3V** · Inventario de Hogar y Negocio → Sandwichies.
 
+## 🎯 Misión
+
+Centralizar el inventario del hogar y del negocio con productos, cantidades, vencimientos y movimientos trazables, manteniendo separados ambos espacios.
+
+## 🔭 Visión
+
+Ser la fuente de verdad de existencias y movimientos para sus espacios autorizados y ofrecer a Sandwichies una integración segura mediante contratos explícitos, sin duplicar balances.
+
+## 🗓️ Revisión documental
+
+README revisado el **14 de noviembre de 2026**. El estado y las capacidades descritas se limitan a lo documentado en este repositorio; una función planificada no se considera implementada sin evidencia y validación.
+
+
 ## 🎯 Producto
 Cupboard mantiene identidad de productos compartida y existencias separadas por espacio. El administrador puede consultar Hogar y Negocio desde una experiencia central, sin mezclar balances, vencimientos ni movimientos.
 
