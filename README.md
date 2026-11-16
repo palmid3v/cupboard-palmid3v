@@ -10,6 +10,14 @@ Centralizar el inventario del hogar y del negocio con productos, cantidades, ven
 
 Ser la fuente de verdad de existencias y movimientos para sus espacios autorizados y ofrecer a Sandwichies una integración segura mediante contratos explícitos, sin duplicar balances.
 
+
+## 🌐 Despliegue en Vercel
+
+- **URL de producción:** https://cupboard-palmid3v.vercel.app
+- **Proyecto Vercel:** `cupboard-palmid3v`
+- **Repositorio GitHub:** [`palmid3v/cupboard-palmid3v`](https://github.com/palmid3v/cupboard-palmid3v)
+- **Alias verificado:** dominio asociado al despliegue de producción READY consultado el 15 de noviembre de 2026.
+
 ## 🗓️ Revisión documental
 
 README revisado el **14 de noviembre de 2026**. El estado y las capacidades descritas se limitan a lo documentado en este repositorio; una función planificada no se considera implementada sin evidencia y validación.
