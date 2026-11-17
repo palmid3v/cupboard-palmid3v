@@ -1,3 +1,5 @@
+**Documentation review:** 2026-11-17
+
 # Cupboard — Security
 
 ## Authentication
