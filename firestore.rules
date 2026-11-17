@@ -136,10 +136,29 @@ service cloud.firestore {
         allow create, update, delete: if owner(householdId);
       }
 
-      // Sandwichies is private business inventory: only the household owner can read or write it.
-      // Client-side workspace selection is never an authorization boundary.
+      // Sandwichies business inventory is private to the household owner. Reservation
+      // counters and system reservation records are managed only by trusted backends.
       match /workspaces/{workspaceId}/{document=**} {
-        allow read, write: if workspaceId == "sandwichies" && owner(householdId);
+        allow read: if workspaceId == "sandwichies" && owner(householdId);
+        allow create: if workspaceId == "sandwichies"
+          && owner(householdId)
+          && request.resource.data.get('systemRecord', false) != true
+          && request.resource.data.get('reservedPortions', 0) == 0;
+        allow update: if workspaceId == "sandwichies"
+          && owner(householdId)
+          && resource.data.get('systemRecord', false) != true
+          && request.resource.data.get('reservedPortions', 0) == resource.data.get('reservedPortions', 0)
+          && (
+            !request.resource.data.keys().hasAny(['portions'])
+            || (
+              request.resource.data.portions is number
+              && request.resource.data.portions >= resource.data.get('reservedPortions', 0)
+            )
+          );
+        allow delete: if workspaceId == "sandwichies"
+          && owner(householdId)
+          && resource.data.get('systemRecord', false) != true
+          && resource.data.get('reservedPortions', 0) == 0;
       }
     }
 

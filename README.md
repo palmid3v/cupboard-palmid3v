@@ -50,13 +50,23 @@ Desde el repositorio:
 
 ```powershell
 cd app
-npm install
+npm ci
 npm run dev
 npm run lint
 npm run build
 npm run test:regression
 npm run test:rules
 ```
+
+Cupboard funciona de forma independiente: Authentication y Firestore son sus dependencias propias; las rutas del Worker de Sandwichies no forman parte del inicio ni de las operaciones de Cupboard. Para ejecutar las pruebas de Rules, usa el emulador Firestore con el proyecto demo `demo-cupboard`:
+
+```powershell
+firebase emulators:exec --only firestore --project demo-cupboard "npm.cmd run test:rules"
+```
+
+La integración comercial es adicional y unidireccional desde Sandwichies: el Worker autorizado solicita operaciones sobre el espacio Negocio → Sandwichies; Cupboard conserva los balances y movimientos como fuente de verdad. La aplicación cliente de Cupboard no recibe ni consume las credenciales del Worker.
+
+La URL de producción actualmente verificada es [https://cupboard-palmid3v.vercel.app](https://cupboard-palmid3v.vercel.app). El dominio aparece verificado en el proyecto Vercel `cupboard-palmid3v` y respondió HTTP 200 en una comprobación HEAD el 2026-11-17. Esto verifica que la página se sirve; no sustituye las pruebas de autenticación contra Firebase LIVE.
 
 Herramientas de inventario:
 - `npm run cupboard:inventory-import` — dry-run por defecto; revisar ayuda/script antes de aplicar.
@@ -74,3 +84,11 @@ Herramientas de inventario:
 **Cupboard · PALMI-D3V** — *Build · Create · Improve · Validate.*
 
 Cupboard es propietario del catálogo compartido y de los balances/movimientos de inventario. Sandwichies solicita consumos; DayFlow consume alertas; ninguno sustituye la autoridad de Cupboard.
+
+## Sandwichies stock reservations
+
+The `Negocio -> Sandwichies` workspace is the only inventory namespace used by the Sandwichies Worker. Physical `portions` remain authoritative; `reservedPortions` records active order holds and the UI displays available stock as `portions - reservedPortions`. Cupboard Firestore Rules prevent browser clients from forging reservation counters or mutating backend reservation records. Owner stock updates and manual movements run through Firestore transactions and cannot reduce physical stock below active reservations.
+
+The Worker stores idempotent reservation records under `households/{householdId}/workspaces/sandwichies/reservations/`, checks every product and balance transactionally, then consumes the reservation in a second transaction that also writes the traceable movement. Pending-order cancellation releases a hold; consumed-order cancellation uses one idempotent reversal. The two Firebase projects do not share a transaction, so this remains a retry-safe saga with reconciliation required for failed cross-project compensation.
+
+Verification on 2026-11-17: Cupboard ESLint passed, regression tests passed 19/19, Firestore Rules Emulator passed 9/9, and a Vite PWA build passed to a temporary output directory. The default `app/dist/sw.js` output path returned `EPERM` in this workspace, so the successful build used `.tmp-release-build`. These local checks do not verify Firebase LIVE IAM, authentication, or inventory data.

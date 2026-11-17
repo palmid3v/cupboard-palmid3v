@@ -137,7 +137,11 @@ export default function useInventorySubscription(enabled = true, activeWorkspace
     setProducts((current) =>
       current.map((product) =>
         product.id === productId && (!workspaceId || product.workspaceId === workspaceId)
-          ? { ...product, portions }
+          ? {
+            ...product,
+            portions,
+            availablePortions: Math.max(0, portions - (Number(product.reservedPortions) || 0)),
+          }
           : product,
       ),
     );

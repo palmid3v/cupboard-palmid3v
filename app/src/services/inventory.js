@@ -6,10 +6,8 @@ import {
   getDoc,
   getDocs,
   onSnapshot,
+  runTransaction,
   serverTimestamp,
-  setDoc,
-  updateDoc,
-  writeBatch,
 } from "firebase/firestore";
 
 import { db } from "../firebase";
@@ -42,9 +40,13 @@ function inventoryRef(barcode, workspaceId = getActiveWorkspaceId()) {
 }
 
 function normalizeInventory(id, data = {}) {
+  const portions = Math.max(0, Number(data.portions) || 0);
+  const reservedPortions = Math.max(0, Number(data.reservedPortions) || 0);
   return {
     id,
-    portions: Number(data.portions) || 0,
+    portions,
+    reservedPortions,
+    availablePortions: Math.max(0, portions - reservedPortions),
     unit: typeof data.unit === "string" && data.unit.trim() ? data.unit.trim() : "porciones",
     expiryDate: data.expiryDate ?? null,
     minStock: Math.max(0, Number(data.minStock) || 5),
@@ -108,37 +110,39 @@ export async function saveInventoryProduct(barcode, data = {}, workspaceId = get
   }
 
   const ref = inventoryRef(normalizedBarcode, workspaceId);
-  const snapshot = await getDoc(ref);
-
   const inventoryData = {
     portions: Math.max(0, Number(data.portions) || 0),
-    unit: String(data.unit || snapshot.data()?.unit || "porciones").trim() || "porciones",
+    unit: String(data.unit || "porciones").trim() || "porciones",
     expiryDate: data.expiryDate || null,
     minStock: Math.max(0, Number(data.minStock) || 5),
     notes: data.notes?.trim() ?? "",
   };
 
-  if (snapshot.exists()) {
-    await updateDoc(ref, {
-      ...inventoryData,
-      updatedAt: serverTimestamp(),
-    });
-    return;
-  }
-
-  await setDoc(ref, {
-    ...inventoryData,
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
+  await runTransaction(db, async (transaction) => {
+    const snapshot = await transaction.get(ref);
+    if (snapshot.exists()) {
+      const reserved = Math.max(0, Number(snapshot.data().reservedPortions) || 0);
+      if (inventoryData.portions < reserved) throw new Error("INVENTORY_PORTIONS_RESERVED");
+      transaction.update(ref, {
+        ...inventoryData,
+        unit: String(data.unit || snapshot.data().unit || "porciones").trim() || "porciones",
+        updatedAt: serverTimestamp(),
+      });
+      return;
+    }
+    transaction.set(ref, { ...inventoryData, reservedPortions: 0, createdAt: serverTimestamp(), updatedAt: serverTimestamp() });
   });
 }
 
 export async function updateInventoryPortions(barcode, newPortions, workspaceId = getActiveWorkspaceId()) {
   const ref = inventoryRef(barcode, workspaceId);
-
-  await updateDoc(ref, {
-    portions: Math.max(0, Number(newPortions) || 0),
-    updatedAt: serverTimestamp(),
+  const requested = Math.max(0, Number(newPortions) || 0);
+  await runTransaction(db, async (transaction) => {
+    const snapshot = await transaction.get(ref);
+    if (!snapshot.exists()) throw new Error("INVENTORY_PRODUCT_MISSING");
+    const reserved = Math.max(0, Number(snapshot.data().reservedPortions) || 0);
+    if (requested < reserved) throw new Error("INVENTORY_PORTIONS_RESERVED");
+    transaction.update(ref, { portions: requested, updatedAt: serverTimestamp() });
   });
 }
 
@@ -179,42 +183,27 @@ export async function saveInventoryProductWithMovement(
   }
 
   const ref = inventoryRef(normalizedBarcode, workspaceId);
-  const snapshot = await getDoc(ref);
-
   const inventoryData = {
     portions: Math.max(0, Number(data.portions) || 0),
-    unit: String(data.unit || snapshot.data()?.unit || "porciones").trim() || "porciones",
+    unit: String(data.unit || "porciones").trim() || "porciones",
     expiryDate: data.expiryDate || null,
     minStock: Math.max(0, Number(data.minStock) || 5),
     notes: data.notes?.trim() ?? "",
   };
 
-  const batch = writeBatch(db);
-
-  if (snapshot.exists()) {
-    batch.update(ref, {
-      ...inventoryData,
-      updatedAt: serverTimestamp(),
-    });
-  } else {
-    batch.set(ref, {
-      ...inventoryData,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
-    });
-  }
-
-  if (movement && Number(movement.quantity) > 0) {
-    batch.set(
-      movementRef(workspaceId),
-      movementData({
-        productId: normalizedBarcode,
-        ...movement,
-      }),
-    );
-  }
-
-  await batch.commit();
+  const movementDocument = movement && Number(movement.quantity) > 0 ? movementRef(workspaceId) : null;
+  await runTransaction(db, async (transaction) => {
+    const snapshot = await transaction.get(ref);
+    if (snapshot.exists()) {
+      const reserved = Math.max(0, Number(snapshot.data().reservedPortions) || 0);
+      inventoryData.unit = String(data.unit || snapshot.data().unit || "porciones").trim() || "porciones";
+      if (inventoryData.portions < reserved) throw new Error("INVENTORY_PORTIONS_RESERVED");
+      transaction.update(ref, { ...inventoryData, updatedAt: serverTimestamp() });
+    } else {
+      transaction.set(ref, { ...inventoryData, reservedPortions: 0, createdAt: serverTimestamp(), updatedAt: serverTimestamp() });
+    }
+    if (movementDocument) transaction.set(movementDocument, movementData({ productId: normalizedBarcode, ...movement }));
+  });
 }
 
 /**
@@ -227,22 +216,22 @@ export async function updateInventoryPortionsWithMovement(
   workspaceId = getActiveWorkspaceId(),
 ) {
   const ref = inventoryRef(barcode, workspaceId);
-  const batch = writeBatch(db);
-
-  batch.update(ref, {
-    portions: Math.max(0, Number(newPortions) || 0),
-    updatedAt: serverTimestamp(),
+  const movementDocument = movement && Number(movement.quantity) > 0 ? movementRef(workspaceId) : null;
+  const requested = Math.max(0, Number(newPortions) || 0);
+  await runTransaction(db, async (transaction) => {
+    const snapshot = await transaction.get(ref);
+    if (!snapshot.exists()) throw new Error("INVENTORY_PRODUCT_MISSING");
+    const current = Math.max(0, Number(snapshot.data().portions) || 0);
+    const reserved = Math.max(0, Number(snapshot.data().reservedPortions) || 0);
+    const movementQuantity = Number(movement?.quantity);
+    const next = movementQuantity > 0 && movement?.type === "consume"
+      ? current - movementQuantity
+      : movementQuantity > 0 && movement?.type === "add"
+        ? current + movementQuantity
+        : requested;
+    if (next < reserved) throw new Error("INVENTORY_PORTIONS_RESERVED");
+    if (next < 0) throw new Error("INVENTORY_STOCK_INSUFFICIENT");
+    transaction.update(ref, { portions: next, updatedAt: serverTimestamp() });
+    if (movementDocument) transaction.set(movementDocument, movementData({ productId: String(barcode).trim(), ...movement }));
   });
-
-  if (movement && Number(movement.quantity) > 0) {
-    batch.set(
-      movementRef(workspaceId),
-      movementData({
-        productId: String(barcode).trim(),
-        ...movement,
-      }),
-    );
-  }
-
-  await batch.commit();
 }

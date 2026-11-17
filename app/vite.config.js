@@ -32,4 +32,32 @@ export default defineConfig({
       },
     }),
   ],
+  build: {
+    rolldownOptions: {
+      output: {
+        codeSplitting: {
+          groups: [
+            {
+              name: "firebase-vendor",
+              test: /node_modules[\\/](@firebase|firebase)[\\/]/,
+              priority: 20,
+              maxSize: 350 * 1024,
+            },
+            {
+              name: "react-vendor",
+              test: /node_modules[\\/](react|react-dom|scheduler)[\\/]/,
+              priority: 15,
+              maxSize: 240 * 1024,
+            },
+            {
+              name: "vendor",
+              test: /node_modules[\\/]/,
+              priority: 10,
+              maxSize: 350 * 1024,
+            },
+          ],
+        },
+      },
+    },
+  },
 });

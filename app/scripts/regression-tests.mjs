@@ -130,7 +130,8 @@ test("architecture extraction keeps App focused on orchestration", async () => {
   const inventoryHook = await read("../src/hooks/useInventorySubscription.js");
 
   assert.match(source, /import InventoryView from "\.\/components\/InventoryView"/);
-  assert.match(source, /import ScannerView from "\.\/components\/ScannerView"/);
+  assert.match(source, /const ScannerView = lazy\(\(\) => import\("\.\/components\/ScannerView"\)\)/);
+  assert.match(source, /<Suspense fallback=/);
   assert.match(source, /import useInventorySubscription from "\.\/hooks\/useInventorySubscription"/);
   assert.doesNotMatch(source, /const inventorySummary = \{/);
   assert.doesNotMatch(source, /const filteredProducts =/);
@@ -231,6 +232,8 @@ test("Hogar retains legacy paths while Sandwichies uses isolated workspace paths
 test("Sandwichies inventory is owner-only and not assignable to members", async () => {
   const rules = await read("../../firestore.rules");
   assert.ok(rules.includes('match /workspaces/{workspaceId}/{document=**}'));
-  assert.match(rules, /allow read, write: if workspaceId == "sandwichies" && owner\(householdId\)/);
+  assert.match(rules, /allow read: if workspaceId == "sandwichies" && owner\(householdId\)/);
+  assert.ok(rules.includes("request.resource.data.get('reservedPortions', 0) == resource.data.get('reservedPortions', 0)"));
+  assert.ok(rules.includes("resource.data.get('systemRecord', false) != true"));
   assert.ok(!rules.includes("allow create, update, delete: if workspaceId == \"sandwichies\" && editor(householdId)"));
 });

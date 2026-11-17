@@ -34,11 +34,11 @@ export default function InventoryView({
   const inventorySummary = useMemo(() => ({
     products: products.length,
     portions: products.reduce(
-      (total, item) => total + (Number(item.portions) || 0),
+      (total, item) => total + Math.max(0, Number(item.availablePortions ?? item.portions) || 0),
       0,
     ),
     lowStock: products.filter(
-      (item) => (Number(item.portions) || 0) <= (Number(item.minStock) || 5),
+      (item) => Math.max(0, Number(item.availablePortions ?? item.portions) || 0) <= (Number(item.minStock) || 5),
     ).length,
   }), [products]);
 
@@ -52,7 +52,7 @@ export default function InventoryView({
           item.name?.toLowerCase().includes(searchTerm) ||
           item.id?.toLowerCase().includes(searchTerm);
 
-        const portions = Number(item.portions) || 0;
+        const portions = Math.max(0, Number(item.availablePortions ?? item.portions) || 0);
         const minStock = Number(item.minStock) || 5;
 
         const matchesFilter =
@@ -75,15 +75,15 @@ export default function InventoryView({
 
         if (inventorySort === "low-stock") {
           return (
-            (Number(a.portions) || 0) -
-            (Number(b.portions) || 0)
+            (Number(a.availablePortions ?? a.portions) || 0) -
+            (Number(b.availablePortions ?? b.portions) || 0)
           );
         }
 
         if (inventorySort === "high-stock") {
           return (
-            (Number(b.portions) || 0) -
-            (Number(a.portions) || 0)
+            (Number(b.availablePortions ?? b.portions) || 0) -
+            (Number(a.availablePortions ?? a.portions) || 0)
           );
         }
 
@@ -276,7 +276,9 @@ export default function InventoryView({
                   {!isLoadingProducts && filteredProducts.length > 0 && (
                     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
                       {filteredProducts.map((item) => {
-                        const portions = Number(item.portions) || 0;
+                        const physicalPortions = Number(item.portions) || 0;
+                        const reservedPortions = Number(item.reservedPortions) || 0;
+                        const portions = Math.max(0, Number(item.availablePortions ?? physicalPortions - reservedPortions));
                         const minStock = Number(item.minStock) || 5;
                         const warningStock = Math.max(minStock * 2, minStock + 1);
                         const isLow = portions <= minStock;
@@ -347,7 +349,8 @@ export default function InventoryView({
                               <div className="mt-5 flex items-end justify-between gap-3">
                                 <div>
                                   <p className="text-3xl font-extrabold leading-none">{portions}</p>
-                                  <p className="mt-1 text-[9px] font-bold uppercase tracking-[0.16em] text-[var(--cupboard-text-subtle)]">{item.unit || "porciones"}</p>
+                                  <p className="mt-1 text-[9px] font-bold uppercase tracking-[0.16em] text-[var(--cupboard-text-subtle)]">Disponibles · {item.unit || "porciones"}</p>
+                                  {reservedPortions > 0 && <p className="mt-1 text-[10px] text-[var(--cupboard-text-muted)]">{reservedPortions} reservadas de {physicalPortions} físicas</p>}
                                 </div>
                                 <button type="button" onClick={(event) => { event.stopPropagation(); onOpenProduct(item); }} className="rounded-xl px-2 py-1.5 text-xs font-bold text-[var(--cupboard-primary)] transition hover:bg-[var(--cupboard-primary-soft)]">Ver →</button>
                               </div>

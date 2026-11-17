@@ -1,7 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import WorkspacePanel from "./components/WorkspacePanel";
 import InventoryView from "./components/InventoryView";
-import ScannerView from "./components/ScannerView";
 import useInventorySubscription from "./hooks/useInventorySubscription";
 import useCupboardSettings from "./hooks/useCupboardSettings";
 import SettingsPanel from "./components/SettingsPanel";
@@ -19,6 +18,8 @@ import {
   getSaveErrorMessage,
   getSaveErrorState,
 } from "./services/regressionContracts";
+
+const ScannerView = lazy(() => import("./components/ScannerView"));
 
 function NavigationButton({
   icon,
@@ -283,7 +284,11 @@ export default function App() {
 
     setSelectedProduct((current) =>
       current?.id === item.id && current?.workspaceId === item.workspaceId
-        ? { ...current, portions: newPortions }
+        ? {
+          ...current,
+          portions: newPortions,
+          availablePortions: Math.max(0, newPortions - (Number(current.reservedPortions) || 0)),
+        }
         : current,
     );
 
@@ -323,7 +328,8 @@ userId: auth.currentUser?.uid || null,
 
   const handleConsume = async (item) => {
     const portions = Number(item.portions) || 0;
-    if (portions <= 0) return;
+    const available = Math.max(0, Number(item.availablePortions ?? portions - (Number(item.reservedPortions) || 0)));
+    if (available <= 0) return;
 
     await updateProductPortionsOptimistically(item, portions - 1);
   };
@@ -717,6 +723,7 @@ setIsSaving(true);
             )}
 
             {workspaceAccessReady && allowedWorkspaces.includes(workspaceId) && view === "scanner" && (
+              <Suspense fallback={<div className="rounded-2xl border border-[var(--cupboard-border)] bg-[var(--cupboard-surface)] p-6 text-sm text-[var(--cupboard-text-muted)]" role="status" aria-live="polite">Cargando escáner…</div>}>
               <ScannerView
                 onScan={handleScan}
                 scannerRestart={scannerRestart}
@@ -753,6 +760,7 @@ setIsSaving(true);
                 weightInputRef={weightInputRef}
                 portionsInputRef={portionsInputRef}
               />
+              </Suspense>
             )}
 
             {view === "settings" && (

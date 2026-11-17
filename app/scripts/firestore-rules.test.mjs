@@ -2,13 +2,14 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { after, before, test } from "node:test";
 import { assertFails, assertSucceeds, initializeTestEnvironment } from "@firebase/rules-unit-testing";
-import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
+import { deleteDoc, doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 
 const projectId = "demo-cupboard-rules";
 let env;
 const homeItem = (db, id = "home-item") => doc(db, "households", "household-a", "inventory", id);
 const businessItem = (db, id = "business-item") => doc(db, "households", "household-a", "workspaces", "sandwichies", "inventory", id);
 const businessMovement = (db, id = "business-movement") => doc(db, "households", "household-a", "workspaces", "sandwichies", "movements", id);
+const businessReservation = (db, id = "order-reservation") => doc(db, "households", "household-a", "workspaces", "sandwichies", "reservations", id);
 
 before(async () => {
   if (!process.env.FIRESTORE_EMULATOR_HOST) throw new Error("FIRESTORE_EMULATOR_HOST is required. Run this suite with Firebase Emulator Suite.");
@@ -31,6 +32,8 @@ before(async () => {
     }
     await setDoc(homeItem(db), { portions: 4, unit: "porciones" });
     await setDoc(businessItem(db), { portions: 8 });
+    await setDoc(businessItem(db, "reserved-item"), { portions: 8, reservedPortions: 4 });
+    await setDoc(businessReservation(db), { orderId: "order-1", status: "reserved", systemRecord: true });
     await setDoc(doc(db, "productCatalog", "shared-product"), { name: "Producto compartido", createdBy: "admin-user" });
   });
 });
@@ -44,6 +47,17 @@ test("owner can read and write both inventories", async () => {
   await assertSucceeds(getDoc(businessItem(db)));
   await assertSucceeds(setDoc(businessItem(db), { portions: 9 }));
   await assertSucceeds(setDoc(businessMovement(db), { quantity: 1, type: "consume" }));
+});
+test("owners cannot forge reservation counters, consume held stock, or mutate backend reservation records", async () => {
+  const db = user("admin-user");
+  await assertSucceeds(updateDoc(businessItem(db, "reserved-item"), { portions: 4 }));
+  await assertFails(updateDoc(businessItem(db, "reserved-item"), { portions: 3 }));
+  await assertFails(updateDoc(businessItem(db, "reserved-item"), { reservedPortions: 0 }));
+  await assertFails(setDoc(businessItem(db, "forged-reservation"), { portions: 8, reservedPortions: 4 }));
+  await assertFails(updateDoc(businessReservation(db), { status: "released" }));
+  await assertFails(setDoc(businessReservation(db, "forged"), { orderId: "forged", systemRecord: true }));
+  await assertFails(deleteDoc(businessReservation(db)));
+  await assertFails(deleteDoc(businessItem(db, "reserved-item")));
 });
 test("home-assigned member can read home inventory but remains read-only", async () => {
   const db = user("member-user");
