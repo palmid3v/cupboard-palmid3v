@@ -318,8 +318,17 @@ textarea::selection {
   --cupboard-radius-xl: 0.4rem;
   font-family: "Courier New", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   background-image:
-    linear-gradient(rgb(57 168 255 / 0.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgb(57 168 255 / 0.025) 1px, transparent 1px);
+  linear-gradient(
+    color-mix(in srgb, var(--cupboard-primary) 3%, transparent)
+    1px,
+    transparent 1px
+  ),
+  linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--cupboard-primary) 3%, transparent)
+    1px,
+    transparent 1px
+  );
   background-size: 24px 24px;
 }
 
