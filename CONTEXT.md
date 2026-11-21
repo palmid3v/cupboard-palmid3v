@@ -1,265 +1,72 @@
 # CONTEXT — Cupboard
 
-## Identity
-- Product: Cupboard
-- Repository: `palmid3v/cupboard-palmid3v`
-- Owner: PALMI-D3V
-- Type: Multi-workspace inventory web application with a central admin view
-- Stage: Functional MVP / active development / reliability hardening
-- Experience: Mobile-first with responsive desktop support
-- Current visual direction: dark-only, warm, calm, green-centered
+**Document review:** 2026-11-17  
+**Repository:** `palmid3v/cupboard-palmid3v`  
+**Owner:** PALMI-D3V  
+**Stage:** Functional MVP / active development / reliability hardening
 
-## Product intent
+## Product purpose
 
-Cupboard helps manage household inventory and, for the administrator, provides a central view over the separate Cupboard (home) and Sandwichies (business) inventories without merging their stock or movement records.
+Cupboard centralizes product identity and inventory operations for two separated contexts: **Hogar** and **Negocio → Sandwichies**. The owner can view/manage both contexts while keeping balances, expiry records and movement histories independent.
 
-Core qualities:
+## Product capabilities
 
-**familiar · calm · practical · organized · quick · approachable**
+- Firestore-backed product inventory and product details.
+- Product lookup by name/barcode; camera scanning and manual barcode entry.
+- Availability and low-stock filters, sorting and inventory summaries.
+- Quantity/portion additions, consumption and adjustments with error handling.
+- Minimum-stock and expiry tracking.
+- Shopping lists, recipes and basic inventory analytics.
+- Shared product identity with workspace-specific quantities and movements.
+- Household membership, invitations, roles and protected access.
+- Responsive web interface and PWA installation support.
 
-## Implemented capabilities
+## Domain ownership
 
-- Firestore-backed inventory
-- Product search by name/barcode
-- All / low-stock / available filters
-- Name / recent / low-stock / high-stock sorting
-- Inventory summaries
-- Product detail view
-- Optimistic add/consume portion actions
-- Error rollback for failed portion updates
-- Camera barcode scanning
-- Manual barcode entry
-- Existing-product lookup
-- New-product registration
-- Product validation
-- Optional product image URL
-- Responsive desktop/mobile navigation
-- Dark-only visual theme
-- PWA configuration
+- Cupboard owns product identity and stock balances/movements for authorized workspaces.
+- Sandwichies owns commercial products/prices, customer orders and their lifecycle. It requests stock consumption; it does not own a duplicate stock ledger.
+- DayFlow may display planning signals derived from Cupboard events, but does not own inventory.
+- Financial-D3V may receive future minimized commercial events under an explicit contract; it does not receive private personal financial data from Cupboard.
 
-## Stack
+Home and Business inventory data must never be mixed. Household members do not gain access to Sandwichies business inventory unless explicitly authorized under its business access policy.
 
-React 19 · Vite 8 · Tailwind CSS 4 · Firebase 12 · Firestore · @zxing/browser · html5-qrcode · vite-plugin-pwa · ESLint 9
+## Architecture and stack
 
-## Runtime architecture
+- React 19, Vite 8 and Tailwind CSS 4.
+- Firebase Authentication and Cloud Firestore.
+- Firestore Security Rules enforce workspace membership and role access.
+- ZXing and html5-qrcode support barcode/camera workflows.
+- vite-plugin-pwa provides PWA support.
+- Regression tests, Rules emulator tests, ESLint and build scripts.
 
-```text
-UI
-└── App.jsx
-    ├── Inventory
-    ├── Scanner
-    ├── Product registration
-    └── Settings
+The runnable app is under `app/`; exact dependencies and scripts are in `app/package.json`.
 
-Scanner
-└── BarcodeScanner.jsx
-    └── @zxing/browser
+## Import and migration safety
 
-Data access
-└── services/
-    ├── products.js
-    ├── catalog.js
-    └── inventory.js
-             └── Firestore
-            ├── productCatalog/{barcode}
-            ├── households/{householdId}/inventory/{barcode}
-            └── households/{householdId}/movements/{movementId}
-```
+Inventory identity migrations and initial imports must be reviewed before applying. Use dry-run to inspect mappings and expected mutations. An actual apply requires a reviewed mapping, backup and explicit owner authorization. No destructive reset, migration or real inventory write during documentation-only maintenance.
 
-## Data identity
+## Quality evidence — checkpoint 2026-11-12
 
-Firestore model:
+Functional regression 19/19, Firestore Rules emulator 8/8, lint, production build and theme-engine validation passed. The high/critical dependency audit gate failed intentionally: 25 findings in the full dependency tree (1 critical, 9 high); production-only audit reported 6 (1 critical, 5 high). This is historical evidence, not a new run on 2026-11-17. Functional checks alone do not establish release readiness.
 
-```text
-productCatalog/{barcode}
-households/{householdId}/inventory/{barcode}
-households/{householdId}/movements/{movementId}
-```
+## Current priorities
 
-The barcode is the document ID for both catalog and inventory records. Shared identity and household state are intentionally separated.
+1. Resolve high/critical dependency vulnerabilities without reducing test coverage or weakening the audit gate.
+2. Complete device/browser and responsive verification.
+3. Verify workspace membership, business isolation and backend permissions.
+4. Validate import/migration with dry-run, backup and reconciliation before applying.
+5. Verify Sandwichies integration with isolated emulators and idempotency/retry scenarios.
 
-## Important behavior
+## Canonical documentation
 
-### Portion updates
+- `docs/PRODUCT.md`
+- `docs/ARCHITECTURE.md`
+- `docs/SECURITY.md`
+- `docs/ROADMAP.md`
+- `QUALITY-CHECKPOINT-2026-11-12.md`
+- `app/README.md`
 
-The inventory UI changes the selected product locally first, then calls `updatePortions()`.
+Keep dated QA reports immutable; record later results in a new dated checkpoint.
 
-On success, the optimistic value remains.
-
-On failure, the previous value is restored and an error is shown.
-
-The action does **not** reload the entire inventory.
-
-### Scanner
-
-`BarcodeScanner.jsx` owns camera startup, cleanup, retry, successful-scan deduplication, and camera-specific error presentation.
-
-The parent receives successful scans through `onScan(code)`.
-
-### Theme
-
-The current UI is dark-only. There is no active light/system theme selector in the current implementation.
-
-## Central admin inventory — October 2026
-
-- The top-level workspace selector switches the main inventory screen between Home/Cupboard and Sandwichies.
-- The main inventory subscription listens only to the selected workspace; it does not subscribe to both inventories in the same view.
-- New product registration exposes an explicit `home` or `sandwichies` destination to administrators. Existing products retain their destination while editing.
-- Existing products retain their current destination during editing. Moving stock between workspaces is not implicit and needs a dedicated transfer operation.
-- Shared product identity remains in `productCatalog/{barcode}`; stock and movements remain in their existing workspace-specific collections.
-- Only the admin/household owner can create inventory records or edit product metadata and inventory configuration. Editors may adjust Home quantities only; Firestore Rules restrict their inventory updates to `portions` and `updatedAt`.
-- The main inventory UI listens only to the selected workspace. The separate Centro operations panel can load cross-workspace product data for authorized admin workflows. Non-admin access remains scoped to the workspace granted to that account.
-
-### Initial Sandwichies inventory import
-
-The source Sandwichies app stores a projection in `inventoryBalances` and history in `inventoryTransactions`. Its trusted backend is already designed to apply new manual/order movements to Cupboard's `workspaces/sandwichies` inventory and mirror the resulting balance back to Sandwichies.
-
-For legacy data, `app/scripts/import-sandwichies-inventory.mjs` imports only missing balances that are not marked with `cupboardInventoryRevision`, and imports legacy movement history idempotently. It defaults to dry-run and requires ADC permissions across both Firebase projects. Do not claim the live stock is unified until the dry-run has been reviewed, the import has been applied, and Sandwichies' deployed ingredient mapping points to the `sandwichies-*` catalog IDs.
-
-## “Inventario conectado” status
-
-The sidebar/header indicator is backed by the active Firestore inventory listener, browser online/offline events, and Firestore snapshot metadata.
-
-States:
-- 🟢 connected — server-backed inventory snapshot;
-- 🟡 offline — browser offline or cached data;
-- 🔴 error — listener/access failure;
-- 🟡 connecting — startup or reconnection in progress.
-
-The owner can also explicitly enable or disable the Firestore network connection for the current browser from Centro → Equipo. This is a client-local control, not a global Firebase switch.
-
-## Current boundaries
-
-Implemented foundation:
-- authentication;
-- multi-user households;
-- authorization/permissions;
-- offline-first Firestore persistence;
-- live connectivity monitoring;
-- expiry;
-- movement/history;
-- shopping lists;
-- recipes;
-- basic analytics;
-- external product catalog enrichment;
-- image URLs.
-
-Deferred:
-- Firebase Storage uploads and local image processing until a billing-enabled Firebase plan is acceptable.
-
-## Documentation rule
-
-When documentation conflicts with implementation, inspect the code first and update the documentation. Never document a planned feature as implemented.
-
-## Development
-
-```bash
-cd app
-npm install
-npm run dev
-npm run lint
-npm run build
-npm run preview
-```
-
-## Status
-
-Cupboard is an active functional MVP. The current priority is reliability of the scan → recognize → save → inventory loop, especially on real mobile devices, followed by permissions UX, error taxonomy, performance, offline/PWA hardening, automated regression, and incremental component extraction.
-
-
-## Access model
-
-Cupboard now treats the household owner as the Administrador general / Propietario. Only the owner can generate invitation codes. New accounts require an invitation and enter as member. Firestore Rules protect role and household ownership fields.
-
-## Connection model
-
-The owner can control the Firestore network connection for the current browser from Centro → Equipo. Connected, connecting, offline/cache, and error states are surfaced in the UI. This is a client-local connection control, not a global Firebase shutdown.
-
-
-## October 2026 security and UX checkpoint
-
-- Email verification is now required before household Firestore access.
-- Firebase verification email is sent at signup; AuthGate supports resend and explicit refresh/check.
-- Pending household invitations remain stored locally until verification succeeds.
-- Firestore Rules independently require `request.auth.token.email_verified == true` and bind profile/member email to the verified Firebase email.
-- Product detail has been extracted into `app/src/components/ProductDetail.jsx` with animated stock feedback, expiry state, product image treatment, category, weight, barcode, and minimum-stock metadata.
-- Firebase users, households, invites, catalog, inventory, and movements are preserved. The catalog/inventory migration is complete.
-
-## October 2026 architecture checkpoint
-
-### Approved phases
-
-- 🟢 FASE 1 — Shared product catalog
-- 🟢 FASE 2 — Data-model audit
-- 🟢 FASE 3 — Inventory service foundation
-- 🟢 FASE 4 — Runtime adoption
-- 🟢 FASE 5 — Movements
-- 🟢 FASE 6 — Rules implementation
-- 🟢 FASE 7 — Non-destructive migration tooling
-- 🟢 FASE 8 — Regression validation
-- 🟢 FASE 9 — Reset + migration
-- 🟢 FASE 10 — Cleanup
-
-### Target data model
-
-```text
-productCatalog/{barcode}
-households/{householdId}/inventory/{barcode}
-households/{householdId}/movements/{movementId}
-```
-
-### New service
-
-`app/src/services/inventory.js` defines the final household inventory boundary with:
-
-- `getInventoryProduct`
-- `getAllInventory`
-- `subscribeToInventory`
-- `saveInventoryProduct`
-- `updateInventoryPortions`
-
-The application now uses dedicated catalog/inventory collections at runtime. The legacy household product model has been retired from the runtime and Rules.
-
-### Safety gate
-
-The migration gate was completed after runtime adoption, movements, Rules, migration preparation, and regression validation passed. FASE 10 cleanup is complete.
-
-## October 4, 2026 checkpoint
-
-Scanner startup-race protection and interrupted-camera recovery are implemented. Real-device iPhone scanning has been validated. The save flow was corrected so a secondary refresh cannot falsely report that the primary product write failed. A transient Firebase Auth HTTP 503 was observed during testing and recovered without a code change; Auth availability remains a recoverable runtime condition.
-
-Next phases: scanner hardening, role-aware save UX, save-state taxonomy, performance, offline/PWA validation, automated regression, and incremental App.jsx extraction.
-
-
-## Documentation checkpoint — 2026-10-18
-
-README.md actualizado para MVP de inventario doméstico. Prioridad vigente: endurecer el flujo escaneo → reconocimiento → registro → inventario en móviles reales y comprobar rollback ante errores Firestore. No afirmar validación completa en dispositivos reales sin evidencia.
-
-Public README states the product scope and release limits. Use the source code, tests and latest audit reports to decide whether a milestone is actually complete.
-
-## Ecosystem handoff — 2026-11-01
-
-Cupboard is one of four independent PALMI-D3V repositories started by [PALMI-D3V Connected Workspace](https://github.com/palmid3v/PALMI-D3V-Connected-Workspace). Local URL: `https://127.0.0.1:5181`; app directory: `app/`; workspace root: `D:\\PALMI-D3V\\projects`. The other apps are DayFlow (5180), Sandwichies (5182) and Financial-D3v (5183).
-
-**Domain ownership:** Cupboard is the inventory source of truth. Shared product identity is separate from workspace-specific stock and movements. Household and Sandwichies business balances must never be merged accidentally. Sandwichies owns order lifecycle; Cupboard owns authoritative inventory.
-
-**Current stack (package/context):** React 19, Vite 8, Tailwind CSS 4, Firebase 12 / Firestore, Firebase Admin 14.5 for trusted tooling/integration, @zxing/browser, html5-qrcode, vite-plugin-pwa, ESLint 9 and Firebase Rules unit testing. Confirm current `app/package.json` before changing versions.
-
-**Current model:** `productCatalog/{barcode}`; household inventory at `households/{householdId}/inventory/{barcode}`; household movement history at `households/{householdId}/movements/{movementId}`. Business inventory remains a distinct workspace. Admin chooses Home or Sandwichies destination explicitly. Household editors do not gain access to business inventory; Sandwichies inventory is owner-only.
-
-**Implemented foundations documented:** multi-user households/invitations, verified-email access, role-based Firestore Rules, offline persistence, connection status, expiry, movement history, shopping lists, recipes, basic analytics, barcode scanning, product registration/detail, central admin view and theme engine. Verify source and Rules before assuming every subflow is production-ready.
-
-**Important scripts:** `npm run lint`, `npm run build`, `npm run test:regression`, `npm run test:rules`, `npm run cupboard:inventory-import`. Import is dry-run by default; `--apply` mutates real data and requires explicit authorization. Never run `reset:data` or apply import without an approved plan.
-
-**Pending cross-app gate:** verify `CUPBOARD_PROJECT_ID`, `CUPBOARD_HOUSEHOLD_ID`, `CUPBOARD_INGREDIENT_MAP_JSON`, ingredient mapping and least-privilege cross-project access. A previous preflight found 11 unmapped ingredients; re-run current preflight to establish current status. Do not state the stock integration is live until import, mappings, permissions and end-to-end tests are verified.
-
-For all four app responsibilities, launch scripts, safety rules and continuation priorities, read the [PALMI-D3V AI handoff](https://github.com/palmid3v/PALMI-D3V-Connected-Workspace/blob/main/AI-HANDOFF-2026-11-01.md).
-
-## Maintenance handoff — 2026-11-12
-
-- Current branch: maintenance/ci-recovery-2026-11.
-- Open PR: https://github.com/palmid3v/cupboard-palmid3v/pull/11.
-- The active workspace selector now scopes inventory subscriptions to one workspace. The regression suite had multiple outdated assumptions about the previous combined inventory UI; the tests are being aligned with the current selector and admin-only destination selection.
-- Do not change the inventory implementation solely to satisfy stale source-string assertions. Validate the selected-workspace behavior and owner-only Sandwichies access.
-- Latest detailed evidence and pending CI gates: QUALITY-CHECKPOINT-2026-11-12.md.
-- Dependency risk: the full app dependency tree reports 25 npm vulnerabilities (5 low, 10 moderate, 9 high, 1 critical); production-only audit reports 6 (5 high, 1 critical). The critical websocket-driver issue is transitive through @firebase/database → faye-websocket. CI prints full and production-only JSON advisory summaries and blocks high/critical findings. Treat dependency triage as a release blocker; do not assume a passing build clears security risk.
+---
+**Cupboard · PALMI-D3V**
