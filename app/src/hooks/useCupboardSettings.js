@@ -3,7 +3,7 @@ import { useCallback, useState } from "react";
 const SETTINGS_KEY = "cupboard.settings";
 
 const DEFAULT_SETTINGS = {
-  minStockDefault: 5,
+  minStockDefault: 3,
   inventorySort: "name",
   inventoryFilter: "all",
 };
