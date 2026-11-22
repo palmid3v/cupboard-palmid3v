@@ -417,7 +417,8 @@ export default function WorkspacePanel() {
             {movements.slice(0, 100).map((item) => {
               const label = item.type === "consume" || item.type === "consumption" ? "Consumo" : item.type === "reversal" ? "Reversión" : item.type === "purchase" ? "Compra" : item.type === "adjustment" ? "Ajuste" : "Entrada";
               const date = item.createdAt?.toDate?.() || (item.createdAt?.seconds ? new Date(item.createdAt.seconds * 1000) : null);
-              const orderLabel = item.orderNumber || item.orderId || item.reason?.match(/pedido #?([A-Za-z0-9_-]+)/i)?.[1];
+              const orderLabel = item.orderNumber || item.reason?.match(/pedido #?([A-Za-z0-9_-]+)/i)?.[1] || item.orderId;
+              const outgoing = typeof item.quantityDelta === "number" ? item.quantityDelta < 0 : item.type === "consume" || item.type === "consumption";
               return (
                 <article key={item.id} className="rounded-2xl border border-[var(--cupboard-border)] bg-[var(--cupboard-bg)] p-4">
                   <div className="flex items-start justify-between gap-3">
@@ -428,7 +429,7 @@ export default function WorkspacePanel() {
                       <p className="mt-1 text-xs text-[var(--cupboard-text-muted)]">{item.reason || (item.source === "order" ? "Consumo generado por pedido" : "Movimiento de inventario")}</p>
                     </div>
                     <div className="text-right">
-                      <p className="font-mono text-sm font-bold">{item.type === "consume" || item.type === "consumption" ? "−" : "+"}{item.quantity} {item.unit || ""}</p>
+                      <p className="font-mono text-sm font-bold">{outgoing ? "−" : "+"}{item.quantity} {item.unit || ""}</p>
                       {date ? <p className="mt-1 text-[10px] text-[var(--cupboard-text-subtle)]">{new Intl.DateTimeFormat("es-CO", { dateStyle: "medium", timeStyle: "short" }).format(date)}</p> : null}
                     </div>
                   </div>
