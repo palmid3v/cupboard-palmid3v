@@ -540,6 +540,10 @@ setIsSaving(true);
               status === "catalog"
                 ? "Agregado desde catálogo"
                 : "Registro de producto",
+            productName: name,
+            unit: form.unit || "porciones",
+            source: "manual",
+            workspaceId: targetWorkspaceId,
             userId: auth.currentUser?.uid || null,
           }
         : null,
