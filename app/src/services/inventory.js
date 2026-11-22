@@ -192,6 +192,7 @@ export async function saveInventoryProductWithMovement(
     expiryDate: data.expiryDate || null,
     minStock: Math.max(0, Number(data.minStock) || 5),
     notes: data.notes?.trim() ?? "",
+    price: data.price == null || data.price === "" ? null : Math.max(0, Number(data.price) || 0),
   };
 
   const movementDocument = movement && Number(movement.quantity) > 0 ? movementRef(workspaceId) : null;
