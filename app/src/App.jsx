@@ -297,7 +297,11 @@ export default function App() {
       await updatePortions(item.id, newPortions, {
 type: newPortions < previousPortions ? "consume" : "add",
 quantity: Math.abs(newPortions - previousPortions),
-reason: newPortions < previousPortions ? "Consumo desde inventario" : "Entrada desde inventario",
+reason: newPortions < previousPortions ? "Consumo manual desde inventario" : "Entrada manual desde inventario",
+productName: item.name || "Producto sin nombre",
+unit: item.unit || "porciones",
+source: "manual",
+workspaceId: item.workspaceId || "home",
 userId: auth.currentUser?.uid || null,
 }, item.workspaceId);
 

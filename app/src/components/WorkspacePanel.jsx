@@ -414,15 +414,27 @@ export default function WorkspacePanel() {
           <h2 className="mt-2 text-2xl font-extrabold">Todo movimiento deja rastro.</h2>
           <div className="mt-6 space-y-2">
             {movements.length === 0 && <p className="text-sm text-[var(--cupboard-text-muted)]">Todavía no hay movimientos registrados.</p>}
-            {movements.slice(0, 30).map((item) => (
-              <div key={item.id} className="flex items-center justify-between rounded-2xl bg-[var(--cupboard-bg)] px-4 py-3">
-                <div>
-                  <p className="text-sm font-bold">{item.type === "consume" || item.type === "consumption" ? "Consumo" : item.type === "reversal" ? "Reversión" : item.type === "purchase" ? "Compra" : item.type === "adjustment" ? "Ajuste" : "Entrada"}</p>
-                  <p className="text-xs text-[var(--cupboard-text-muted)]">{item.reason || item.productId}</p>
-                </div>
-                <span className="font-mono text-sm font-bold">{item.quantity}</span>
-              </div>
-            ))}
+            {movements.slice(0, 100).map((item) => {
+              const label = item.type === "consume" || item.type === "consumption" ? "Consumo" : item.type === "reversal" ? "Reversión" : item.type === "purchase" ? "Compra" : item.type === "adjustment" ? "Ajuste" : "Entrada";
+              const date = item.createdAt?.toDate?.() || (item.createdAt?.seconds ? new Date(item.createdAt.seconds * 1000) : null);
+              return (
+                <article key={item.id} className="rounded-2xl border border-[var(--cupboard-border)] bg-[var(--cupboard-bg)] p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <span className="rounded-full bg-[var(--cupboard-primary-soft)] px-2.5 py-1 text-[9px] font-bold uppercase text-[var(--cupboard-primary)]">{label}</span>
+                      {item.orderNumber || item.orderId ? <span className="ml-2 text-[10px] font-bold text-[var(--cupboard-info)]">Pedido #{item.orderNumber || item.orderId}</span> : null}
+                      <p className="mt-2 text-sm font-bold">{item.productName || item.reason || item.productId || "Movimiento sin producto"}</p>
+                      <p className="mt-1 text-xs text-[var(--cupboard-text-muted)]">{item.reason || (item.source === "order" ? "Consumo generado por pedido" : "Movimiento de inventario")}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-mono text-sm font-bold">{item.type === "consume" || item.type === "consumption" ? "−" : "+"}{item.quantity} {item.unit || ""}</p>
+                      {date ? <p className="mt-1 text-[10px] text-[var(--cupboard-text-subtle)]">{new Intl.DateTimeFormat("es-CO", { dateStyle: "medium", timeStyle: "short" }).format(date)}</p> : null}
+                    </div>
+                  </div>
+                  <p className="mt-3 border-t border-[var(--cupboard-border)] pt-3 font-mono text-[10px] text-[var(--cupboard-text-subtle)]">ID: {item.movementId || item.id}</p>
+                </article>
+              );
+            })}
           </div>
         </PanelCard>
       )}
