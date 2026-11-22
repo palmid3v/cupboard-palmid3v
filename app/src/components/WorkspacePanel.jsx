@@ -417,13 +417,14 @@ export default function WorkspacePanel() {
             {movements.slice(0, 100).map((item) => {
               const label = item.type === "consume" || item.type === "consumption" ? "Consumo" : item.type === "reversal" ? "Reversión" : item.type === "purchase" ? "Compra" : item.type === "adjustment" ? "Ajuste" : "Entrada";
               const date = item.createdAt?.toDate?.() || (item.createdAt?.seconds ? new Date(item.createdAt.seconds * 1000) : null);
+              const orderLabel = item.orderNumber || item.orderId || item.reason?.match(/pedido #?([A-Za-z0-9_-]+)/i)?.[1];
               return (
                 <article key={item.id} className="rounded-2xl border border-[var(--cupboard-border)] bg-[var(--cupboard-bg)] p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <span className="rounded-full bg-[var(--cupboard-primary-soft)] px-2.5 py-1 text-[9px] font-bold uppercase text-[var(--cupboard-primary)]">{label}</span>
-                      {item.orderNumber || item.orderId ? <span className="ml-2 text-[10px] font-bold text-[var(--cupboard-info)]">Pedido #{item.orderNumber || item.orderId}</span> : null}
-                      <p className="mt-2 text-sm font-bold">{item.productName || item.reason || item.productId || "Movimiento sin producto"}</p>
+                      {orderLabel ? <span className="ml-2 text-[10px] font-bold text-[var(--cupboard-info)]">Pedido #{orderLabel}</span> : null}
+                      <p className="mt-2 text-sm font-bold">{item.productName || item.ingredientName || item.reason || item.productId || "Movimiento sin producto"}</p>
                       <p className="mt-1 text-xs text-[var(--cupboard-text-muted)]">{item.reason || (item.source === "order" ? "Consumo generado por pedido" : "Movimiento de inventario")}</p>
                     </div>
                     <div className="text-right">
