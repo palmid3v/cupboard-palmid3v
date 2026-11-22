@@ -346,6 +346,7 @@ export default function InventoryView({
                                 <span className="shrink-0 rounded-xl bg-[var(--cupboard-surface-muted)] px-2 py-1 text-[9px] font-bold uppercase tracking-[0.12em] text-[var(--cupboard-text-subtle)]">{item.id ? "SKU" : "ITEM"}</span>
                               </div>
 
+                              {item.price != null && <div className="mt-4 flex items-center justify-between rounded-xl border border-[var(--cupboard-border)] bg-[var(--cupboard-bg)]/70 px-3 py-2"><span className="text-[9px] font-bold uppercase tracking-[0.14em] text-[var(--cupboard-text-subtle)]">Precio</span><span className="text-sm font-extrabold text-[var(--cupboard-primary)]">{new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(item.price)}</span></div>}
                               <div className="mt-5 flex items-end justify-between gap-3">
                                 <div>
                                   <p className="text-3xl font-extrabold leading-none">{portions}</p>

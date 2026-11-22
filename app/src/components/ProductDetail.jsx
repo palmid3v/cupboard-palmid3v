@@ -136,6 +136,7 @@ export default function ProductDetail({
               {product.description || "Sin descripción. Puedes añadir una desde editar producto."}
             </p>
 
+            {product.price != null && <div className="mt-5 flex items-center justify-between gap-4 rounded-2xl border border-[var(--cupboard-border)] bg-[var(--cupboard-surface-muted)] px-4 py-3"><div><p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--cupboard-text-subtle)]">Precio registrado</p><p className="mt-1 text-2xl font-extrabold text-[var(--cupboard-primary)]">{new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(product.price)}</p></div><span className="text-[10px] text-[var(--cupboard-text-subtle)]">COP</span></div>}
             <div className="relative mt-7 overflow-hidden rounded-[1.75rem] border border-[var(--cupboard-border)] bg-[linear-gradient(145deg,var(--cupboard-surface-raised),var(--cupboard-surface-muted))] p-5 sm:p-6">
               <div className="absolute -right-12 -top-16 h-36 w-36 rounded-full bg-[var(--cupboard-primary)]/10 blur-3xl" />
               <div className="relative">

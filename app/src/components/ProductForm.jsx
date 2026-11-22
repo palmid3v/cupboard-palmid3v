@@ -71,6 +71,11 @@ export default function ProductForm({
                       </div>
 
                       <div>
+                        <label htmlFor="product-price" className="mb-2 block text-xs font-bold uppercase tracking-[0.12em] text-[var(--cupboard-text-subtle)]">Precio del producto · COP</label>
+                        <div className="relative"><span className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-xs font-bold text-[var(--cupboard-text-subtle)]">$</span><input id="product-price" name="price" type="number" min="0" step="1" inputMode="numeric" placeholder="Opcional" value={form.price ?? ""} onChange={onChange} className="w-full rounded-2xl border border-[var(--cupboard-border)] bg-[var(--cupboard-bg)] py-3.5 pl-8 pr-4 text-sm outline-none transition placeholder:text-[var(--cupboard-text-subtle)] focus:border-[var(--cupboard-primary)] focus:ring-4 focus:ring-[var(--cupboard-primary)]/10" /></div>
+                        <p className="mt-1.5 text-[10px] text-[var(--cupboard-text-subtle)]">Valor de compra del producto o presentación. No es precio por porción.</p>
+                      </div>
+                      <div>
                         <label htmlFor="product-min-stock" className="mb-2 block text-xs font-bold uppercase tracking-[0.12em] text-[var(--cupboard-text-subtle)]">Stock mínimo</label>
                         <input id="product-min-stock" name="minStock" type="number" min="0" placeholder="5" value={form.minStock} onChange={onChange} className="w-full rounded-2xl border border-[var(--cupboard-border)] bg-[var(--cupboard-bg)] px-4 py-3.5 text-sm outline-none transition placeholder:text-[var(--cupboard-text-subtle)] focus:border-[var(--cupboard-primary)] focus:ring-4 focus:ring-[var(--cupboard-primary)]/10" />
                       </div>

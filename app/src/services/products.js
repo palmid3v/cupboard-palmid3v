@@ -21,6 +21,7 @@ function normalizeProduct(id, catalog = {}, inventory = {}) {
     ingredientId: catalog.ingredientId ?? null,
     weight: Number(catalog.weight) || 0,
     portions: Number(inventory.portions) || 0,
+    price: inventory.price == null ? null : Number(inventory.price),
     unit: inventory.unit || "porciones",
     imageUrl: catalog.imageUrl ?? "",
     category: catalog.category ?? "",
@@ -95,6 +96,7 @@ export async function saveProduct(barcode, data = {}, movement = null, workspace
     catalog.id,
     {
       portions: data.portions,
+      price: data.price,
       unit: data.unit,
       expiryDate: data.expiryDate,
       minStock: data.minStock,
@@ -104,7 +106,7 @@ export async function saveProduct(barcode, data = {}, movement = null, workspace
     effectiveWorkspaceId,
   );
 
-  return { ...catalog, portions: Number(data.portions) || 0, workspaceId: effectiveWorkspaceId };
+  return { ...catalog, portions: Number(data.portions) || 0, price: data.price == null || data.price === "" ? null : Number(data.price), workspaceId: effectiveWorkspaceId };
 }
 
 export async function getAllProducts(workspaceId) {

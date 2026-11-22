@@ -231,6 +231,7 @@ export default function App() {
     description: "",
     weight: "",
     portions: "",
+    price: "",
     unit: "porciones",
     imageUrl: "",
     category: "",
@@ -360,6 +361,7 @@ userId: auth.currentUser?.uid || null,
         description: product.description || "",
         weight: product.weight || "",
         portions: product.portions || "",
+        price: product.price ?? "",
         unit: product.unit || "porciones",
         imageUrl: product.imageUrl || "",
         category: product.category || "",
@@ -377,6 +379,7 @@ userId: auth.currentUser?.uid || null,
         description: product.description || "",
         weight: product.weight || "",
         portions: 0,
+        price: "",
         unit: product.unit || "porciones",
         imageUrl: product.imageUrl || "",
         category: product.category || "",
@@ -392,6 +395,7 @@ userId: auth.currentUser?.uid || null,
         description: "",
         weight: "",
         portions: "",
+        price: "",
         unit: "porciones",
         imageUrl: "",
         category: "",
@@ -456,6 +460,7 @@ userId: auth.currentUser?.uid || null,
   const portionsValue = Number(form.portions);
   const weightValue =
     form.weight === "" ? null : Number(form.weight);
+  const priceValue = form.price === "" || form.price == null ? null : Number(form.price);
 
   if (!productCode) {
   setFormError(
@@ -479,6 +484,11 @@ userId: auth.currentUser?.uid || null,
   ) {
     setFormError("Las porciones deben ser un número igual o mayor que 0.");
     portionsInputRef.current?.focus();
+    return;
+  }
+
+  if (priceValue !== null && (!Number.isFinite(priceValue) || priceValue < 0 || !Number.isInteger(priceValue))) {
+    setFormError("El precio debe ser un valor entero en pesos colombianos, igual o mayor que 0.");
     return;
   }
 
@@ -513,6 +523,7 @@ setIsSaving(true);
         name,
         weight: weightValue ?? 0,
         portions: portionsValue,
+        price: priceValue,
         category: form.category,
         expiryDate: form.expiryDate,
         minStock: form.minStock,
@@ -555,6 +566,7 @@ setIsSaving(true);
     description: "",
     weight: "",
     portions: "",
+    price: "",
     unit: "porciones",
     imageUrl: "",
     category: "",
@@ -690,6 +702,7 @@ setIsSaving(true);
                     description: product.description || "",
                     weight: product.weight || "",
                     portions: product.portions ?? "",
+                    price: product.price ?? "",
                     unit: product.unit || "porciones",
                     imageUrl: product.imageUrl || "",
                     category: product.category || "",

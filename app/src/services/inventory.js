@@ -51,6 +51,7 @@ function normalizeInventory(id, data = {}) {
     expiryDate: data.expiryDate ?? null,
     minStock: Math.max(0, Number(data.minStock) || 5),
     notes: data.notes ?? "",
+    price: data.price == null || data.price === "" ? null : Math.max(0, Number(data.price) || 0),
     createdAt: data.createdAt ?? null,
     updatedAt: data.updatedAt ?? null,
   };
@@ -116,6 +117,7 @@ export async function saveInventoryProduct(barcode, data = {}, workspaceId = get
     expiryDate: data.expiryDate || null,
     minStock: Math.max(0, Number(data.minStock) || 5),
     notes: data.notes?.trim() ?? "",
+    price: data.price == null || data.price === "" ? null : Math.max(0, Number(data.price) || 0),
   };
 
   await runTransaction(db, async (transaction) => {
@@ -155,13 +157,14 @@ function movementRef(workspaceId = getActiveWorkspaceId()) {
   return doc(movements);
 }
 
-function movementData({ productId, type, quantity, reason = "", userId = null }) {
+function movementData({ productId, type, quantity, reason = "", userId = null, ...metadata }) {
   return {
     productId,
     type,
     quantity: Number(quantity) || 0,
     reason,
     userId,
+    ...metadata,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   };
@@ -202,7 +205,7 @@ export async function saveInventoryProductWithMovement(
     } else {
       transaction.set(ref, { ...inventoryData, reservedPortions: 0, createdAt: serverTimestamp(), updatedAt: serverTimestamp() });
     }
-    if (movementDocument) transaction.set(movementDocument, movementData({ productId: normalizedBarcode, ...movement }));
+    if (movementDocument) transaction.set(movementDocument, movementData({ productId: normalizedBarcode, movementId: movementDocument.id, ...movement }));
   });
 }
 
@@ -232,6 +235,6 @@ export async function updateInventoryPortionsWithMovement(
     if (next < reserved) throw new Error("INVENTORY_PORTIONS_RESERVED");
     if (next < 0) throw new Error("INVENTORY_STOCK_INSUFFICIENT");
     transaction.update(ref, { portions: next, updatedAt: serverTimestamp() });
-    if (movementDocument) transaction.set(movementDocument, movementData({ productId: String(barcode).trim(), ...movement }));
+    if (movementDocument) transaction.set(movementDocument, movementData({ productId: String(barcode).trim(), movementId: movementDocument.id, ...movement }));
   });
 }
