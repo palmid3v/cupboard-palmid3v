@@ -123,3 +123,8 @@ La disponibilidad del sitio publicado y la validación local/CI son evidencias d
 
 **Cupboard · PALMI-D3V**  
 *🧱 Build · 🎨 Create · 🔧 Improve · ✅ Validate.*
+
+
+## 📚 Documentation status · 2026-11-26
+
+See [DOCUMENTATION-STATUS-2026-11-26.md](docs/DOCUMENTATION-STATUS-2026-11-26.md) for the current product scope, boundaries and release gates.
